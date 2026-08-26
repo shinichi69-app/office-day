@@ -795,4 +795,118 @@
       agents.forEach(agent => {
         const dx = agent.deskX, dy = agent.deskY;
         ctx.fillStyle = '#3d3f7a';
-        ctx.shadowBl
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = '#2a2c60';
+        ctx.fillRect(dx-36, dy-22, 76, 48);
+        ctx.shadowBlur = 0;
+        
+        ctx.fillStyle = agent.state === 'WORKING' ? '#55efc4' : '#2d3b6b';
+        ctx.fillRect(dx-14, dy-20, 32, 24);
+        ctx.fillStyle = '#0b0d1a';
+        ctx.fillRect(dx-10, dy-16, 24, 16);
+        if (agent.state === 'WORKING') {
+          ctx.fillStyle = '#55efc4';
+          for (let i=0; i<6; i++) {
+            ctx.fillRect(dx-8 + i*4, dy-12 + (i%2)*4, 2, 2);
+          }
+        }
+        ctx.fillStyle = '#2f315a';
+        ctx.fillRect(dx-30, dy-6, 16, 32);
+        ctx.fillStyle = '#8a8dc0';
+        ctx.font = '8px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(agent.emoji + ' ' + agent.name, dx, dy+34);
+      });
+
+      agents.forEach(agent => {
+        const x = agent.x, y = agent.y;
+        ctx.fillStyle = '#0b0c1a80';
+        ctx.beginPath();
+        ctx.ellipse(x, y+4, 13, 5, 0, 0, Math.PI*2);
+        ctx.fill();
+
+        ctx.fillStyle = agent.color;
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = agent.color + '60';
+        ctx.fillRect(x-13, y-26, 26, 28);
+        ctx.shadowBlur = 0;
+        
+        ctx.fillStyle = agent.accent || agent.color;
+        ctx.fillRect(x-7, y-6, 14, 6);
+        
+        ctx.fillStyle = agent.color;
+        ctx.fillRect(x-9, y-34, 18, 12);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x-7, y-30, 4, 4);
+        ctx.fillRect(x+3, y-30, 4, 4);
+        ctx.fillStyle = '#0b0c1a';
+        ctx.fillRect(x-6, y-29, 2, 2);
+        ctx.fillRect(x+4, y-29, 2, 2);
+        ctx.fillStyle = '#0b0c1a';
+        ctx.fillRect(x-3, y-22, 6, 2);
+
+        ctx.fillStyle = '#d0d2ff';
+        ctx.font = 'bold 9px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(agent.emoji + ' ' + agent.name, x, y-40);
+
+        if (agent.bubbleText) {
+          const txt = agent.bubbleText;
+          ctx.font = '9px monospace';
+          const tw = ctx.measureText(txt).width;
+          const bw = Math.min(140, Math.max(tw + 24, 70));
+          const bx = x - bw/2;
+          const by = y - 78;
+          ctx.fillStyle = '#f0f0ff';
+          ctx.shadowBlur = 16;
+          ctx.shadowColor = '#00000080';
+          ctx.beginPath();
+          ctx.roundRect(bx, by, bw, 28, 14);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+          ctx.strokeStyle = '#4a4d8a';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.roundRect(bx, by, bw, 28, 14);
+          ctx.stroke();
+          ctx.fillStyle = '#15162b';
+          ctx.font = '9px monospace';
+          ctx.textAlign = 'center';
+          const displayText = txt.length > 16 ? txt.substring(0,15)+'…' : txt;
+          ctx.fillText(displayText, x, by+19);
+        }
+      });
+    }
+
+    if (!CanvasRenderingContext2D.prototype.roundRect) {
+      CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+        if (r > w/2) r = w/2;
+        if (r > h/2) r = h/2;
+        this.moveTo(x + r, y);
+        this.lineTo(x + w - r, y);
+        this.quadraticCurveTo(x + w, y, x + w, y + r);
+        this.lineTo(x + w, y + h - r);
+        this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        this.lineTo(x + r, y + h);
+        this.quadraticCurveTo(x, y + h, x, y + h - r);
+        this.lineTo(x, y + r);
+        this.quadraticCurveTo(x, y, x + r, y);
+        return this;
+      };
+    }
+
+    // Init
+    agents.forEach(a => {
+      a.x = a.restX; a.y = a.restY;
+      a.targetX = a.restX; a.targetY = a.restY;
+      a.state = 'IDLE';
+      updateStatusUI(a, 'รอเริ่ม', 'idle');
+    });
+    update();
+    
+    console.log('✅ โหลดหน้าเว็บเสร็จแล้ว!');
+    console.log('showFullscreenSummary มีอยู่:', typeof window.showFullscreenSummary === 'function');
+  })();
+</script>
+</body>
+</html>
