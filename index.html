@@ -1,912 +1,837 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Pixel Office - Team Workflow</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    body {
-      background: #0b0c1a;
-      color: #e0e0ff;
-      font-family: 'Courier New', monospace;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 20px;
-      margin: 0;
-    }
-    .container {
-      max-width: 860px;
-      width: 100%;
-      background: #14152b;
-      border-radius: 24px;
-      padding: 24px 24px 30px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.7), 0 0 0 1px #3c3f7a inset;
-      position: relative;
-    }
-    h2 {
-      text-align: center;
-      font-weight: 400;
-      letter-spacing: 2px;
-      color: #b7b9ff;
-      margin-bottom: 4px;
-      font-size: 1.7rem;
-      text-shadow: 0 0 12px #4e54c880;
-    }
-    h2 small {
-      font-size: 0.85rem;
-      color: #8f91c0;
-      display: inline-block;
-      margin-left: 8px;
-    }
-    .subtitle {
-      text-align: center;
-      color: #6f72b0;
-      font-size: 0.85rem;
-      margin-bottom: 12px;
-      letter-spacing: 1px;
-    }
-    canvas {
-      display: block;
-      width: 100%;
-      height: auto;
-      border-radius: 16px;
-      background: #1d1e38;
-      image-rendering: pixelated;
-      box-shadow: 0 8px 0 #0a0b14, 0 0 0 1px #4a4d8a;
-      margin: 12px 0 14px;
-      cursor: default;
-    }
-    .controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 4px;
-    }
-    .controls input {
-      flex: 3 1 240px;
-      padding: 12px 18px;
-      background: #1a1b33;
-      border: 1px solid #3c3f7a;
-      border-radius: 40px;
-      color: #f0f0ff;
-      font-family: inherit;
-      outline: none;
-      transition: 0.2s;
-    }
-    .controls input:focus {
-      border-color: #7b7fd8;
-      background: #222349;
-      box-shadow: 0 0 0 3px #3c3f7a60;
-    }
-    .controls input::placeholder {
-      color: #5d60a0;
-    }
-    .controls button {
-      flex: 0 1 auto;
-      padding: 12px 32px;
-      background: #4e54c8;
-      border: none;
-      border-radius: 40px;
-      color: white;
-      font-weight: bold;
-      font-family: inherit;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: 0.2s;
-      box-shadow: 0 6px 0 #2e317a;
-      transform: translateY(0);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .controls button:active {
-      transform: translateY(4px);
-      box-shadow: 0 2px 0 #2e317a;
-    }
-    .controls button:hover {
-      background: #6b70e0;
-    }
-    .controls button:disabled {
-      opacity: 0.5;
-      transform: translateY(4px);
-      box-shadow: 0 2px 0 #2e317a;
-      cursor: not-allowed;
-    }
-    .status-panel {
-      margin-top: 18px;
-      background: #111225;
-      border-radius: 20px;
-      padding: 16px 20px;
-      border: 1px solid #343764;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 6px 12px;
-    }
-    .status-item {
-      font-size: 0.85rem;
-      padding: 6px 14px 6px 10px;
-      border-radius: 40px;
-      background: #1a1b33;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      border-left: 4px solid #4e54c8;
-      flex: 1 1 150px;
-      color: #c8caff;
-      min-height: 40px;
-    }
-    .status-item .dot {
-      display: inline-block;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      flex-shrink: 0;
-      background: #6f72b0;
-      transition: 0.3s;
-    }
-    .status-item .dot.idle { background: #6f72b0; }
-    .status-item .dot.walking { background: #f7b85a; box-shadow: 0 0 12px #f7b85a80; }
-    .status-item .dot.working { background: #5ac8f7; box-shadow: 0 0 12px #5ac8f780; animation: pulse 0.8s infinite; }
-    .status-item .dot.done { background: #5af78e; box-shadow: 0 0 12px #5af78e80; }
-    .status-item .role-tag {
-      font-size: 0.7rem;
-      background: #2a2c52;
-      padding: 2px 10px;
-      border-radius: 20px;
-      color: #a8aae0;
-      white-space: nowrap;
-    }
-    .workflow-log {
-      margin-top: 14px;
-      background: #0e0f22;
-      border-radius: 16px;
-      padding: 12px 18px;
-      border: 1px solid #2a2c52;
-      font-size: 0.8rem;
-      color: #a8aae0;
-      min-height: 48px;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 6px 16px;
-    }
-    .workflow-log .step {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: #1a1b33;
-      padding: 4px 14px 4px 10px;
-      border-radius: 40px;
-      border-left: 3px solid #4e54c8;
-    }
-    .workflow-log .step .emoji { font-size: 1.1rem; }
-    .workflow-log .step .label { color: #b7b9ff; }
-    .workflow-log .step .result { color: #5af78e; font-weight: bold; }
-    .btn-summary {
-      background: #00b894 !important;
-      box-shadow: 0 6px 0 #006b5f !important;
-      margin-left: auto;
-      padding: 8px 20px !important;
-      font-size: 0.85rem !important;
-    }
-    .btn-summary:hover {
-      background: #55efc4 !important;
-      color: #0b0c1a !important;
-    }
-    .btn-summary:disabled {
-      opacity: 0.4;
-      box-shadow: 0 2px 0 #006b5f !important;
-      cursor: not-allowed;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(0.85); }
-    }
-    @media (max-width: 600px) {
-      .container { padding: 16px; }
-      .controls { flex-direction: column; }
-      .controls input, .controls button { flex: 1 1 auto; width: 100%; }
-      .status-panel { flex-direction: column; }
-      .workflow-log { flex-direction: column; align-items: stretch; }
-      .btn-summary { margin-left: 0; }
-    }
-    .footer {
-      margin-top: 16px;
-      color: #5d60a0;
-      font-size: 0.75rem;
-      text-align: center;
-      border-top: 1px solid #282b50;
-      padding-top: 14px;
-      letter-spacing: 0.5px;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise HQ v25.0 - Ultimate Fullscreen Simulator</title>
+    <style>
+        :root { 
+            --bg: #030712; --panel: rgba(15, 23, 42, 0.88); --panel-border: rgba(56, 189, 248, 0.35); 
+            --accent: #38bdf8; --text: #f8fafc; --text-muted: #94a3b8;
+            --success: #22c55e; --danger: #ef4444; --warning: #f59e0b; --gold: #facc15;
+        }
+        * { box-sizing: border-box; font-family: 'Consolas', 'Segoe UI', monospace; user-select: none; }
+        html, body { margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; background: var(--bg); color: var(--text); }
+        
+        #canvas2d { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; cursor: pointer; }
 
-    /* === FULLSCREEN OVERLAY === */
-    .fullscreen-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(11, 12, 26, 0.95);
-      backdrop-filter: blur(12px);
-      z-index: 9999;
-      justify-content: center;
-      align-items: center;
-      padding: 40px;
-      animation: fadeIn 0.4s ease;
-    }
-    .fullscreen-overlay.show {
-      display: flex;
-    }
-    .fullscreen-card {
-      background: #14152b;
-      border-radius: 32px;
-      padding: 40px 48px;
-      max-width: 720px;
-      width: 100%;
-      border: 1px solid #4a4d8a;
-      box-shadow: 0 30px 60px rgba(0,0,0,0.8);
-      position: relative;
-      max-height: 90vh;
-      overflow-y: auto;
-      animation: slideUp 0.4s ease;
-    }
-    .fullscreen-card h2 {
-      font-size: 1.8rem;
-      color: #b7b9ff;
-      margin-bottom: 8px;
-      text-align: center;
-    }
-    .fullscreen-card .topic-display {
-      text-align: center;
-      font-size: 1.2rem;
-      color: #5af78e;
-      background: #1a1b33;
-      padding: 10px 20px;
-      border-radius: 40px;
-      margin-bottom: 24px;
-      border: 1px solid #2a2c52;
-    }
-    .result-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      margin: 20px 0 28px;
-    }
-    .result-item {
-      background: #1a1b33;
-      border-radius: 16px;
-      padding: 16px 20px;
-      border-left: 6px solid #4e54c8;
-      display: flex;
-      align-items: flex-start;
-      gap: 14px;
-    }
-    .result-item .icon {
-      font-size: 2rem;
-      flex-shrink: 0;
-      width: 48px;
-      text-align: center;
-    }
-    .result-item .content {
-      flex: 1;
-    }
-    .result-item .agent-name {
-      font-weight: bold;
-      color: #b7b9ff;
-      font-size: 1rem;
-    }
-    .result-item .agent-role {
-      font-size: 0.75rem;
-      color: #6f72b0;
-      margin-left: 8px;
-    }
-    .result-item .result-text {
-      color: #e0e0ff;
-      margin-top: 4px;
-      font-size: 0.95rem;
-      line-height: 1.5;
-    }
-    .result-item .status-badge {
-      display: inline-block;
-      font-size: 0.7rem;
-      padding: 2px 12px;
-      border-radius: 20px;
-      background: #2a2c52;
-      color: #5af78e;
-      margin-top: 4px;
-    }
-    .fullscreen-card .close-btn {
-      width: 100%;
-      padding: 14px;
-      background: #4e54c8;
-      border: none;
-      border-radius: 40px;
-      color: white;
-      font-weight: bold;
-      font-size: 1.1rem;
-      cursor: pointer;
-      transition: 0.2s;
-      box-shadow: 0 6px 0 #2e317a;
-      margin-top: 8px;
-      font-family: inherit;
-    }
-    .fullscreen-card .close-btn:hover {
-      background: #6b70e0;
-    }
-    .fullscreen-card .close-btn:active {
-      transform: translateY(4px);
-      box-shadow: 0 2px 0 #2e317a;
-    }
-    .fullscreen-card .summary-tag {
-      text-align: center;
-      font-size: 0.85rem;
-      color: #6f72b0;
-      margin-bottom: 16px;
-      border-top: 1px solid #2a2c52;
-      padding-top: 16px;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    @keyframes slideUp {
-      from { transform: translateY(30px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-    @media (max-width: 600px) {
-      .fullscreen-card { padding: 24px 20px; }
-      .result-item { flex-direction: column; align-items: center; text-align: center; }
-      .result-item .icon { width: auto; }
-    }
-  </style>
+        header { position: absolute; top: 12px; left: 12px; right: 12px; z-index: 10; display: flex; justify-content: space-between; align-items: center; background: var(--panel); padding: 8px 16px; border-radius: 12px; border: 1px solid var(--panel-border); backdrop-filter: blur(12px); box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+        .stats-bar { display: flex; gap: 8px; font-weight: bold; font-size: 11px; flex-wrap: wrap; }
+        .stat-item { background: rgba(8, 13, 26, 0.75); padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 4px; }
+        
+        .cam-hint { position: absolute; top: 75px; left: 16px; z-index: 10; background: rgba(0,0,0,0.75); color: var(--accent); padding: 6px 12px; border-radius: 6px; font-size: 10.5px; border: 1px solid var(--panel-border); pointer-events: none; backdrop-filter: blur(6px); }
+
+        .emp-modal { display: none; position: absolute; top: 110px; right: 16px; width: 290px; background: rgba(15, 23, 42, 0.95); border: 1px solid var(--accent); border-radius: 12px; padding: 14px; color: var(--text); box-shadow: 0 15px 35px rgba(0,0,0,0.85); backdrop-filter: blur(12px); z-index: 100; }
+        .emp-modal h4 { margin: 0 0 8px 0; color: var(--accent); font-size: 13px; display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px; }
+        .stat-bar-bg { width: 100%; background: #1e293b; height: 6px; border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
+        .stat-bar-fill { height: 100%; transition: width 0.3s; }
+        .modal-btn { width: 100%; margin-top: 5px; padding: 6px; font-size: 10px; font-weight: bold; border-radius: 5px; cursor: pointer; border: 1px solid var(--panel-border); background: rgba(8, 13, 26, 0.8); color: var(--text); }
+        .modal-btn:hover { background: var(--accent); color: #000; }
+
+        .bottom-hud { position: absolute; bottom: 12px; left: 12px; right: 12px; z-index: 10; display: grid; grid-template-columns: 2.5fr 1fr; gap: 12px; max-height: 220px; }
+        .card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 12px; padding: 10px; backdrop-filter: blur(12px); overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+        h3 { margin-top: 0; margin-bottom: 6px; color: var(--accent); font-size: 11px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .btn-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-bottom: 6px; }
+        .btn-grid-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+        
+        .btn { background: rgba(8, 13, 26, 0.8); color: var(--text); border: 1px solid rgba(255,255,255,0.15); padding: 6px; border-radius: 6px; cursor: pointer; font-weight: bold; font-family: inherit; font-size: 9.5px; text-align: center; transition: all 0.15s ease; }
+        .btn:hover, .btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+        .job-inbox { display: flex; gap: 8px; overflow-x: auto; background: rgba(0,0,0,0.5); padding: 6px; border-radius: 6px; margin-bottom: 6px; min-height: 55px; align-items: center; }
+        .job-card { background: rgba(15, 23, 42, 0.9); border: 1px solid var(--accent); border-radius: 4px; padding: 4px 8px; min-width: 190px; font-size: 10px; }
+        .dept-tag { padding: 1px 4px; border-radius: 2px; font-weight: bold; font-size: 8px; color: #000; margin-left: 3px; }
+
+        .log-box { height: 160px; overflow-y: auto; font-size: 9.5px; background: rgba(0,0,0,0.6); padding: 6px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); }
+        .log-item { margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 2px; line-height: 1.2; }
+
+        .crisis-banner { display: none; position: absolute; top: 65px; left: 50%; transform: translateX(-50%); z-index: 20; background: rgba(127, 29, 29, 0.95); border: 1px solid var(--danger); padding: 8px 18px; border-radius: 20px; font-size: 11px; font-weight: bold; color: #fca5a5; backdrop-filter: blur(8px); gap: 12px; align-items: center; }
+    </style>
 </head>
 <body>
-<div class="container">
-  <h2>🏢 AI Micro‑Office <small>Shinichi HQ</small></h2>
-  <div class="subtitle">⚡ Team Workflow — เทรนด์ → คอนเทนต์ → ตรวจสอบ</div>
+    <canvas id="canvas2d"></canvas>
 
-  <canvas id="officeCanvas" width="820" height="400"></canvas>
+    <header>
+        <div>
+            <strong style="color:var(--gold); font-size:14px;">🏢 ENTERPRISE HQ v25.0 ULTIMATE</strong>
+            <span style="font-size:10px; color:var(--text-muted);"> | CEO: คุณชินอิจิ</span>
+        </div>
+        <div class="stats-bar">
+            <div class="stat-item" style="color:var(--success);">💰 <span id="ui-cash">$750,000</span></div>
+            <div class="stat-item" style="color:var(--gold);">⭐ <span id="ui-fame">85%</span></div>
+            <div class="stat-item" style="color:var(--accent);">👥 <span id="ui-emp">0</span>/<span id="ui-max-emp">10</span></div>
+            <div class="stat-item" style="color:var(--danger);">💸 $<span id="ui-expenses">0</span>/ด.</div>
+            <div class="stat-item" style="color:var(--warning);">🕒 <span id="ui-time">08:00</span></div>
+            <div class="stat-item">📅 เดือน <span id="ui-month">1</span></div>
+            <div class="stat-item" id="weather-tag">☀️ แจ่มใส</div>
+            <button class="btn" style="background:var(--accent); color:#000; border:none; padding:4px 8px;" onclick="toggleFullScreen()">🖥️ เต็มจอ</button>
+            <button class="btn" style="background:var(--danger); color:white; border:none; padding:4px 8px;" onclick="resetGame()">🔄 เริ่มใหม่</button>
+        </div>
+    </header>
 
-  <div class="controls">
-    <input type="text" id="userInput" placeholder="ใส่หัวข้อหรือ关键词 เช่น 'เครื่องดื่มเพื่อสุขภาพ' ...">
-    <button id="startBtn" onclick="startWorkflow()">🚀 เริ่มเวิร์กโฟลว์</button>
-  </div>
+    <div class="cam-hint">🖱️ คลิกตัวละครเพื่อดูโปรไฟล์ / ระบบเวลาและสภาพอากาศแบบเรียลไทม์</div>
 
-  <div class="status-panel">
-    <div class="status-item" id="status-kim">
-      <span class="dot idle" id="dot-kim"></span>
-      <span><span id="statusText-kim">รอเริ่ม</span> <span class="role-tag">🔍 เทรนด์</span></span>
+    <div id="crisis-banner" class="crisis-banner">
+        <span id="crisis-msg">🚨 ALERT: เกิดเหตุการณ์วิกฤต!</span>
+        <button class="btn" style="background:var(--danger); color:white; border:none; padding:3px 8px;" onclick="resolveCrisis()">🛡️ แก้ไขวิกฤต</button>
     </div>
-    <div class="status-item" id="status-alex">
-      <span class="dot idle" id="dot-alex"></span>
-      <span><span id="statusText-alex">รอเริ่ม</span> <span class="role-tag">✍️ คอนเทนต์</span></span>
+
+    <!-- Employee Inspector Modal -->
+    <div id="emp-modal" class="emp-modal">
+        <h4><span id="modal-emp-name">Name</span> <button style="background:none; border:none; color:white; cursor:pointer;" onclick="closeEmpModal()">✖</button></h4>
+        <div style="font-size:9.5px; color:var(--text-muted); margin-bottom:4px;" id="modal-emp-dept">Dev Specialist</div>
+        <div style="font-size:9.5px;">ความเครียด: <span id="modal-emp-stress-val">0%</span></div>
+        <div class="stat-bar-bg"><div id="modal-emp-stress-bar" class="stat-bar-fill" style="background:var(--danger); width:0%;"></div></div>
+        <div style="font-size:9.5px;">พลังงาน: <span id="modal-emp-stamina-val">100%</span></div>
+        <div class="stat-bar-bg"><div id="modal-emp-stamina-bar" class="stat-bar-fill" style="background:var(--success); width:100%;"></div></div>
+        <div style="font-size:10px; margin-bottom:6px;">
+            <div>🎖️ Lv.<strong id="modal-emp-lv">1</strong> | นิสัย: <strong id="modal-emp-trait">Workaholic</strong></div>
+            <div>💵 เงินเดือน: <strong id="modal-emp-salary">$3,800</strong></div>
+        </div>
+        <button class="modal-btn" style="border-color:var(--gold); color:var(--gold);" onclick="giveBonusToSelected()">💵 ให้โบนัส ($2,000) [-25% Stress]</button>
+        <button class="modal-btn" style="border-color:var(--accent); color:var(--accent);" onclick="trainSelectedEmp()">📚 ส่งอบรม ($5,000) [+100 EXP]</button>
+        <button class="modal-btn" style="border-color:var(--danger); color:var(--danger);" onclick="fireSelectedEmp()">❌ เลิกจ้างพนักงาน</button>
     </div>
-    <div class="status-item" id="status-may">
-      <span class="dot idle" id="dot-may"></span>
-      <span><span id="statusText-may">รอเริ่ม</span> <span class="role-tag">✅ ตรวจสอบ</span></span>
-    </div>
-  </div>
 
-  <div class="workflow-log" id="workflowLog">
-    <span style="color:#5d60a0;">💬 รอการเริ่มเวิร์กโฟลว์...</span>
-    <button id="summaryBtn" class="btn-summary" onclick="window.showFullscreenSummary()" style="display:none;">
-      📺 ดูผลสรุปแบบเต็มจอ
-    </button>
-  </div>
+    <!-- Floating Bottom Controls HUD -->
+    <div class="bottom-hud">
+        <div class="card">
+            <h3>📢 สัญญาจ้างงาน & การควบคุมสิ่งอำนวยความสะดวก HQ <span id="auto-manager-status" style="background:#1e293b; color:var(--text); padding:1px 5px; border-radius:3px; font-size:8.5px;">🤖 Director: Off</span></h3>
+            
+            <div class="job-inbox" id="job-inbox"></div>
 
-  <div class="footer">🧠 AI Agents ทำงานร่วมกันแบบ Pipeline — แต่ละคนมีหน้าที่เฉพาะ</div>
-</div>
-
-<!-- === FULLSCREEN OVERLAY === -->
-<div class="fullscreen-overlay" id="fullscreenOverlay">
-  <div class="fullscreen-card">
-    <h2>📊 สรุปผลการทำงาน</h2>
-    <div class="topic-display" id="fsTopic">📌 หัวข้อ: -</div>
-    <div class="result-grid" id="fsResultGrid"></div>
-    <div class="summary-tag" id="fsSummaryTag">✨ ทุกคนทำงานเสร็จสิ้นแล้ว!</div>
-    <button class="close-btn" onclick="window.closeFullscreen()">✕ ปิด และให้ทุกคนกลับไปพัก</button>
-  </div>
-</div>
-
-<script>
-  (function(){
-    const canvas = document.getElementById('officeCanvas');
-    const ctx = canvas.getContext('2d');
-    ctx.imageSmoothingEnabled = false;
-
-    // ----- AGENTS CONFIG -----
-    const agents = [
-      {
-        id: 'kim', name: 'Kim', role: 'Trend Analyst',
-        color: '#e84393', accent: '#ff6eb4',
-        x: 60, y: 80,
-        restX: 60, restY: 80,
-        deskX: 580, deskY: 70,
-        targetX: 60, targetY: 80,
-        speed: 1.6,
-        state: 'IDLE',
-        bubbleText: '',
-        bubbleTimer: null,
-        taskResult: '',
-        emoji: '🔍'
-      },
-      {
-        id: 'alex', name: 'Alex', role: 'Content Creator',
-        color: '#0984e3', accent: '#6ab0ff',
-        x: 60, y: 190,
-        restX: 60, restY: 190,
-        deskX: 580, deskY: 185,
-        targetX: 60, targetY: 190,
-        speed: 1.6,
-        state: 'IDLE',
-        bubbleText: '',
-        bubbleTimer: null,
-        taskResult: '',
-        emoji: '✍️'
-      },
-      {
-        id: 'may', name: 'May', role: 'Quality Checker',
-        color: '#00b894', accent: '#55efc4',
-        x: 60, y: 300,
-        restX: 60, restY: 300,
-        deskX: 580, deskY: 300,
-        targetX: 60, targetY: 300,
-        speed: 1.6,
-        state: 'IDLE',
-        bubbleText: '',
-        bubbleTimer: null,
-        taskResult: '',
-        emoji: '✅'
-      }
-    ];
-
-    // DOM refs
-    const statusTexts = {};
-    const dots = {};
-    agents.forEach(a => {
-      statusTexts[a.id] = document.getElementById(`statusText-${a.id}`);
-      dots[a.id] = document.getElementById(`dot-${a.id}`);
-    });
-    const logEl = document.getElementById('workflowLog');
-    const startBtn = document.getElementById('startBtn');
-    const summaryBtn = document.getElementById('summaryBtn');
-
-    // Fullscreen elements
-    const overlay = document.getElementById('fullscreenOverlay');
-    const fsTopic = document.getElementById('fsTopic');
-    const fsResultGrid = document.getElementById('fsResultGrid');
-    const fsSummaryTag = document.getElementById('fsSummaryTag');
-
-    let currentTopic = '';
-    let workflowDone = false;
-    let isReturning = false;
-
-    // ----- Helper functions -----
-    function setDot(agent, stateClass) {
-      const dot = dots[agent.id];
-      if (dot) {
-        dot.className = 'dot';
-        if (stateClass) dot.classList.add(stateClass);
-      }
-    }
-
-    function updateStatusUI(agent, text, stateClass) {
-      const el = statusTexts[agent.id];
-      if (el) el.innerText = text;
-      setDot(agent, stateClass);
-    }
-
-    function showBubble(agent, text, duration = 2500) {
-      agent.bubbleText = text;
-      if (agent.bubbleTimer) clearTimeout(agent.bubbleTimer);
-      agent.bubbleTimer = setTimeout(() => {
-        agent.bubbleText = '';
-      }, duration);
-    }
-
-    function addLog(html, showSummaryBtn = false) {
-      logEl.innerHTML = html;
-      if (showSummaryBtn) {
-        summaryBtn.style.display = 'inline-flex';
-        summaryBtn.disabled = false;
-      } else {
-        summaryBtn.style.display = 'none';
-        summaryBtn.disabled = true;
-      }
-    }
-
-    // ----- Move agent to target (promise) -----
-    function moveAgentTo(agent, targetX, targetY) {
-      return new Promise((resolve) => {
-        agent.targetX = targetX;
-        agent.targetY = targetY;
-        const checkInterval = setInterval(() => {
-          if (Math.abs(agent.x - targetX) < 1.5 && Math.abs(agent.y - targetY) < 1.5) {
-            agent.x = targetX;
-            agent.y = targetY;
-            clearInterval(checkInterval);
-            resolve();
-          }
-        }, 50);
-      });
-    }
-
-    // ----- Simulate work with progress -----
-    function simulateWork(agent, workText, duration = 1500) {
-      return new Promise((resolve) => {
-        agent.state = 'WORKING';
-        updateStatusUI(agent, workText, 'working');
-        showBubble(agent, '⏳ กำลังทำงาน...', duration);
-        setTimeout(() => {
-          resolve();
-        }, duration);
-      });
-    }
-
-    // ----- SHOW FULLSCREEN SUMMARY -----
-    window.showFullscreenSummary = function() {
-      console.log('showFullscreenSummary ถูกเรียก!');
-      console.log('workflowDone =', workflowDone);
-      
-      if (!workflowDone) {
-        alert('⚠️ ยังไม่มีผลลัพธ์ให้แสดง กรุณาเริ่มเวิร์กโฟลว์ก่อน');
-        return;
-      }
-      
-      fsTopic.textContent = `📌 หัวข้อ: "${currentTopic}"`;
-      
-      const colors = {
-        kim: '#e84393',
-        alex: '#0984e3',
-        may: '#00b894'
-      };
-      const roles = {
-        kim: '🔍 เทรนด์',
-        alex: '✍️ คอนเทนต์',
-        may: '✅ ตรวจสอบ'
-      };
-      
-      let html = '';
-      agents.forEach(agent => {
-        const borderColor = colors[agent.id] || '#4e54c8';
-        const resultText = agent.taskResult || 'ไม่มีข้อมูล';
-        html += `
-          <div class="result-item" style="border-left-color: ${borderColor};">
-            <div class="icon">${agent.emoji}</div>
-            <div class="content">
-              <div>
-                <span class="agent-name">${agent.name}</span>
-                <span class="agent-role">${roles[agent.id]}</span>
-              </div>
-              <div class="result-text">${resultText}</div>
-              <span class="status-badge">✅ เสร็จสิ้น</span>
+            <div class="btn-grid">
+                <button id="btn-theme-cyber" class="btn active" onclick="setOfficeTheme('cyber')">🌆 Cyber</button>
+                <button id="btn-theme-luxury" class="btn" onclick="setOfficeTheme('luxury')">🏛️ Luxury</button>
+                <button id="btn-theme-eco" class="btn" onclick="setOfficeTheme('eco')">🌱 Eco</button>
+                <button id="btn-up-coffee" class="btn" onclick="upgradeAmenity('coffee')">☕ Coffee</button>
+                <button id="btn-up-lounge" class="btn" onclick="upgradeAmenity('lounge')">🎮 VR</button>
+                <button id="btn-up-tech" class="btn" onclick="upgradeAmenity('tech')">🖥️ Ergo</button>
             </div>
-          </div>
-        `;
-      });
-      fsResultGrid.innerHTML = html;
-      
-      const mayResult = agents[2].taskResult || 'งานเสร็จสมบูรณ์';
-      fsSummaryTag.textContent = `📌 สรุปโดย May: ${mayResult}`;
-      
-      overlay.classList.add('show');
-      document.body.style.overflow = 'hidden';
-    };
 
-    window.closeFullscreen = function() {
-      console.log('closeFullscreen ถูกเรียก');
-      overlay.classList.remove('show');
-      document.body.style.overflow = '';
-      
-      if (workflowDone && !isReturning) {
-        isReturning = true;
-        returnAllToLounge();
-      }
-    };
+            <div class="btn-grid-6">
+                <button id="btn-hire-manager" class="btn" style="background:#451a03; border-color:var(--gold); color:var(--gold);" onclick="toggleAutoManager()">👔 Director ($45k)</button>
+                <button class="btn" style="background:#064e3b; border-color:var(--success); color:#4ade80;" onclick="upgradeOfficeHQ()"><span id="hq-upgrade-text">🏛️ ขยาย HQ Lv.2</span></button>
+                <button class="btn" onclick="hireByDept('Dev')">💻 Dev</button>
+                <button class="btn" onclick="hireByDept('Ads')">🎯 Ads</button>
+                <button class="btn" onclick="hireByDept('Creative')">🎨 Art</button>
+                <button class="btn" onclick="hireByDept('Acc')">📊 Acc</button>
+            </div>
+        </div>
 
-    // ----- Return all agents to lounge -----
-    async function returnAllToLounge() {
-      console.log('returnAllToLounge เริ่มทำงาน');
-      for (const agent of agents) {
-        updateStatusUI(agent, 'กลับไปพัก...', 'walking');
-        showBubble(agent, '🚶 กลับ lounge', 1200);
-        await moveAgentTo(agent, agent.restX, agent.restY);
-        agent.state = 'IDLE';
-        updateStatusUI(agent, 'พร้อมรับงานใหม่', 'idle');
-        showBubble(agent, '☕ พร้อม!', 1000);
-      }
-      isReturning = false;
-      startBtn.disabled = false;
-      startBtn.textContent = '🚀 เริ่มเวิร์กโฟลว์';
-      workflowDone = false;
-      summaryBtn.style.display = 'none';
-      summaryBtn.disabled = true;
-      console.log('returnAllToLounge เสร็จสิ้น');
-    }
+        <div class="card">
+            <h3>📜 สถานะ & Logs</h3>
+            <div class="log-box" id="game-log"></div>
+        </div>
+    </div>
 
-    // ----- MAIN WORKFLOW -----
-    window.startWorkflow = async function() {
-      console.log('startWorkflow ถูกเรียก');
-      const input = document.getElementById('userInput');
-      const topic = input.value.trim();
-      if (!topic) {
-        addLog(`<span style="color:#f7b85a;">⚠️ กรุณาใส่หัวข้อหรือ关键词ก่อน</span>`);
-        return;
-      }
-
-      workflowDone = false;
-      isReturning = false;
-      currentTopic = topic;
-      startBtn.disabled = true;
-      startBtn.textContent = '⏳ กำลังทำงาน...';
-      summaryBtn.style.display = 'none';
-      summaryBtn.disabled = true;
-
-      for (const agent of agents) {
-        agent.targetX = agent.restX;
-        agent.targetY = agent.restY;
-        agent.state = 'IDLE';
-        agent.taskResult = '';
-        updateStatusUI(agent, 'พร้อมทำงาน', 'idle');
-        showBubble(agent, '☕ พร้อม!', 1000);
-      }
-
-      await new Promise(r => setTimeout(r, 500));
-
-      const kim = agents[0];
-      const alex = agents[1];
-      const may = agents[2];
-
-      addLog(`<span class="step"><span class="emoji">🔍</span> <span class="label">Kim กำลังวิเคราะห์เทรนด์สำหรับ:</span> <span class="result">"${topic}"</span></span>`);
-      
-      updateStatusUI(kim, 'เดินไปโต๊ะ...', 'walking');
-      showBubble(kim, '🚶 ไปดูเทรนด์', 1500);
-      await moveAgentTo(kim, kim.deskX, kim.deskY);
-      await simulateWork(kim, '📊 กำลังวิเคราะห์เทรนด์...', 1800);
-      
-      const trendResults = [
-        `📈 เทรนด์ "${topic}" มาแรง! โต 35% ใน 3 เดือน กลุ่มเป้าหมายหลักคือวัยรุ่นและคนทำงาน`,
-        `🔥 "${topic}" กำลังเป็นที่นิยมในโซเชียลมีเดีย มียอดพูดถึงเพิ่ม 280%`,
-        `📊 ตลาด "${topic}" ขยายตัว 28% ปีนี้ คาดการณ์โตต่อเนื่องใน Q4`,
-        `💡 ผู้บริโภคให้ความสนใจ "${topic}" สูงสุดในรอบปี โดยเฉพาะกลุ่ม Gen Z`,
-        `🌟 "${topic}" อยู่ใน Top 5 เทรนด์แห่งปี มีการค้นหาสูงสุดในเดือนนี้`
-      ];
-      const trend = trendResults[Math.floor(Math.random() * trendResults.length)];
-      kim.taskResult = trend;
-      kim.state = 'IDLE';
-      updateStatusUI(kim, `✅ วิเคราะห์เสร็จ`, 'done');
-      showBubble(kim, '📊 เทรนด์เสร็จ!', 1500);
-      addLog(`<span class="step"><span class="emoji">🔍</span> <span class="label">Kim:</span> <span class="result">${trend.substring(0, 30)}...</span></span>`);
-
-      // STEP 2: Alex
-      addLog(`<span class="step"><span class="emoji">✍️</span> <span class="label">Alex กำลังสร้างคอนเทนต์จากเทรนด์...</span></span>`);
-      
-      updateStatusUI(alex, 'เดินไปโต๊ะ...', 'walking');
-      showBubble(alex, '🚶 ไปสร้างคอนเทนต์', 1500);
-      await moveAgentTo(alex, alex.deskX, alex.deskY);
-      await simulateWork(alex, '✍️ กำลังคิดคอนเทนต์...', 2000);
-      
-      const contentIdeas = [
-        `🎯 แคมเปญ "${topic}" ใช้แนวคิด "สุขภาพดี เริ่มที่ตัวเอง" ร่วมกับ influencer สายสุขภาพ`,
-        `📝 คอนเทนต์ "${topic}" แนว How-to พร้อมแชร์เรื่องจริงจากผู้ใช้งานจริง 5 คน`,
-        `🎬 ผลิตวิดีโอ "${topic}" สไตล์ vlog สั้น 60 วินาที เน้นภาพสวยและดนตรีประกอบ`,
-        `📰 บทความ "${topic}" พร้อม Infographic ดึงดูดสายตา แจกฟรี 5 ไอเดีย`,
-        `🎨 ใช้ User-Generated Content ชวนแฟนๆ แชร์ประสบการณ์ "${topic}" พร้อมแฮชแท็ก`
-      ];
-      const content = contentIdeas[Math.floor(Math.random() * contentIdeas.length)];
-      alex.taskResult = content;
-      alex.state = 'IDLE';
-      updateStatusUI(alex, `✅ สร้างคอนเทนต์เสร็จ`, 'done');
-      showBubble(alex, '✍️ คอนเทนต์เสร็จ!', 1500);
-      addLog(`<span class="step"><span class="emoji">✍️</span> <span class="label">Alex:</span> <span class="result">${content.substring(0, 30)}...</span></span>`);
-
-      // STEP 3: May
-      addLog(`<span class="step"><span class="emoji">✅</span> <span class="label">May กำลังตรวจสอบและสรุปผล...</span></span>`);
-      
-      updateStatusUI(may, 'เดินไปโต๊ะ...', 'walking');
-      showBubble(may, '🚶 ไปตรวจสอบ', 1500);
-      await moveAgentTo(may, may.deskX, may.deskY);
-      await simulateWork(may, '🔎 กำลังตรวจสอบคุณภาพ...', 1800);
-      
-      const summaries = [
-        `⭐ สรุป: เทรนด์ "${topic}" แรงมาก → คอนเทนต์ที่สร้างตรงกลุ่มเป้าหมาย → พร้อมใช้ได้ทันที!`,
-        `✅ ผ่านทุกเกณฑ์! "${topic}" มีศักยภาพสูง ใช้คอนเทนต์ที่สร้างไว้ได้เลย`,
-        `📌 แนะนำปรับเล็กน้อย: เพิ่ม hashtag #${topic.replace(/\s/g,'')} และลงช่วงเวลา 20:00 น.`,
-        `🏆 คะแนนรวม 92/100 — "${topic}" พร้อม launch แนะนำใช้ช่องทาง TikTok และ IG`,
-        `💯 อนุมัติ! "${topic}" ผ่านทุกเกณฑ์ เริ่มผลิตเนื้อหาและวางแผนเผยแพร่ได้`
-      ];
-      const summary = summaries[Math.floor(Math.random() * summaries.length)];
-      may.taskResult = summary;
-      may.state = 'IDLE';
-      updateStatusUI(may, `✅ ตรวจสอบเสร็จ`, 'done');
-      showBubble(may, '✅ ตรวจสอบเสร็จ!', 1500);
-      
-      workflowDone = true;
-      console.log('workflowDone =', workflowDone);
-      
-      addLog(`
-        <span class="step"><span class="emoji">🏁</span> <span class="label">✨ เวิร์กโฟลว์เสร็จสิ้น!</span></span>
-        <span class="step"><span class="emoji">📊</span> <span class="label">คลิกปุ่มเพื่อดูผลสรุปแบบเต็มจอ</span></span>
-      `, true);
-      
-      summaryBtn.style.display = 'inline-flex';
-      summaryBtn.disabled = false;
-      startBtn.textContent = '✅ เสร็จแล้ว (กดปุ่มเขียวเพื่อดูสรุป)';
-    };
-
-    // ----- Animation loop -----
-    function update() {
-      agents.forEach(agent => {
-        const dx = agent.targetX - agent.x;
-        const dy = agent.targetY - agent.y;
-        const dist = Math.sqrt(dx*dx + dy*dy);
-        if (dist > 0.8) {
-          if (agent.state !== 'WALKING' && agent.state !== 'WORKING') {
-            agent.state = 'WALKING';
-          }
-          const step = Math.min(agent.speed, dist);
-          agent.x += (dx / dist) * step;
-          agent.y += (dy / dist) * step;
-        } else {
-          agent.x = agent.targetX;
-          agent.y = agent.targetY;
+    <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSFX(freq, type = 'sine', duration = 0.12) {
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); osc.stop(audioCtx.currentTime + duration);
+            } catch(e) {}
         }
-      });
 
-      draw();
-      requestAnimationFrame(update);
-    }
-
-    // ----- Draw -----
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#1a1b33';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      ctx.strokeStyle = '#2f3160';
-      ctx.lineWidth = 0.5;
-      for (let x = 0; x < canvas.width; x += 35) {
-        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
-      }
-      for (let y = 0; y < canvas.height; y += 35) {
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
-      }
-
-      ctx.fillStyle = '#1f2145';
-      ctx.shadowColor = '#3c3f7a40';
-      ctx.shadowBlur = 12;
-      ctx.fillRect(20, 30, 110, 340);
-      ctx.shadowBlur = 0;
-      ctx.fillStyle = '#9b9ed0';
-      ctx.font = '10px monospace';
-      ctx.fillText('🏖️ LOUNGE', 40, 52);
-
-      agents.forEach(agent => {
-        const dx = agent.deskX, dy = agent.deskY;
-        ctx.fillStyle = '#3d3f7a';
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = '#2a2c60';
-        ctx.fillRect(dx-36, dy-22, 76, 48);
-        ctx.shadowBlur = 0;
-        
-        ctx.fillStyle = agent.state === 'WORKING' ? '#55efc4' : '#2d3b6b';
-        ctx.fillRect(dx-14, dy-20, 32, 24);
-        ctx.fillStyle = '#0b0d1a';
-        ctx.fillRect(dx-10, dy-16, 24, 16);
-        if (agent.state === 'WORKING') {
-          ctx.fillStyle = '#55efc4';
-          for (let i=0; i<6; i++) {
-            ctx.fillRect(dx-8 + i*4, dy-12 + (i%2)*4, 2, 2);
-          }
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {});
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
         }
-        ctx.fillStyle = '#2f315a';
-        ctx.fillRect(dx-30, dy-6, 16, 32);
-        ctx.fillStyle = '#8a8dc0';
-        ctx.font = '8px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(agent.emoji + ' ' + agent.name, dx, dy+34);
-      });
 
-      agents.forEach(agent => {
-        const x = agent.x, y = agent.y;
-        ctx.fillStyle = '#0b0c1a80';
-        ctx.beginPath();
-        ctx.ellipse(x, y+4, 13, 5, 0, 0, Math.PI*2);
-        ctx.fill();
+        const OFFICE_TIERS = {
+            1: { name: "Startup Studio", desks: 10, rent: 4500, utility: 1500, upgradeCost: 60000, next: 2 },
+            2: { name: "Enterprise HQ", desks: 18, rent: 14000, utility: 4000, upgradeCost: 220000, next: 3 },
+            3: { name: "Global Tech Tower", desks: 26, rent: 40000, utility: 9000, upgradeCost: 0, next: null }
+        };
 
-        ctx.fillStyle = agent.color;
-        ctx.shadowBlur = 12;
-        ctx.shadowColor = agent.color + '60';
-        ctx.fillRect(x-13, y-26, 26, 28);
-        ctx.shadowBlur = 0;
-        
-        ctx.fillStyle = agent.accent || agent.color;
-        ctx.fillRect(x-7, y-6, 14, 6);
-        
-        ctx.fillStyle = agent.color;
-        ctx.fillRect(x-9, y-34, 18, 12);
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(x-7, y-30, 4, 4);
-        ctx.fillRect(x+3, y-30, 4, 4);
-        ctx.fillStyle = '#0b0c1a';
-        ctx.fillRect(x-6, y-29, 2, 2);
-        ctx.fillRect(x+4, y-29, 2, 2);
-        ctx.fillStyle = '#0b0c1a';
-        ctx.fillRect(x-3, y-22, 6, 2);
+        const UPGRADE_CONFIGS = {
+            coffee: { name: "Coffee Bar", costs: [15000, 35000, 75000] },
+            lounge: { name: "VR Lounge", costs: [20000, 45000, 90000] },
+            tech: { name: "Ergo Desk", costs: [25000, 60000, 120000] }
+        };
 
-        ctx.fillStyle = '#d0d2ff';
-        ctx.font = 'bold 9px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(agent.emoji + ' ' + agent.name, x, y-40);
+        const DEPT_CONFIG = {
+            'Acc': { name: "Accounting", color: "#facc15", salary: 3800, hireCost: 4200 },
+            'HR': { name: "HR Manager", color: "#ec4899", salary: 3200, hireCost: 3600 },
+            'Dev': { name: "Web Dev", color: "#38bdf8", salary: 3800, hireCost: 4500 },
+            'Ads': { name: "Ad Specialist", color: "#4ade80", salary: 3000, hireCost: 3500 },
+            'Creative': { name: "Creative Art", color: "#c084fc", salary: 2400, hireCost: 2800 }
+        };
 
-        if (agent.bubbleText) {
-          const txt = agent.bubbleText;
-          ctx.font = '9px monospace';
-          const tw = ctx.measureText(txt).width;
-          const bw = Math.min(140, Math.max(tw + 24, 70));
-          const bx = x - bw/2;
-          const by = y - 78;
-          ctx.fillStyle = '#f0f0ff';
-          ctx.shadowBlur = 16;
-          ctx.shadowColor = '#00000080';
-          ctx.beginPath();
-          ctx.roundRect(bx, by, bw, 28, 14);
-          ctx.fill();
-          ctx.shadowBlur = 0;
-          ctx.strokeStyle = '#4a4d8a';
-          ctx.lineWidth = 1.5;
-          ctx.beginPath();
-          ctx.roundRect(bx, by, bw, 28, 14);
-          ctx.stroke();
-          ctx.fillStyle = '#15162b';
-          ctx.font = '9px monospace';
-          ctx.textAlign = 'center';
-          const displayText = txt.length > 16 ? txt.substring(0,15)+'…' : txt;
-          ctx.fillText(displayText, x, by+19);
+        const CONVERSATIONS = [
+            ["บั๊กนี้แก้ไงดีหว่า...", "ลอง Restart Server ดูยัง?"],
+            ["บรีฟงานนี้ขอแบบปังๆ น้า", "ขอเวลาออกแบบ 10 นาทีครับ!"],
+            ["ตัวเลขงบดุลเดือนนี้เป๊ะมาก!", "เยี่ยมเลย สรรพากรผ่านสะดวก"],
+            ["กาแฟที่บาร์รสชาติเข้มดีจัง", "เติมคาเฟอีนลุยงานต่อ!"],
+            ["แคมเปญใหม่ยิงแอดปังมาก!", "ยอด CTR พุ่งทะลุเป้า"]
+        ];
+
+        const TRAITS = [
+            { name: "Workaholic", speed: 1.25, stressRate: 1.2 },
+            { name: "Coffee Addict", speed: 1.0, stressRate: 1.0, coffeeBonus: 2.0 },
+            { name: "Chill Master", speed: 0.9, stressRate: 0.5 }
+        ];
+
+        const DESK_POSITIONS_2D = [];
+        for (let row = 0; row < 5; row++) {
+            for (let col = 0; col < 5; col++) {
+                DESK_POSITIONS_2D.push({ x: -12 + (col * 4.5), z: -8 + (row * 4.2) });
+            }
         }
-      });
-    }
 
-    if (!CanvasRenderingContext2D.prototype.roundRect) {
-      CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
-        if (r > w/2) r = w/2;
-        if (r > h/2) r = h/2;
-        this.moveTo(x + r, y);
-        this.lineTo(x + w - r, y);
-        this.quadraticCurveTo(x + w, y, x + w, y + r);
-        this.lineTo(x + w, y + h - r);
-        this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-        this.lineTo(x + r, y + h);
-        this.quadraticCurveTo(x, y + h, x, y + h - r);
-        this.lineTo(x, y + r);
-        this.quadraticCurveTo(x, y, x + r, y);
-        return this;
-      };
-    }
+        let gameState = {
+            cash: 750000, month: 1, hour: 8, minute: 0, fame: 85,
+            weather: 'sunny', // sunny, rainy
+            officeLevel: 1, theme: 'cyber', hasAutoManager: false, autoManagerSalary: 6000,
+            employees: [], incomingJobs: [], activeJobs: [], activeCrisis: null,
+            selectedEmpId: null, hoveredEmpId: null,
+            upgrades: { coffee: 0, lounge: 0, tech: 0 }
+        };
 
-    // Init
-    agents.forEach(a => {
-      a.x = a.restX; a.y = a.restY;
-      a.targetX = a.restX; a.targetY = a.restY;
-      a.state = 'IDLE';
-      updateStatusUI(a, 'รอเริ่ม', 'idle');
-    });
-    update();
-    
-    console.log('✅ โหลดหน้าเว็บเสร็จแล้ว!');
-    console.log('showFullscreenSummary มีอยู่:', typeof window.showFullscreenSummary === 'function');
-  })();
-</script>
+        let canvas, ctx;
+        let tickAnim = 0;
+        let rainParticles = [];
+
+        function initRain() {
+            rainParticles = [];
+            for(let i=0; i<80; i++) {
+                rainParticles.push({
+                    x: Math.random() * window.innerWidth,
+                    y: Math.random() * window.innerHeight,
+                    length: Math.random() * 15 + 10,
+                    speed: Math.random() * 10 + 10
+                });
+            }
+        }
+
+        function toIso(x, z) {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height * 0.38;
+            const isoX = centerX + (x - z) * 26;
+            const isoY = centerY + (x + z) * 15;
+            return { x: isoX, y: isoY };
+        }
+
+        function drawIsoTile(x, z, w, d, fillColor, strokeColor) {
+            const p1 = toIso(x, z);
+            const p2 = toIso(x + w, z);
+            const p3 = toIso(x + w, z + d);
+            const p4 = toIso(x, z + d);
+
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y);
+            ctx.lineTo(p3.x, p3.y); ctx.lineTo(p4.x, p4.y);
+            ctx.closePath();
+            ctx.fillStyle = fillColor; ctx.fill();
+            if (strokeColor) {
+                ctx.strokeStyle = strokeColor; ctx.lineWidth = 1; ctx.stroke();
+            }
+        }
+
+        function drawIsoBox(x, z, w, d, h, topColor, leftColor, rightColor) {
+            const p1 = toIso(x, z);
+            const p2 = toIso(x + w, z);
+            const p3 = toIso(x + w, z + d);
+            const p4 = toIso(x, z + d);
+
+            ctx.beginPath();
+            ctx.moveTo(p4.x, p4.y); ctx.lineTo(p3.x, p3.y);
+            ctx.lineTo(p3.x, p3.y - h); ctx.lineTo(p4.x, p4.y - h);
+            ctx.closePath(); ctx.fillStyle = leftColor; ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(p2.x, p2.y); ctx.lineTo(p3.x, p3.y);
+            ctx.lineTo(p3.x, p3.y - h); ctx.lineTo(p2.x, p2.y - h);
+            ctx.closePath(); ctx.fillStyle = rightColor; ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y - h); ctx.lineTo(p2.x, p2.y - h);
+            ctx.lineTo(p3.x, p3.y - h); ctx.lineTo(p4.x, p4.y - h);
+            ctx.closePath(); ctx.fillStyle = topColor; ctx.fill();
+            ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.stroke();
+        }
+
+        class Employee2D {
+            constructor(id, name, deptKey, deskIndex) {
+                this.id = id; this.name = name; this.deptKey = deptKey;
+                this.config = DEPT_CONFIG[deptKey];
+                this.salary = this.config.salary;
+                this.trait = TRAITS[Math.floor(Math.random() * TRAITS.length)];
+                this.deskIndex = deskIndex;
+                this.deskPos = DESK_POSITIONS_2D[deskIndex];
+                
+                this.x = this.deskPos.x; this.z = this.deskPos.z;
+                this.targetX = this.x; this.targetZ = this.z;
+                this.stress = 0; this.stamina = 100; this.level = 1; this.exp = 0;
+                this.state = 'WORKING';
+                this.speechBubble = null; this.speechTimer = 0;
+                this.emote = '💡'; this.walkCycle = 0; this.isWalking = false; this.partner = null;
+
+                this.speak(`สวัสดีครับ! ผมชื่อ ${this.name}`);
+            }
+
+            speak(text) {
+                this.speechBubble = text; this.speechTimer = 180;
+            }
+
+            gainExp(amount) {
+                this.exp += Math.round(amount);
+                if (this.exp >= this.level * 100) {
+                    this.exp -= this.level * 100; this.level++;
+                    this.salary = Math.round(this.salary * 1.15);
+                    playSFX(880, 'sine', 0.2); this.emote = '🌟';
+                    this.speak(`🌟 เลเวลอัป Lv.${this.level}!`);
+                    addLog(`🌟 คุณ ${this.name} (${this.config.name}) เลเวลอัปเป็น Lv.${this.level}!`);
+                }
+            }
+
+            startTalkWith(otherEmp) {
+                if (this.state !== 'WORKING' || otherEmp.state !== 'WORKING') return;
+                this.partner = otherEmp; otherEmp.partner = this;
+                this.state = 'WALKING_TO_TALK'; otherEmp.state = 'WALKING_TO_TALK';
+                this.targetX = otherEmp.x + 1.2; this.targetZ = otherEmp.z;
+                otherEmp.targetX = otherEmp.x; otherEmp.targetZ = otherEmp.z;
+            }
+
+            update() {
+                if (this.state === 'WORKING') {
+                    this.stress = Math.min(100, this.stress + (0.012 * this.trait.stressRate));
+                    this.stamina = Math.max(0, this.stamina - 0.02);
+                    
+                    if (this.stress > 80) this.emote = '🔥';
+                    else if (this.stamina < 30) this.emote = '💤';
+                    else this.emote = '💻';
+
+                    if ((this.stamina < 25 || this.stress > 75) && Math.random() < 0.02) {
+                        this.state = gameState.upgrades.lounge > 0 && Math.random() < 0.5 ? 'LOUNGE' : 'COFFEE';
+                        this.targetX = 12 + (Math.random() * 2 - 1); 
+                        this.targetZ = this.state === 'COFFEE' ? 3 : 8;
+                        this.emote = this.state === 'COFFEE' ? '☕' : '🎮';
+                        this.speak(this.state === 'COFFEE' ? "พักจิบกาแฟแป๊บ ☕" : "เล่น VR พักสมอง 🎮");
+                    }
+
+                    if (Math.random() < 0.002 && gameState.employees.length > 1) {
+                        let partners = gameState.employees.filter(e => e.id !== this.id && e.state === 'WORKING');
+                        if (partners.length > 0) this.startTalkWith(partners[Math.floor(Math.random() * partners.length)]);
+                    }
+                } else if (this.state === 'WALKING_TO_TALK') {
+                    let dist = Math.hypot(this.targetX - this.x, this.targetZ - this.z);
+                    if (dist < 0.3) {
+                        this.state = 'TALKING';
+                        if (this.partner) {
+                            this.partner.state = 'TALKING';
+                            let chatPair = CONVERSATIONS[Math.floor(Math.random() * CONVERSATIONS.length)];
+                            this.speak(chatPair[0]); this.emote = '💬';
+                            this.partner.speak(chatPair[1]); this.partner.emote = '🗣️';
+                            addLog(`💬 ${this.name}: "${chatPair[0]}" <-> ${this.partner.name}: "${chatPair[1]}"`);
+                            playSFX(550, 'sine', 0.1);
+                        }
+                    }
+                } else if (this.state === 'TALKING') {
+                    if (this.speechTimer <= 0) {
+                        this.state = 'WORKING';
+                        this.targetX = this.deskPos.x; this.targetZ = this.deskPos.z;
+                        if (this.partner) {
+                            this.partner.state = 'WORKING';
+                            this.partner.targetX = this.partner.deskPos.x;
+                            this.partner.targetZ = this.partner.deskPos.z;
+                            this.partner.partner = null;
+                        }
+                        this.partner = null;
+                        this.stress = Math.max(0, this.stress - 10);
+                    }
+                } else {
+                    this.stamina = Math.min(100, this.stamina + 0.35);
+                    this.stress = Math.max(0, this.stress - 0.3);
+                    if (this.stamina >= 95) {
+                        this.state = 'WORKING';
+                        this.targetX = this.deskPos.x; this.targetZ = this.deskPos.z;
+                        this.emote = '💪';
+                        this.speak("พลังเต็มแล้ว! ลุยงานต่อ 💪");
+                    }
+                }
+
+                if (this.speechTimer > 0) this.speechTimer--;
+
+                let dx = this.targetX - this.x; let dz = this.targetZ - this.z;
+                let dist = Math.hypot(dx, dz);
+                if (dist > 0.15) {
+                    this.isWalking = true; this.walkCycle += 0.35;
+                    this.x += (dx / dist) * 0.09; this.z += (dz / dist) * 0.09;
+                } else {
+                    this.isWalking = false; this.walkCycle = 0;
+                    this.x = this.targetX; this.z = this.targetZ;
+                }
+            }
+
+            draw() {
+                const pos = toIso(this.x, this.z);
+                const screenX = pos.x;
+                const bounceY = this.isWalking ? Math.abs(Math.sin(this.walkCycle)) * 5 : 0;
+                const screenY = pos.y - bounceY;
+                
+                const isHovered = gameState.hoveredEmpId === this.id;
+                const isSelected = gameState.selectedEmpId === this.id;
+
+                if (isSelected || isHovered) {
+                    ctx.beginPath();
+                    ctx.ellipse(screenX, pos.y + 2, 14, 7, 0, 0, Math.PI * 2);
+                    ctx.fillStyle = isSelected ? 'rgba(56, 189, 248, 0.4)' : 'rgba(250, 204, 21, 0.3)';
+                    ctx.fill(); ctx.strokeStyle = isSelected ? '#38bdf8' : '#facc15';
+                    ctx.lineWidth = 1.5; ctx.stroke();
+                }
+
+                // Soft Shadow
+                ctx.beginPath();
+                ctx.ellipse(screenX, pos.y + 2, 10, 5, 0, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.fill();
+
+                if (this.isWalking) {
+                    let legOffset = Math.sin(this.walkCycle) * 5;
+                    ctx.strokeStyle = '#000'; ctx.lineWidth = 2.5;
+                    ctx.beginPath(); ctx.moveTo(screenX - 3, screenY - 6); ctx.lineTo(screenX - 3 + legOffset, pos.y); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(screenX + 3, screenY - 6); ctx.lineTo(screenX + 3 - legOffset, pos.y); ctx.stroke();
+                }
+
+                ctx.fillStyle = this.config.color;
+                ctx.beginPath(); ctx.roundRect(screenX - 8, screenY - 26, 16, 20, 4); ctx.fill();
+                ctx.strokeStyle = isSelected ? '#38bdf8' : '#000'; ctx.lineWidth = isSelected ? 2 : 1; ctx.stroke();
+
+                ctx.fillStyle = '#ffdbac';
+                ctx.beginPath(); ctx.arc(screenX, screenY - 32, 7, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+                if (this.state === 'TALKING' && this.partner) {
+                    const pPos = toIso(this.partner.x, this.partner.z);
+                    ctx.strokeStyle = 'rgba(250, 204, 21, 0.5)'; ctx.setLineDash([4, 4]);
+                    ctx.beginPath(); ctx.moveTo(screenX, screenY - 20); ctx.lineTo(pPos.x, pPos.y - 20); ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+
+                ctx.font = '12px sans-serif';
+                ctx.fillText(this.emote, screenX + 9, screenY - 30);
+
+                if (this.speechTimer > 0 && this.speechBubble) {
+                    ctx.font = 'bold 11px sans-serif';
+                    let textWidth = ctx.measureText(this.speechBubble).width;
+                    
+                    ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
+                    ctx.strokeStyle = this.state === 'TALKING' ? '#facc15' : '#38bdf8';
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath(); ctx.roundRect(screenX - textWidth / 2 - 8, screenY - 62, textWidth + 16, 20, 6); ctx.fill(); ctx.stroke();
+
+                    ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center';
+                    ctx.fillText(this.speechBubble, screenX, screenY - 48); ctx.textAlign = 'left';
+                }
+
+                this.screenBounds = { x: screenX - 12, y: screenY - 40, w: 24, h: 42 };
+            }
+        }
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initRain();
+        }
+
+        function init2D() {
+            canvas = document.getElementById('canvas2d');
+            ctx = canvas.getContext('2d');
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
+            canvas.addEventListener('click', onCanvasClick);
+            canvas.addEventListener('mousemove', onCanvasMouseMove);
+        }
+
+        function render2D() {
+            tickAnim++;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            let themeBg = '#04060d', tileFill = '#131c2e', gridLine = 'rgba(56, 189, 248, 0.15)';
+            if (gameState.theme === 'luxury') {
+                themeBg = '#140d09'; tileFill = '#2d221a'; gridLine = 'rgba(250, 204, 21, 0.2)';
+            } else if (gameState.theme === 'eco') {
+                themeBg = '#05140c'; tileFill = '#112b1d'; gridLine = 'rgba(34, 197, 94, 0.2)';
+            }
+
+            ctx.fillStyle = themeBg;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Floor & Walls
+            drawIsoTile(-16, -12, 32, 24, tileFill, gridLine);
+            drawIsoBox(-16, -12, 32, 0.5, 30, '#1e293b', '#0f172a', '#334155');
+            drawIsoBox(-16, -12, 0.5, 24, 30, '#1e293b', '#0f172a', '#334155');
+
+            // Desks & Glowing Screen Effects
+            let maxDesks = OFFICE_TIERS[gameState.officeLevel].desks;
+            for (let i = 0; i < maxDesks; i++) {
+                let pos = DESK_POSITIONS_2D[i];
+                drawIsoBox(pos.x, pos.z, 2.8, 1.8, 12, '#1e293b', '#0f172a', '#334155');
+                
+                let pcPos = toIso(pos.x + 0.5, pos.z + 0.4);
+                let empAtDesk = gameState.employees.find(e => e.deskIndex === i && e.state === 'WORKING');
+                
+                ctx.fillStyle = empAtDesk ? ((tickAnim % 20 < 10) ? '#38bdf8' : '#818cf8') : '#1e293b';
+                ctx.shadowColor = empAtDesk ? '#38bdf8' : 'transparent';
+                ctx.shadowBlur = empAtDesk ? 10 : 0;
+                ctx.fillRect(pcPos.x - 4, pcPos.y - 18, 10, 7);
+                ctx.shadowBlur = 0;
+            }
+
+            // Facilities
+            if (gameState.upgrades.coffee > 0) drawIsoBox(12, 2.5, 2.0, 2.0, 22, '#f59e0b', '#b45309', '#d97706');
+            if (gameState.upgrades.lounge > 0) drawIsoBox(12, 7.5, 2.2, 2.2, 25, '#c084fc', '#7e22ce', '#9333ea');
+
+            // Employees Rendering Order (Iso depth)
+            let sortedEmps = [...gameState.employees].sort((a, b) => (a.x + a.z) - (b.x + b.z));
+            sortedEmps.forEach(emp => { emp.update(); emp.draw(); });
+
+            // Day/Night Ambient Filter Overlay
+            let isNight = gameState.hour >= 19 || gameState.hour < 6;
+            if (isNight) {
+                ctx.fillStyle = 'rgba(5, 10, 25, 0.35)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+
+            // Dynamic Weather Effect (Rain)
+            if (gameState.weather === 'rainy') {
+                ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)';
+                ctx.lineWidth = 1.2;
+                rainParticles.forEach(p => {
+                    ctx.beginPath();
+                    ctx.moveTo(p.x, p.y);
+                    ctx.lineTo(p.x - 3, p.y + p.length);
+                    ctx.stroke();
+                    p.y += p.speed;
+                    p.x -= 1;
+                    if (p.y > canvas.height) { p.y = -20; p.x = Math.random() * canvas.width; }
+                });
+            }
+
+            requestAnimationFrame(render2D);
+        }
+
+        function onCanvasMouseMove(event) {
+            const mouseX = event.clientX; const mouseY = event.clientY;
+            let hoveredId = null;
+            for (let emp of gameState.employees) {
+                if (emp.screenBounds) {
+                    let b = emp.screenBounds;
+                    if (mouseX >= b.x && mouseX <= b.x + b.w && mouseY >= b.y && mouseY <= b.y + b.h) {
+                        hoveredId = emp.id; break;
+                    }
+                }
+            }
+            gameState.hoveredEmpId = hoveredId;
+            canvas.style.cursor = hoveredId ? 'pointer' : 'default';
+        }
+
+        function onCanvasClick(event) {
+            const clickX = event.clientX; const clickY = event.clientY;
+            for (let emp of gameState.employees) {
+                if (emp.screenBounds) {
+                    let b = emp.screenBounds;
+                    if (clickX >= b.x && clickX <= b.x + b.w && clickY >= b.y && clickY <= b.y + b.h) {
+                        openEmpModal(emp.id); break;
+                    }
+                }
+            }
+        }
+
+        function openEmpModal(empId) {
+            let emp = gameState.employees.find(e => e.id === empId);
+            if (!emp) return;
+
+            gameState.selectedEmpId = empId;
+            document.getElementById('modal-emp-name').innerText = emp.name;
+            document.getElementById('modal-emp-dept').innerText = emp.config.name;
+            document.getElementById('modal-emp-stress-val').innerText = `${Math.round(emp.stress)}%`;
+            document.getElementById('modal-emp-stress-bar').style.width = `${emp.stress}%`;
+            document.getElementById('modal-emp-stamina-val').innerText = `${Math.round(emp.stamina)}%`;
+            document.getElementById('modal-emp-stamina-bar').style.width = `${emp.stamina}%`;
+            document.getElementById('modal-emp-lv').innerText = emp.level;
+            document.getElementById('modal-emp-trait').innerText = emp.trait.name;
+            document.getElementById('modal-emp-salary').innerText = `$${emp.salary.toLocaleString()}`;
+
+            document.getElementById('emp-modal').style.display = 'block';
+            playSFX(500, 'sine', 0.1);
+        }
+
+        function closeEmpModal() {
+            document.getElementById('emp-modal').style.display = 'none';
+            gameState.selectedEmpId = null;
+        }
+
+        function giveBonusToSelected() {
+            if (!gameState.selectedEmpId || gameState.cash < 2000) return;
+            let emp = gameState.employees.find(e => e.id === gameState.selectedEmpId);
+            if (emp) {
+                gameState.cash -= 2000; emp.stress = Math.max(0, emp.stress - 25);
+                emp.speak("💰 ขอบคุณสำหรับโบนัสครับ!"); emp.emote = '❤️';
+                playSFX(750, 'sine', 0.2); addLog(`💵 จ่ายโบนัส $2,000 ให้ ${emp.name}`);
+                openEmpModal(emp.id); updateUI();
+            }
+        }
+
+        function trainSelectedEmp() {
+            if (!gameState.selectedEmpId || gameState.cash < 5000) return;
+            let emp = gameState.employees.find(e => e.id === gameState.selectedEmpId);
+            if (emp) {
+                gameState.cash -= 5000; emp.gainExp(100);
+                emp.speak("📚 เรียนรู้ทักษะใหม่แล้ว!");
+                playSFX(820, 'sine', 0.2); addLog(`📚 อบรมทักษะให้ ${emp.name} (+100 EXP)`);
+                openEmpModal(emp.id); updateUI();
+            }
+        }
+
+        function fireSelectedEmp() {
+            if (!gameState.selectedEmpId) return;
+            let idx = gameState.employees.findIndex(e => e.id === gameState.selectedEmpId);
+            if (idx !== -1) {
+                let emp = gameState.employees[idx];
+                gameState.employees.splice(idx, 1);
+                addLog(`❌ เลิกจ้างพนักงาน: ${emp.name}`);
+                closeEmpModal(); updateUI();
+            }
+        }
+
+        function initGame() {
+            init2D();
+            addLog("🚀 ยินดีต้อนรับสู่ Fullscreen Interactive Agency Simulator v25.0!");
+            setInterval(generateAgencyJob, 4000);
+            setInterval(updateTimeEngine, 200);
+            setInterval(randomCrisisEngine, 25000);
+            setInterval(weatherEngine, 45000);
+
+            setInterval(() => {
+                gameState.month++;
+                let empSalary = gameState.employees.reduce((s, e) => s + e.salary, 0);
+                let managerSalary = gameState.hasAutoManager ? gameState.autoManagerSalary : 0;
+                let tier = OFFICE_TIERS[gameState.officeLevel];
+                let totalCost = empSalary + managerSalary + tier.rent + tier.utility;
+
+                gameState.cash -= totalCost;
+                playSFX(440, 'triangle', 0.2);
+                addLog(`📅 สรุปงบเดือนที่ ${gameState.month}: หักค่าใช้จ่าย $${totalCost.toLocaleString()}`);
+                updateUI();
+            }, 30000);
+
+            updateUI();
+            render2D();
+        }
+
+        function weatherEngine() {
+            gameState.weather = Math.random() < 0.4 ? 'rainy' : 'sunny';
+            const tag = document.getElementById('weather-tag');
+            if (gameState.weather === 'rainy') {
+                tag.innerText = '🌧️ ฝนตก';
+                addLog('🌧️ สภาพอากาศ: ฝนเริ่มตกข้างนอกออฟฟิศ');
+            } else {
+                tag.innerText = '☀️ แจ่มใส';
+                addLog('☀️ สภาพอากาศ: ท้องฟ้าแจ่มใส');
+            }
+        }
+
+        function updateTimeEngine() {
+            gameState.minute += 10;
+            if (gameState.minute >= 60) {
+                gameState.minute = 0;
+                gameState.hour = (gameState.hour + 1) % 24;
+            }
+            document.getElementById('ui-time').innerText = `${String(gameState.hour).padStart(2,'0')}:${String(gameState.minute).padStart(2,'0')}`;
+            
+            gameState.activeJobs.forEach(job => {
+                let workers = gameState.employees.filter(e => e.deptKey === job.type && e.state === 'WORKING');
+                let speedMultiplier = workers.reduce((sum, e) => sum + e.trait.speed, 0);
+                let speed = (speedMultiplier * 1.8) + 0.5;
+                
+                job.progress += speed;
+                if (job.progress >= 100) completeJob(job);
+            });
+            gameState.activeJobs = gameState.activeJobs.filter(j => j.progress < 100);
+            renderJobInbox();
+        }
+
+        function randomCrisisEngine() {
+            if (gameState.activeCrisis || Math.random() > 0.45) return;
+            const crises = [
+                { id: 'server', msg: "🚨 SERVER CRASH: ระบบคลาวด์ล่ม!", deptNeeded: 'Dev', penalty: 45000 },
+                { id: 'audit', msg: "🚨 TAX AUDIT: ตรวจสอบบัญชีด่วน!", deptNeeded: 'Acc', penalty: 35000 }
+            ];
+
+            gameState.activeCrisis = crises[Math.floor(Math.random() * crises.length)];
+            playSFX(220, 'sawtooth', 0.4);
+            document.getElementById('crisis-msg').innerText = `${gameState.activeCrisis.msg}`;
+            document.getElementById('crisis-banner').style.display = 'flex';
+            addLog(`🚨 เกิดวิกฤต: ${gameState.activeCrisis.msg}`);
+        }
+
+        function resolveCrisis() {
+            if (!gameState.activeCrisis) return;
+            let crisis = gameState.activeCrisis;
+            let availableStaff = gameState.employees.filter(e => e.deptKey === crisis.deptNeeded);
+
+            if (availableStaff.length > 0) {
+                playSFX(660, 'sine', 0.25); addLog(`🛡️ แก้ไขวิกฤตสำเร็จ!`);
+            } else {
+                gameState.cash -= crisis.penalty;
+                playSFX(150, 'sawtooth', 0.5); addLog(`💥 ขาดทีมตรงสาย! เสียค่าปรับ $${crisis.penalty.toLocaleString()}`);
+            }
+
+            gameState.activeCrisis = null;
+            document.getElementById('crisis-banner').style.display = 'none';
+            updateUI();
+        }
+
+        function setOfficeTheme(themeKey) {
+            gameState.theme = themeKey;
+            document.getElementById(`btn-theme-cyber`).classList.remove('active');
+            document.getElementById(`btn-theme-luxury`).classList.remove('active');
+            document.getElementById(`btn-theme-eco`).classList.remove('active');
+            document.getElementById(`btn-theme-${themeKey}`).classList.add('active');
+        }
+
+        function upgradeAmenity(key) {
+            let currentLv = gameState.upgrades[key];
+            if (currentLv >= 3) return;
+            let cfg = UPGRADE_CONFIGS[key];
+            let cost = cfg.costs[currentLv];
+
+            if (gameState.cash >= cost) {
+                gameState.cash -= cost; gameState.upgrades[key]++;
+                playSFX(700, 'sine', 0.2); addLog(`🎉 อัปเกรด "${cfg.name}" Lv.${gameState.upgrades[key]}`);
+                updateUI();
+            }
+        }
+
+        function toggleAutoManager() {
+            if (!gameState.hasAutoManager && gameState.cash >= 45000) {
+                gameState.cash -= 45000; gameState.hasAutoManager = true;
+                document.getElementById('btn-hire-manager').classList.add('active');
+                document.getElementById('auto-manager-status').innerText = "🤖 Director: Active";
+                document.getElementById('auto-manager-status').style.background = "var(--gold)";
+                document.getElementById('auto-manager-status').style.color = "#000";
+                playSFX(600, 'sine', 0.2); addLog("👔 จ้าง Operations Director เรียบร้อยแล้ว!");
+                updateUI();
+            }
+        }
+
+        function upgradeOfficeHQ() {
+            let current = OFFICE_TIERS[gameState.officeLevel];
+            if (current.next && gameState.cash >= current.upgradeCost) {
+                gameState.cash -= current.upgradeCost; gameState.officeLevel = current.next;
+                playSFX(800, 'sine', 0.3); addLog(`🎉 ขยายสถานที่ตั้งเป็น "${OFFICE_TIERS[gameState.officeLevel].name}"`);
+                updateUI();
+            }
+        }
+
+        function hireByDept(deptKey) {
+            let maxDesks = OFFICE_TIERS[gameState.officeLevel].desks;
+            if (gameState.employees.length >= maxDesks) {
+                addLog(`⚠️ โต๊ะทำงานเต็มแล้ว! โปรดอัปเกรด HQ`); return;
+            }
+            let cfg = DEPT_CONFIG[deptKey];
+            if (gameState.cash >= cfg.hireCost) {
+                gameState.cash -= cfg.hireCost;
+                let emp = new Employee2D(Date.now(), `${cfg.name} #${gameState.employees.length+1}`, deptKey, gameState.employees.length);
+                gameState.employees.push(emp);
+                playSFX(580, 'sine', 0.15); addLog(`🎉 จ้างงาน: ${emp.name}`);
+                updateUI();
+            }
+        }
+
+        function generateAgencyJob() {
+            if (gameState.incomingJobs.length >= 3) return;
+            const jobs = [
+                { title: "ยิงแอด Omnichannel", type: "Ads", reward: 24000, exp: 120 },
+                { title: "ออกแบบ UI Kit Brand", type: "Creative", reward: 32000, exp: 170 },
+                { title: "พัฒนา Web Portal", type: "Dev", reward: 45000, exp: 220 },
+                { title: "ตรวจสอบงบประหมวด", type: "Acc", reward: 38000, exp: 180 }
+            ];
+
+            let raw = jobs[Math.floor(Math.random() * jobs.length)];
+            let newJob = { id: Date.now() + Math.random(), title: raw.title, type: raw.type, reward: raw.reward, exp: raw.exp, progress: 0 };
+            gameState.incomingJobs.push(newJob);
+            if (gameState.hasAutoManager) acceptJob(newJob.id);
+            renderJobInbox();
+        }
+
+        function acceptJob(id) {
+            let idx = gameState.incomingJobs.findIndex(j => j.id === id);
+            if (idx !== -1) {
+                let job = gameState.incomingJobs.splice(idx, 1)[0];
+                gameState.activeJobs.push(job);
+                playSFX(400, 'sine', 0.1); addLog(`🤝 เริ่มผลิตงาน: "${job.title}"`);
+                renderJobInbox();
+            }
+        }
+
+        function completeJob(job) {
+            gameState.cash += job.reward;
+            gameState.employees.forEach(e => e.gainExp(job.exp));
+            playSFX(900, 'sine', 0.25); addLog(`✅ ส่งมอบงานสำเร็จ: "${job.title}" +$${job.reward.toLocaleString()}`);
+            updateUI();
+        }
+
+        function renderJobInbox() {
+            const container = document.getElementById('job-inbox');
+            container.innerHTML = '';
+            
+            gameState.incomingJobs.forEach(j => {
+                const card = document.createElement('div'); card.className = 'job-card';
+                card.innerHTML = `
+                    <strong>${j.title}</strong> <span class="dept-tag" style="background:${DEPT_CONFIG[j.type].color};">${j.type}</span><br>
+                    <span style="color:var(--success);">$${j.reward.toLocaleString()}</span>
+                    <button class="btn" style="padding:1px 5px; margin-top:2px; background:var(--success); color:#000;" onclick="acceptJob(${j.id})">รับงาน</button>
+                `;
+                container.appendChild(card);
+            });
+
+            gameState.activeJobs.forEach(j => {
+                const card = document.createElement('div'); card.className = 'job-card'; card.style.borderColor = 'var(--gold)';
+                card.innerHTML = `<strong>⚙️ ${j.title}</strong> (${Math.floor(j.progress)}%)`;
+                container.appendChild(card);
+            });
+        }
+
+        function updateUI() {
+            document.getElementById('ui-cash').innerText = '$' + gameState.cash.toLocaleString();
+            document.getElementById('ui-fame').innerText = gameState.fame + '%';
+            document.getElementById('ui-emp').innerText = gameState.employees.length;
+            document.getElementById('ui-max-emp').innerText = OFFICE_TIERS[gameState.officeLevel].desks;
+            document.getElementById('ui-month').innerText = gameState.month;
+            
+            let empSalary = gameState.employees.reduce((s, e) => s + e.salary, 0);
+            let managerSalary = gameState.hasAutoManager ? gameState.autoManagerSalary : 0;
+            let tier = OFFICE_TIERS[gameState.officeLevel];
+            let totalCost = empSalary + managerSalary + tier.rent + tier.utility;
+
+            document.getElementById('ui-expenses').innerText = totalCost.toLocaleString();
+            
+            let hqTier = OFFICE_TIERS[gameState.officeLevel];
+            document.getElementById('hq-upgrade-text').innerText = hqTier.next ? `🏛️ ขยาย HQ Lv.${hqTier.next}` : `🏛️ HQ Max`;
+        }
+
+        function addLog(msg) {
+            const logBox = document.getElementById('game-log');
+            logBox.innerHTML = `<div class="log-item">${msg}</div>` + logBox.innerHTML;
+        }
+
+        function resetGame() {
+            if (confirm("ต้องการรีเซ็ตเกมเริ่มใหม่ใช่หรือไม่?")) location.reload();
+        }
+
+        window.onload = initGame;
+    </script>
 </body>
 </html>
