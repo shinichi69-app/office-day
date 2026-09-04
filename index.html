@@ -1,4 +1,4 @@
-<!-- index.html - Marketing Project Management System (Firebase พร้อม Analytics) -->
+<!-- index.html - แก้ไขปัญหาปฏิทิน -->
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -11,7 +11,7 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   
-  <!-- Firebase SDKs (compat version สำหรับใช้กับ script tag) -->
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
@@ -30,9 +30,10 @@
     .fc { font-size: 0.9rem; }
     .fc-event { cursor: pointer; }
     .modal-backdrop { backdrop-filter: blur(4px); }
-    .status-badge { transition: all 0.2s; }
     .progress-bar { transition: width 0.8s ease; }
-    /* Custom scrollbar */
+    /* Fix FullCalendar */
+    .fc-daygrid-day { cursor: pointer; }
+    .fc-daygrid-day:hover { background: #f8fafc; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 3px; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
@@ -46,7 +47,7 @@
     const { useState, useEffect, useCallback, useRef, useMemo } = React;
 
     // ============================================================
-    // 🔥 FIREBASE CONFIG - ใช้ Config สมบูรณ์ของคุณ
+    // 🔥 FIREBASE CONFIG
     // ============================================================
     const firebaseConfig = {
       apiKey: "AIzaSyALhqvQGSPR2OtWG4-yuAeBVeo103mLHeE",
@@ -58,12 +59,10 @@
       measurementId: "G-LQFMH7X9WH"
     };
 
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const analytics = firebase.analytics();
 
-    // Log page view to Analytics
     analytics.logEvent('page_view', {
       page_title: 'Marketing Project Management',
       page_location: window.location.href
@@ -73,7 +72,6 @@
     // 📦 FIRESTORE SERVICE
     // ============================================================
     const FirebaseService = {
-      // Get all projects
       async getProjects() {
         try {
           const snapshot = await db.collection('projects')
@@ -96,7 +94,6 @@
         }
       },
 
-      // Add new project
       async addProject(projectData) {
         try {
           const docRef = await db.collection('projects').add({
@@ -104,14 +101,11 @@
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           });
-          
-          // Log to Analytics
           analytics.logEvent('project_created', {
             project_name: projectData.name,
             project_category: projectData.category,
             project_budget: projectData.budget
           });
-          
           return { id: docRef.id, ...projectData };
         } catch (error) {
           console.error('Error adding project:', error);
@@ -119,20 +113,16 @@
         }
       },
 
-      // Update project
       async updateProject(id, projectData) {
         try {
           await db.collection('projects').doc(id).update({
             ...projectData,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           });
-          
-          // Log to Analytics
           analytics.logEvent('project_updated', {
             project_id: id,
             project_name: projectData.name
           });
-          
           return { id, ...projectData };
         } catch (error) {
           console.error('Error updating project:', error);
@@ -140,16 +130,10 @@
         }
       },
 
-      // Delete project
       async deleteProject(id) {
         try {
           await db.collection('projects').doc(id).delete();
-          
-          // Log to Analytics
-          analytics.logEvent('project_deleted', {
-            project_id: id
-          });
-          
+          analytics.logEvent('project_deleted', { project_id: id });
           return { success: true };
         } catch (error) {
           console.error('Error deleting project:', error);
@@ -157,7 +141,6 @@
         }
       },
 
-      // Real-time subscription
       subscribeProjects(callback) {
         return db.collection('projects')
           .orderBy('startDate', 'desc')
@@ -184,7 +167,7 @@
     // ============================================================
     function StatCard({ title, value, icon, color, bg, subtitle }) {
       return (
-        <div class={`bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between stat-card-hover`}>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between stat-card-hover">
           <div>
             <p class="text-xs font-medium text-slate-500">{title}</p>
             <p class="text-xl font-bold text-slate-900">{value}</p>
@@ -198,26 +181,53 @@
     }
 
     // ============================================================
-    // 📅 CALENDAR COMPONENT
+    // 📅 CALENDAR COMPONENT (แก้ไขแล้ว)
     // ============================================================
     function CalendarComponent({ projects }) {
       const calendarRef = useRef(null);
+      const [isCalendarReady, setIsCalendarReady] = useState(false);
 
       useEffect(() => {
-        if (calendarRef.current) {
+        // ให้เวลา DOM โหลดเสร็จ
+        const timer = setTimeout(() => {
+          setIsCalendarReady(true);
+        }, 100);
+        return () => clearTimeout(timer);
+      }, []);
+
+      useEffect(() => {
+        if (!isCalendarReady || !projects.length) {
+          // ถ้ายังไม่มีโปรเจค ให้แสดงข้อความ
           const calendarEl = document.getElementById('calendar');
-          if (!calendarEl) return;
-
-          // Cleanup previous calendar
-          if (window.calendarInstance) {
-            window.calendarInstance.destroy();
+          if (calendarEl && !projects.length) {
+            calendarEl.innerHTML = `
+              <div class="flex flex-col items-center justify-center h-[400px] text-slate-400">
+                <p class="text-4xl mb-4">📭</p>
+                <p class="text-lg font-medium">ยังไม่มีโปรเจคในปฏิทิน</p>
+                <p class="text-sm">เพิ่มโปรเจคแรกของคุณเพื่อดูในปฏิทิน</p>
+              </div>
+            `;
           }
+          return;
+        }
 
-          const events = projects.map(p => ({
+        const calendarEl = document.getElementById('calendar');
+        if (!calendarEl) return;
+
+        // Cleanup existing calendar
+        if (window.calendarInstance) {
+          window.calendarInstance.destroy();
+          window.calendarInstance = null;
+        }
+
+        // สร้าง events จาก projects
+        const events = projects
+          .filter(p => p.startDate && p.endDate)
+          .map(p => ({
             id: p.id,
             title: p.name,
-            start: p.startDate ? new Date(p.startDate).toISOString().split('T')[0] : null,
-            end: p.endDate ? new Date(p.endDate).toISOString().split('T')[0] : null,
+            start: new Date(p.startDate).toISOString().split('T')[0],
+            end: new Date(p.endDate).toISOString().split('T')[0],
             backgroundColor: p.status === 'completed' ? '#3b82f6' : 
                             p.status === 'active' ? '#10b981' : 
                             p.status === 'paused' ? '#f59e0b' : 
@@ -241,6 +251,7 @@
             }
           }));
 
+        try {
           const calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             locale: 'th',
@@ -270,22 +281,68 @@
             },
             eventDidMount: function(info) {
               info.el.title = info.event.title;
+            },
+            loading: function(isLoading) {
+              if (isLoading) {
+                calendarEl.style.opacity = '0.5';
+              } else {
+                calendarEl.style.opacity = '1';
+              }
             }
           });
 
           calendar.render();
           window.calendarInstance = calendar;
+          console.log('✅ Calendar rendered successfully with', events.length, 'events');
 
-          return () => {
-            if (window.calendarInstance) {
-              window.calendarInstance.destroy();
-              window.calendarInstance = null;
-            }
-          };
+        } catch (error) {
+          console.error('❌ Calendar error:', error);
+          calendarEl.innerHTML = `
+            <div class="flex flex-col items-center justify-center h-[400px] text-red-400">
+              <p class="text-4xl mb-4">⚠️</p>
+              <p class="text-lg font-medium">เกิดข้อผิดพลาดในการโหลดปฏิทิน</p>
+              <p class="text-sm">กรุณารีเฟรชหน้าเว็บ</p>
+            </div>
+          `;
         }
-      }, [projects]);
 
-      return <div ref={calendarRef} id="calendar" class="min-h-[600px]"></div>;
+        return () => {
+          if (window.calendarInstance) {
+            window.calendarInstance.destroy();
+            window.calendarInstance = null;
+          }
+        };
+      }, [projects, isCalendarReady]);
+
+      // ถ้ายังไม่มีโปรเจค ให้แสดงข้อความ
+      if (!projects || projects.length === 0) {
+        return (
+          <div className="flex flex-col items-center justify-center h-[400px] bg-slate-50 rounded-xl border-2 border-dashed border-slate-200">
+            <p className="text-5xl mb-4">📅</p>
+            <p className="text-lg font-medium text-slate-600">ยังไม่มีกิจกรรมในปฏิทิน</p>
+            <p className="text-sm text-slate-400 mt-1">เพิ่มโปรเจคที่มีช่วงวันที่เพื่อแสดงในปฏิทิน</p>
+            <button 
+              onClick={() => document.querySelector('[data-add-project]')?.click()}
+              className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition"
+            >
+              + เพิ่มโปรเจค
+            </button>
+          </div>
+        );
+      }
+
+      return (
+        <div>
+          <div id="calendar" ref={calendarRef} className="min-h-[600px]"></div>
+          <div className="mt-4 flex flex-wrap gap-4 justify-center text-xs text-slate-500 border-t pt-4">
+            <span><span className="inline-block w-3 h-3 rounded-full bg-emerald-500 mr-1"></span> Active</span>
+            <span><span className="inline-block w-3 h-3 rounded-full bg-blue-500 mr-1"></span> Completed</span>
+            <span><span className="inline-block w-3 h-3 rounded-full bg-amber-500 mr-1"></span> Paused</span>
+            <span><span className="inline-block w-3 h-3 rounded-full bg-red-500 mr-1"></span> Cancelled</span>
+            <span><span className="inline-block w-3 h-3 rounded-full bg-slate-400 mr-1"></span> Planning</span>
+          </div>
+        </div>
+      );
     }
 
     // ============================================================
@@ -361,7 +418,6 @@
         setEditingProject(null);
       };
 
-      // Setup real-time listener
       useEffect(() => {
         const unsubscribe = FirebaseService.subscribeProjects((data) => {
           setProjects(data);
@@ -369,7 +425,6 @@
           setTimeout(() => lucide.createIcons(), 100);
         });
 
-        // Log to Analytics
         analytics.logEvent('dashboard_view', {
           timestamp: new Date().toISOString()
         });
@@ -400,7 +455,6 @@
         }
         setShowModal(true);
         
-        // Log to Analytics
         analytics.logEvent('modal_opened', {
           mode: project ? 'edit' : 'create'
         });
@@ -462,7 +516,6 @@
         }
       };
 
-      // Filter projects
       const filteredProjects = useMemo(() => {
         let result = projects;
         if (searchTerm) {
@@ -572,6 +625,7 @@
                     📊 {projects.length} โปรเจค
                   </span>
                   <button
+                    data-add-project
                     onClick={() => openModal()}
                     class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2 shadow-sm"
                   >
@@ -801,17 +855,10 @@
               </div>
             )}
 
-            {/* Calendar Tab */}
+            {/* Calendar Tab - ใช้ CalendarComponent ที่แก้ไขแล้ว */}
             {activeTab === 'calendar' && (
               <div class="fade-in bg-white rounded-xl border border-slate-200 p-4">
                 <CalendarComponent projects={projects} />
-                <div class="mt-4 flex flex-wrap gap-4 justify-center text-xs text-slate-500 border-t pt-4">
-                  <span><span class="inline-block w-3 h-3 rounded-full bg-emerald-500 mr-1"></span> Active</span>
-                  <span><span class="inline-block w-3 h-3 rounded-full bg-blue-500 mr-1"></span> Completed</span>
-                  <span><span class="inline-block w-3 h-3 rounded-full bg-amber-500 mr-1"></span> Paused</span>
-                  <span><span class="inline-block w-3 h-3 rounded-full bg-red-500 mr-1"></span> Cancelled</span>
-                  <span><span class="inline-block w-3 h-3 rounded-full bg-slate-400 mr-1"></span> Planning</span>
-                </div>
               </div>
             )}
           </div>
