@@ -1,4 +1,4 @@
-<!-- index.html - Marketing Project Management System -->
+<!-- index.html - Marketing Project Management System (Firebase พร้อม Analytics) -->
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -11,10 +11,10 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   
-  <!-- Firebase SDKs -->
+  <!-- Firebase SDKs (compat version สำหรับใช้กับ script tag) -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
 
   <!-- FullCalendar for Calendar -->
   <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/main.min.css' rel='stylesheet' />
@@ -32,6 +32,11 @@
     .modal-backdrop { backdrop-filter: blur(4px); }
     .status-badge { transition: all 0.2s; }
     .progress-bar { transition: width 0.8s ease; }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
   </style>
 </head>
 <body class="bg-slate-50 font-sans text-slate-800">
@@ -41,19 +46,28 @@
     const { useState, useEffect, useCallback, useRef, useMemo } = React;
 
     // ============================================================
-    // 🔥 FIREBASE CONFIG
+    // 🔥 FIREBASE CONFIG - ใช้ Config สมบูรณ์ของคุณ
     // ============================================================
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
+      apiKey: "AIzaSyALhqvQGSPR2OtWG4-yuAeBVeo103mLHeE",
+      authDomain: "mkt-project-f818a.firebaseapp.com",
+      projectId: "mkt-project-f818a",
+      storageBucket: "mkt-project-f818a.firebasestorage.app",
+      messagingSenderId: "1076626422079",
+      appId: "1:1076626422079:web:31d3849f6af7ae76213b8a",
+      measurementId: "G-LQFMH7X9WH"
     };
 
+    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+    const analytics = firebase.analytics();
+
+    // Log page view to Analytics
+    analytics.logEvent('page_view', {
+      page_title: 'Marketing Project Management',
+      page_location: window.location.href
+    });
 
     // ============================================================
     // 📦 FIRESTORE SERVICE
@@ -90,6 +104,14 @@
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           });
+          
+          // Log to Analytics
+          analytics.logEvent('project_created', {
+            project_name: projectData.name,
+            project_category: projectData.category,
+            project_budget: projectData.budget
+          });
+          
           return { id: docRef.id, ...projectData };
         } catch (error) {
           console.error('Error adding project:', error);
@@ -104,6 +126,13 @@
             ...projectData,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           });
+          
+          // Log to Analytics
+          analytics.logEvent('project_updated', {
+            project_id: id,
+            project_name: projectData.name
+          });
+          
           return { id, ...projectData };
         } catch (error) {
           console.error('Error updating project:', error);
@@ -115,6 +144,12 @@
       async deleteProject(id) {
         try {
           await db.collection('projects').doc(id).delete();
+          
+          // Log to Analytics
+          analytics.logEvent('project_deleted', {
+            project_id: id
+          });
+          
           return { success: true };
         } catch (error) {
           console.error('Error deleting project:', error);
@@ -145,662 +180,15 @@
     };
 
     // ============================================================
-    // 🎯 MAIN APP
-    // ============================================================
-    function App() {
-      const [projects, setProjects] = useState([]);
-      const [loading, setLoading] = useState(true);
-      const [showModal, setShowModal] = useState(false);
-      const [editingProject, setEditingProject] = useState(null);
-      const [toast, setToast] = useState(null);
-      const [activeTab, setActiveTab] = useState('dashboard'); // dashboard | calendar | projects
-      const [selectedProject, setSelectedProject] = useState(null);
-      const calendarRef = useRef(null);
-
-      // Form state
-      const [formData, setFormData] = useState({
-        name: '',
-        description: '',
-        category: 'social',
-        budget: '',
-        spent: '',
-        leads: '',
-        conversions: '',
-        status: 'planning',
-        startDate: '',
-        endDate: '',
-        team: '',
-        platform: '',
-        target: ''
-      });
-
-      const categories = [
-        { value: 'social', label: '📱 Social Media' },
-        { value: 'seo', label: '🔍 SEO' },
-        { value: 'email', label: '📧 Email Marketing' },
-        { value: 'content', label: '📝 Content Marketing' },
-        { value: 'influencer', label: '⭐ Influencer' },
-        { value: 'ads', label: '💲 Paid Ads' },
-        { value: 'event', label: '🎪 Event' },
-        { value: 'other', label: '📌 Other' }
-      ];
-
-      const statuses = [
-        { value: 'planning', label: '📋 Planning', color: 'bg-slate-100 text-slate-700' },
-        { value: 'active', label: '🟢 Active', color: 'bg-emerald-100 text-emerald-700' },
-        { value: 'paused', label: '🟡 Paused', color: 'bg-amber-100 text-amber-700' },
-        { value: 'completed', label: '✅ Completed', color: 'bg-blue-100 text-blue-700' },
-        { value: 'cancelled', label: '🔴 Cancelled', color: 'bg-red-100 text-red-700' }
-      ];
-
-      const showToast = (message, type = 'success') => {
-        setToast({ message, type });
-        setTimeout(() => setToast(null), 3000);
-      };
-
-      // Load data
-      const loadData = useCallback(async () => {
-        try {
-          setLoading(true);
-          const data = await FirebaseService.getProjects();
-          setProjects(data);
-        } catch (error) {
-          showToast('เกิดข้อผิดพลาดในการโหลดข้อมูล', 'error');
-        } finally {
-          setLoading(false);
-        }
-      }, []);
-
-      // Setup real-time listener
-      useEffect(() => {
-        const unsubscribe = FirebaseService.subscribeProjects((data) => {
-          setProjects(data);
-          setLoading(false);
-          setTimeout(() => lucide.createIcons(), 100);
-        });
-
-        return () => unsubscribe();
-      }, []);
-
-      // Reset form
-      const resetForm = () => {
-        setFormData({
-          name: '',
-          description: '',
-          category: 'social',
-          budget: '',
-          spent: '',
-          leads: '',
-          conversions: '',
-          status: 'planning',
-          startDate: '',
-          endDate: '',
-          team: '',
-          platform: '',
-          target: ''
-        });
-        setEditingProject(null);
-      };
-
-      // Open modal for add/edit
-      const openModal = (project = null) => {
-        if (project) {
-          setEditingProject(project);
-          setFormData({
-            name: project.name || '',
-            description: project.description || '',
-            category: project.category || 'social',
-            budget: project.budget || '',
-            spent: project.spent || '',
-            leads: project.leads || '',
-            conversions: project.conversions || '',
-            status: project.status || 'planning',
-            startDate: project.startDate ? new Date(project.startDate).toISOString().split('T')[0] : '',
-            endDate: project.endDate ? new Date(project.endDate).toISOString().split('T')[0] : '',
-            team: project.team || '',
-            platform: project.platform || '',
-            target: project.target || ''
-          });
-        } else {
-          resetForm();
-        }
-        setShowModal(true);
-      };
-
-      // Close modal
-      const closeModal = () => {
-        setShowModal(false);
-        resetForm();
-        setSelectedProject(null);
-      };
-
-      // Save project
-      const saveProject = async () => {
-        if (!formData.name || !formData.startDate || !formData.endDate) {
-          showToast('กรุณากรอกชื่อโปรเจค และวันที่เริ่มต้น-สิ้นสุด', 'error');
-          return;
-        }
-
-        const dataToSave = {
-          name: formData.name,
-          description: formData.description || '',
-          category: formData.category,
-          budget: parseInt(formData.budget) || 0,
-          spent: parseInt(formData.spent) || 0,
-          leads: parseInt(formData.leads) || 0,
-          conversions: parseInt(formData.conversions) || 0,
-          status: formData.status,
-          startDate: new Date(formData.startDate),
-          endDate: new Date(formData.endDate),
-          team: formData.team || '',
-          platform: formData.platform || '',
-          target: formData.target || ''
-        };
-
-        try {
-          if (editingProject) {
-            await FirebaseService.updateProject(editingProject.id, dataToSave);
-            showToast('อัปเดตโปรเจคสำเร็จ!', 'success');
-          } else {
-            await FirebaseService.addProject(dataToSave);
-            showToast('สร้างโปรเจคใหม่สำเร็จ!', 'success');
-          }
-          closeModal();
-        } catch (error) {
-          showToast('เกิดข้อผิดพลาด', 'error');
-        }
-      };
-
-      // Delete project
-      const deleteProject = async (id) => {
-        if (!confirm('คุณแน่ใจว่าต้องการลบโปรเจคนี้?')) return;
-        try {
-          await FirebaseService.deleteProject(id);
-          showToast('ลบโปรเจคเรียบร้อย', 'success');
-        } catch (error) {
-          showToast('เกิดข้อผิดพลาดในการลบ', 'error');
-        }
-      };
-
-      // Calculate metrics
-      const metrics = useMemo(() => {
-        const total = projects.length;
-        const active = projects.filter(p => p.status === 'active').length;
-        const completed = projects.filter(p => p.status === 'completed').length;
-        const totalBudget = projects.reduce((sum, p) => sum + (p.budget || 0), 0);
-        const totalSpent = projects.reduce((sum, p) => sum + (p.spent || 0), 0);
-        const totalLeads = projects.reduce((sum, p) => sum + (p.leads || 0), 0);
-        const totalConversions = projects.reduce((sum, p) => sum + (p.conversions || 0), 0);
-        const conversionRate = totalLeads > 0 ? ((totalConversions / totalLeads) * 100).toFixed(1) : 0;
-        const spentPercentage = totalBudget > 0 ? ((totalSpent / totalBudget) * 100).toFixed(0) : 0;
-        
-        return { total, active, completed, totalBudget, totalSpent, totalLeads, totalConversions, conversionRate, spentPercentage };
-      }, [projects]);
-
-      // Get category icon
-      const getCategoryIcon = (category) => {
-        const icons = {
-          social: '📱',
-          seo: '🔍',
-          email: '📧',
-          content: '📝',
-          influencer: '⭐',
-          ads: '💲',
-          event: '🎪',
-          other: '📌'
-        };
-        return icons[category] || '📌';
-      };
-
-      // Get status badge
-      const getStatusBadge = (status) => {
-        const statusMap = {
-          planning: { label: 'Planning', color: 'bg-slate-100 text-slate-700' },
-          active: { label: 'Active', color: 'bg-emerald-100 text-emerald-700' },
-          paused: { label: 'Paused', color: 'bg-amber-100 text-amber-700' },
-          completed: { label: 'Completed', color: 'bg-blue-100 text-blue-700' },
-          cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-700' }
-        };
-        const s = statusMap[status] || statusMap.planning;
-        return <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${s.color}`}>{s.label}</span>;
-      };
-
-      // Format date
-      const formatDate = (date) => {
-        if (!date) return '-';
-        const d = new Date(date);
-        return d.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
-      };
-
-      // Get days remaining
-      const getDaysRemaining = (endDate) => {
-        if (!endDate) return null;
-        const now = new Date();
-        const end = new Date(endDate);
-        const diff = Math.ceil((end - now) / (1000 * 60 * 60 * 24));
-        if (diff < 0) return 'หมดอายุแล้ว';
-        return `${diff} วัน`;
-      };
-
-      if (loading) {
-        return (
-          <div class="min-h-screen flex items-center justify-center">
-            <div class="text-center">
-              <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent"></div>
-              <p class="mt-4 text-slate-500 font-medium">กำลังโหลดข้อมูล...</p>
-            </div>
-          </div>
-        );
-      }
-
-      return (
-        <div class="min-h-screen bg-slate-50">
-          {/* Toast */}
-          {toast && (
-            <div class={`fixed top-4 right-4 z-[100] px-6 py-3 rounded-lg shadow-lg toast ${
-              toast.type === 'error' ? 'bg-red-500 text-white' : 'bg-emerald-500 text-white'
-            }`}>
-              {toast.message}
-            </div>
-          )}
-
-          {/* Header */}
-          <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
-            <div class="max-w-7xl mx-auto px-6 py-4">
-              <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                  <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                    <span>📊</span> Marketing Project Management
-                  </h1>
-                  <p class="text-sm text-slate-500">จัดการโปรเจคการตลาดทั้งหมดในที่เดียว</p>
-                </div>
-                <div class="flex items-center gap-3">
-                  <button
-                    onClick={() => openModal()}
-                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2"
-                  >
-                    <i data-lucide="plus" class="w-4 h-4"></i>
-                    เพิ่มโปรเจค
-                  </button>
-                </div>
-              </div>
-            </div>
-          </header>
-
-          {/* Main Content */}
-          <div class="max-w-7xl mx-auto px-6 py-6">
-            {/* Tabs */}
-            <div class="flex gap-2 mb-6 border-b border-slate-200 pb-2">
-              {['dashboard', 'projects', 'calendar'].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                    activeTab === tab 
-                      ? 'bg-indigo-100 text-indigo-700' 
-                      : 'text-slate-500 hover:bg-slate-100'
-                  }`}
-                >
-                  {tab === 'dashboard' && '📈 Dashboard'}
-                  {tab === 'projects' && '📋 โปรเจคทั้งหมด'}
-                  {tab === 'calendar' && '📅 ปฏิทิน'}
-                </button>
-              ))}
-            </div>
-
-            {/* Dashboard Tab */}
-            {activeTab === 'dashboard' && (
-              <div class="fade-in">
-                {/* Stat Cards */}
-                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
-                  <StatCard title="ทั้งหมด" value={metrics.total} icon="folder" color="text-indigo-600" bg="bg-indigo-50" />
-                  <StatCard title="กำลังดำเนินการ" value={metrics.active} icon="play" color="text-emerald-600" bg="bg-emerald-50" />
-                  <StatCard title="เสร็จสิ้น" value={metrics.completed} icon="check-circle" color="text-blue-600" bg="bg-blue-50" />
-                  <StatCard title="งบประมาณรวม" value={'฿' + metrics.totalBudget.toLocaleString()} icon="wallet" color="text-amber-600" bg="bg-amber-50" />
-                  <StatCard title="ใช้จ่ายแล้ว" value={'฿' + metrics.totalSpent.toLocaleString()} icon="credit-card" color="text-rose-600" bg="bg-rose-50" />
-                  <StatCard title="Conversion Rate" value={metrics.conversionRate + '%'} icon="target" color="text-purple-600" bg="bg-purple-50" />
-                </div>
-
-                {/* Budget Progress */}
-                <div class="bg-white rounded-xl border border-slate-200 p-6 mb-6">
-                  <div class="flex justify-between items-center mb-2">
-                    <span class="text-sm font-medium text-slate-700">การใช้จ่ายงบประมาณ</span>
-                    <span class="text-sm font-bold text-slate-900">{metrics.spentPercentage}%</span>
-                  </div>
-                  <div class="w-full bg-slate-200 rounded-full h-3">
-                    <div 
-                      class={`h-3 rounded-full progress-bar ${parseInt(metrics.spentPercentage) > 90 ? 'bg-rose-500' : parseInt(metrics.spentPercentage) > 70 ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                      style={{ width: metrics.spentPercentage + '%' }}
-                    ></div>
-                  </div>
-                  <div class="flex justify-between text-xs text-slate-400 mt-1">
-                    <span>฿{metrics.totalSpent.toLocaleString()}</span>
-                    <span>฿{metrics.totalBudget.toLocaleString()}</span>
-                  </div>
-                </div>
-
-                {/* Recent Projects */}
-                <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-                  <div class="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                    <h3 class="font-bold text-slate-800">📋 โปรเจคล่าสุด</h3>
-                    <button onClick={() => setActiveTab('projects')} class="text-sm text-indigo-600 hover:text-indigo-800">
-                      ดูทั้งหมด →
-                    </button>
-                  </div>
-                  <div class="divide-y divide-slate-100">
-                    {projects.slice(0, 5).map(p => (
-                      <div key={p.id} class="p-4 hover:bg-slate-50 transition flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                          <span class="text-2xl">{getCategoryIcon(p.category)}</span>
-                          <div>
-                            <p class="font-semibold text-slate-900">{p.name}</p>
-                            <p class="text-xs text-slate-500">{formatDate(p.startDate)} - {formatDate(p.endDate)}</p>
-                          </div>
-                        </div>
-                        <div class="flex items-center gap-3">
-                          {getStatusBadge(p.status)}
-                          <span class="text-sm font-medium text-slate-700">฿{(p.spent || 0).toLocaleString()}</span>
-                        </div>
-                      </div>
-                    ))}
-                    {projects.length === 0 && (
-                      <div class="p-8 text-center text-slate-400">
-                        <p>ยังไม่มีโปรเจค กรุณาเพิ่มโปรเจคใหม่</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Projects Tab */}
-            {activeTab === 'projects' && (
-              <div class="fade-in">
-                {/* Filter and Search */}
-                <div class="bg-white rounded-xl border border-slate-200 p-4 mb-4">
-                  <div class="flex flex-wrap gap-3 items-center">
-                    <input 
-                      type="text" 
-                      placeholder="🔍 ค้นหาโปรเจค..."
-                      class="flex-1 min-w-[200px] px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                    />
-                    <select class="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
-                      <option value="">ทั้งหมด</option>
-                      {categories.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-                    </select>
-                    <select class="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
-                      <option value="">สถานะทั้งหมด</option>
-                      {statuses.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Projects Grid */}
-                <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {projects.map(p => (
-                    <div key={p.id} class="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition p-4">
-                      <div class="flex justify-between items-start mb-3">
-                        <div class="flex items-center gap-2">
-                          <span class="text-2xl">{getCategoryIcon(p.category)}</span>
-                          <h4 class="font-bold text-slate-900">{p.name}</h4>
-                        </div>
-                        {getStatusBadge(p.status)}
-                      </div>
-                      
-                      <p class="text-sm text-slate-500 line-clamp-2 mb-3">{p.description || 'ไม่มีรายละเอียด'}</p>
-                      
-                      <div class="grid grid-cols-2 gap-2 text-sm mb-3">
-                        <div><span class="text-slate-500">งบประมาณ:</span> <span class="font-medium">฿{(p.budget || 0).toLocaleString()}</span></div>
-                        <div><span class="text-slate-500">ใช้ไป:</span> <span class="font-medium">฿{(p.spent || 0).toLocaleString()}</span></div>
-                        <div><span class="text-slate-500">Leads:</span> <span class="font-medium text-blue-600">{p.leads || 0}</span></div>
-                        <div><span class="text-slate-500">Conversions:</span> <span class="font-medium text-emerald-600">{p.conversions || 0}</span></div>
-                      </div>
-
-                      <div class="text-xs text-slate-400 mb-3">
-                        📅 {formatDate(p.startDate)} - {formatDate(p.endDate)}
-                        {p.endDate && <span class="ml-2">⏳ {getDaysRemaining(p.endDate)}</span>}
-                      </div>
-
-                      <div class="flex gap-2">
-                        <button 
-                          onClick={() => openModal(p)}
-                          class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg text-sm font-medium transition"
-                        >
-                          แก้ไข
-                        </button>
-                        <button 
-                          onClick={() => deleteProject(p.id)}
-                          class="flex-1 bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg text-sm font-medium transition"
-                        >
-                          ลบ
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {projects.length === 0 && (
-                  <div class="bg-white rounded-xl border border-slate-200 p-12 text-center text-slate-400">
-                    <p class="text-4xl mb-2">📭</p>
-                    <p>ยังไม่มีโปรเจคในระบบ</p>
-                    <button onClick={() => openModal()} class="mt-4 text-indigo-600 hover:text-indigo-800 font-medium">
-                      + เพิ่มโปรเจคแรกของคุณ
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Calendar Tab */}
-            {activeTab === 'calendar' && (
-              <div class="fade-in bg-white rounded-xl border border-slate-200 p-4">
-                <div id="calendar"></div>
-              </div>
-            )}
-          </div>
-
-          {/* ============================================================ */}
-          {/* 📝 MODAL - Add/Edit Project */}
-          {/* ============================================================ */}
-          {showModal && (
-            <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 modal-backdrop" onClick={closeModal}>
-              <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                <div class="flex justify-between items-start mb-6">
-                  <h3 class="text-xl font-bold text-slate-900">
-                    {editingProject ? '✏️ แก้ไขโปรเจค' : '➕ เพิ่มโปรเจคใหม่'}
-                  </h3>
-                  <button onClick={closeModal} class="text-slate-400 hover:text-slate-600">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                  </button>
-                </div>
-
-                <div class="space-y-4">
-                  {/* Row 1: Name & Category */}
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อโปรเจค *</label>
-                      <input 
-                        type="text" 
-                        value={formData.name}
-                        onChange={(e) => setFormData({...formData, name: e.target.value})}
-                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        placeholder="ชื่อโปรเจค"
-                      />
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-1">หมวดหมู่</label>
-                      <select 
-                        value={formData.category}
-                        onChange={(e) => setFormData({...formData, category: e.target.value})}
-                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      >
-                        {categories.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Row 2: Description */}
-                  <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">รายละเอียด</label>
-                    <textarea 
-                      value={formData.description}
-                      onChange={(e) => setFormData({...formData, description: e.target.value})}
-                      class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      rows="3"
-                      placeholder="รายละเอียดโปรเจค..."
-                    />
-                  </div>
-
-                  {/* Row 3: Budget & Spent */}
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-1">งบประมาณ (บาท)</label>
-                      <input 
-                        type="number" 
-                        value={formData.budget}
-                        onChange={(e) => setFormData({...formData, budget: e.target.value})}
-                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        placeholder="100000"
-                      />
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-1">ใช้จ่ายไปแล้ว (บาท)</label>
-                      <input 
-                        type="number" 
-                        value={formData.spent}
-                        onChange={(e) => setFormData({...formData, spent: e.target.value})}
-                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        placeholder="50000"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Row 4: Leads & Conversions */}
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-1">จำนวน Leads</label>
-                      <input 
-                        type="number" 
-                        value={formData.leads}
-                        onChange={(e) => setFormData({...formData, leads: e.target.value})}
-                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        placeholder="0"
-                      />
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-1">จำนวน Conversions</label>
-                      <input 
-                        type="number" 
-                        value={formData.conversions}
-                        onChange={(e) => setFormData({...formData, conversions: e.target.value})}
-                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        placeholder="0"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Row 5: Date Range */}
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-1">วันที่เริ่มต้น *</label>
-                      <input 
-                        type="date" 
-                        value={formData.startDate}
-                        onChange={(e) => setFormData({...formData, startDate: e.target.value})}
-                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      />
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-1">วันที่สิ้นสุด *</label>
-                      <input 
-                        type="date" 
-                        value={formData.endDate}
-                        onChange={(e) => setFormData({...formData, endDate: e.target.value})}
-                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Row 6: Status & Team */}
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-1">สถานะ</label>
-                      <select 
-                        value={formData.status}
-                        onChange={(e) => setFormData({...formData, status: e.target.value})}
-                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      >
-                        {statuses.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-1">ทีมที่รับผิดชอบ</label>
-                      <input 
-                        type="text" 
-                        value={formData.team}
-                        onChange={(e) => setFormData({...formData, team: e.target.value})}
-                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        placeholder="ชื่อทีม或个人"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Row 7: Platform & Target */}
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-1">แพลตฟอร์ม/ช่องทาง</label>
-                      <input 
-                        type="text" 
-                        value={formData.platform}
-                        onChange={(e) => setFormData({...formData, platform: e.target.value})}
-                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        placeholder="Facebook, Google, Email, etc."
-                      />
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-1">กลุ่มเป้าหมาย</label>
-                      <input 
-                        type="text" 
-                        value={formData.target}
-                        onChange={(e) => setFormData({...formData, target: e.target.value})}
-                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        placeholder="อายุ 25-35, ผู้หญิง, etc."
-                      />
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div class="flex gap-3 pt-4 border-t border-slate-200">
-                    <button 
-                      onClick={saveProject}
-                      class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg font-semibold transition"
-                    >
-                      {editingProject ? '💾 บันทึกการแก้ไข' : '✅ สร้างโปรเจค'}
-                    </button>
-                    <button 
-                      onClick={closeModal}
-                      class="px-6 py-2.5 border border-slate-300 rounded-lg text-slate-600 hover:bg-slate-50 transition"
-                    >
-                      ยกเลิก
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      );
-    }
-
-    // ============================================================
     // 📊 STAT CARD COMPONENT
     // ============================================================
-    function StatCard({ title, value, icon, color, bg }) {
+    function StatCard({ title, value, icon, color, bg, subtitle }) {
       return (
         <div class={`bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between stat-card-hover`}>
           <div>
             <p class="text-xs font-medium text-slate-500">{title}</p>
             <p class="text-xl font-bold text-slate-900">{value}</p>
+            {subtitle && <p class="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
           </div>
           <div className={`p-2.5 rounded-lg ${bg} ${color}`}>
             <i data-lucide={icon} class="w-5 h-5"></i>
@@ -843,7 +231,13 @@
               category: p.category,
               status: p.status,
               budget: p.budget,
-              spent: p.spent
+              spent: p.spent,
+              description: p.description,
+              leads: p.leads,
+              conversions: p.conversions,
+              team: p.team,
+              platform: p.platform,
+              target: p.target
             }
           }));
 
@@ -859,11 +253,22 @@
             eventClick: function(info) {
               const p = projects.find(proj => proj.id === info.event.id);
               if (p) {
-                alert(`📋 ${p.name}\n\n📅 ${new Date(p.startDate).toLocaleDateString('th-TH')} - ${new Date(p.endDate).toLocaleDateString('th-TH')}\n📂 ${p.category}\n📊 ${p.status}\n💰 งบประมาณ: ${p.budget?.toLocaleString() || 0}\n💸 ใช้ไป: ${p.spent?.toLocaleString() || 0}\n👥 Leads: ${p.leads || 0}\n✅ Conversions: ${p.conversions || 0}`);
+                const msg = `📋 ${p.name}\n\n` +
+                  `📅 ${new Date(p.startDate).toLocaleDateString('th-TH')} - ${new Date(p.endDate).toLocaleDateString('th-TH')}\n` +
+                  `📂 ${p.category || 'ไม่ระบุ'}\n` +
+                  `📊 ${p.status || 'planning'}\n` +
+                  `💰 งบประมาณ: ${p.budget?.toLocaleString() || 0} บาท\n` +
+                  `💸 ใช้ไป: ${p.spent?.toLocaleString() || 0} บาท\n` +
+                  `👥 Leads: ${p.leads || 0}\n` +
+                  `✅ Conversions: ${p.conversions || 0}\n` +
+                  `👤 ทีม: ${p.team || 'ไม่ระบุ'}\n` +
+                  `📱 แพลตฟอร์ม: ${p.platform || 'ไม่ระบุ'}\n` +
+                  `🎯 กลุ่มเป้าหมาย: ${p.target || 'ไม่ระบุ'}\n\n` +
+                  `📝 ${p.description || 'ไม่มีรายละเอียด'}`;
+                alert(msg);
               }
             },
             eventDidMount: function(info) {
-              // Add tooltip
               info.el.title = info.event.title;
             }
           });
@@ -884,48 +289,19 @@
     }
 
     // ============================================================
-    // 🚀 RENDER APP
+    // 🎯 MAIN APP
     // ============================================================
-    // Create wrapper with calendar
-    function AppWrapper() {
+    function App() {
       const [projects, setProjects] = useState([]);
       const [loading, setLoading] = useState(true);
-
-      useEffect(() => {
-        const unsubscribe = FirebaseService.subscribeProjects((data) => {
-          setProjects(data);
-          setLoading(false);
-        });
-        return () => unsubscribe();
-      }, []);
-
-      if (loading) {
-        return (
-          <div class="min-h-screen flex items-center justify-center">
-            <div class="text-center">
-              <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent"></div>
-              <p class="mt-4 text-slate-500 font-medium">กำลังโหลด...</p>
-            </div>
-          </div>
-        );
-      }
-
-      return (
-        <div>
-          <App projects={projects} />
-        </div>
-      );
-    }
-
-    // Override App to use projects from props
-    const OriginalApp = App;
-    App = function({ projects: initialProjects }) {
-      const [projects, setProjects] = useState(initialProjects || []);
-      const [loading, setLoading] = useState(false);
       const [showModal, setShowModal] = useState(false);
       const [editingProject, setEditingProject] = useState(null);
       const [toast, setToast] = useState(null);
       const [activeTab, setActiveTab] = useState('dashboard');
+      const [searchTerm, setSearchTerm] = useState('');
+      const [filterCategory, setFilterCategory] = useState('all');
+      const [filterStatus, setFilterStatus] = useState('all');
+
       const [formData, setFormData] = useState({
         name: '',
         description: '',
@@ -985,6 +361,22 @@
         setEditingProject(null);
       };
 
+      // Setup real-time listener
+      useEffect(() => {
+        const unsubscribe = FirebaseService.subscribeProjects((data) => {
+          setProjects(data);
+          setLoading(false);
+          setTimeout(() => lucide.createIcons(), 100);
+        });
+
+        // Log to Analytics
+        analytics.logEvent('dashboard_view', {
+          timestamp: new Date().toISOString()
+        });
+
+        return () => unsubscribe();
+      }, []);
+
       const openModal = (project = null) => {
         if (project) {
           setEditingProject(project);
@@ -1007,6 +399,11 @@
           resetForm();
         }
         setShowModal(true);
+        
+        // Log to Analytics
+        analytics.logEvent('modal_opened', {
+          mode: project ? 'edit' : 'create'
+        });
       };
 
       const closeModal = () => {
@@ -1017,6 +414,11 @@
       const saveProject = async () => {
         if (!formData.name || !formData.startDate || !formData.endDate) {
           showToast('กรุณากรอกชื่อโปรเจค และวันที่เริ่มต้น-สิ้นสุด', 'error');
+          return;
+        }
+
+        if (new Date(formData.startDate) > new Date(formData.endDate)) {
+          showToast('วันที่เริ่มต้นต้องน้อยกว่าวันที่สิ้นสุด', 'error');
           return;
         }
 
@@ -1046,7 +448,7 @@
           }
           closeModal();
         } catch (error) {
-          showToast('เกิดข้อผิดพลาด', 'error');
+          showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
         }
       };
 
@@ -1059,6 +461,24 @@
           showToast('เกิดข้อผิดพลาดในการลบ', 'error');
         }
       };
+
+      // Filter projects
+      const filteredProjects = useMemo(() => {
+        let result = projects;
+        if (searchTerm) {
+          result = result.filter(p => 
+            p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            p.description?.toLowerCase().includes(searchTerm.toLowerCase())
+          );
+        }
+        if (filterCategory !== 'all') {
+          result = result.filter(p => p.category === filterCategory);
+        }
+        if (filterStatus !== 'all') {
+          result = result.filter(p => p.status === filterStatus);
+        }
+        return result;
+      }, [projects, searchTerm, filterCategory, filterStatus]);
 
       const metrics = useMemo(() => {
         const total = projects.length;
@@ -1101,9 +521,21 @@
         const now = new Date();
         const end = new Date(endDate);
         const diff = Math.ceil((end - now) / (1000 * 60 * 60 * 24));
-        if (diff < 0) return 'หมดอายุแล้ว';
-        return `${diff} วัน`;
+        if (diff < 0) return '⏰ หมดอายุแล้ว';
+        return `⏳ ${diff} วัน`;
       };
+
+      if (loading) {
+        return (
+          <div class="min-h-screen flex items-center justify-center bg-slate-50">
+            <div class="text-center">
+              <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent"></div>
+              <p class="mt-4 text-slate-500 font-medium">กำลังโหลดข้อมูล...</p>
+              <p class="text-xs text-slate-400 mt-1">🔥 Firebase: mkt-project-f818a</p>
+            </div>
+          </div>
+        );
+      }
 
       return (
         <div class="min-h-screen bg-slate-50">
@@ -1117,19 +549,31 @@
           )}
 
           {/* Header */}
-          <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+          <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
             <div class="max-w-7xl mx-auto px-6 py-4">
               <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                   <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
                     <span>📊</span> Marketing Project Management
                   </h1>
-                  <p class="text-sm text-slate-500">จัดการโปรเจคการตลาดทั้งหมดในที่เดียว</p>
+                  <p class="text-sm text-slate-500 flex items-center gap-2">
+                    จัดการโปรเจคการตลาดทั้งหมดในที่เดียว
+                    <span class="text-xs bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <span class="relative flex h-1.5 w-1.5">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                      </span>
+                      Live
+                    </span>
+                  </p>
                 </div>
                 <div class="flex items-center gap-3">
+                  <span class="hidden md:flex text-xs text-slate-400 bg-slate-100 px-3 py-1 rounded-full">
+                    📊 {projects.length} โปรเจค
+                  </span>
                   <button
                     onClick={() => openModal()}
-                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2 shadow-sm"
                   >
                     <i data-lucide="plus" class="w-4 h-4"></i>
                     เพิ่มโปรเจค
@@ -1142,22 +586,30 @@
           {/* Main Content */}
           <div class="max-w-7xl mx-auto px-6 py-6">
             {/* Tabs */}
-            <div class="flex gap-2 mb-6 border-b border-slate-200 pb-2">
-              {['dashboard', 'projects', 'calendar'].map((tab) => (
+            <div class="flex gap-2 mb-6 border-b border-slate-200 pb-2 overflow-x-auto">
+              {[
+                { id: 'dashboard', label: '📈 Dashboard' },
+                { id: 'projects', label: '📋 โปรเจคทั้งหมด' },
+                { id: 'calendar', label: '📅 ปฏิทิน' }
+              ].map((tab) => (
                 <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                    activeTab === tab 
+                  key={tab.id}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    analytics.logEvent('tab_switch', { tab: tab.id });
+                  }}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap ${
+                    activeTab === tab.id 
                       ? 'bg-indigo-100 text-indigo-700' 
                       : 'text-slate-500 hover:bg-slate-100'
                   }`}
                 >
-                  {tab === 'dashboard' && '📈 Dashboard'}
-                  {tab === 'projects' && '📋 โปรเจคทั้งหมด'}
-                  {tab === 'calendar' && '📅 ปฏิทิน'}
+                  {tab.label}
                 </button>
               ))}
+              <span class="ml-auto text-xs text-slate-400 flex items-center">
+                {projects.length} รายการ
+              </span>
             </div>
 
             {/* Dashboard Tab */}
@@ -1169,23 +621,49 @@
                   <StatCard title="เสร็จสิ้น" value={metrics.completed} icon="check-circle" color="text-blue-600" bg="bg-blue-50" />
                   <StatCard title="งบประมาณรวม" value={'฿' + metrics.totalBudget.toLocaleString()} icon="wallet" color="text-amber-600" bg="bg-amber-50" />
                   <StatCard title="ใช้จ่ายแล้ว" value={'฿' + metrics.totalSpent.toLocaleString()} icon="credit-card" color="text-rose-600" bg="bg-rose-50" />
-                  <StatCard title="Conversion Rate" value={metrics.conversionRate + '%'} icon="target" color="text-purple-600" bg="bg-purple-50" />
+                  <StatCard 
+                    title="Conversion Rate" 
+                    value={metrics.conversionRate + '%'} 
+                    icon="target" 
+                    color="text-purple-600" 
+                    bg="bg-purple-50"
+                    subtitle={`${metrics.totalConversions} / ${metrics.totalLeads} Leads`}
+                  />
                 </div>
 
-                <div class="bg-white rounded-xl border border-slate-200 p-6 mb-6">
-                  <div class="flex justify-between items-center mb-2">
-                    <span class="text-sm font-medium text-slate-700">การใช้จ่ายงบประมาณ</span>
-                    <span class="text-sm font-bold text-slate-900">{metrics.spentPercentage}%</span>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                  <div class="bg-white rounded-xl border border-slate-200 p-6">
+                    <div class="flex justify-between items-center mb-2">
+                      <span class="text-sm font-medium text-slate-700">📊 การใช้จ่ายงบประมาณ</span>
+                      <span class="text-sm font-bold text-slate-900">{metrics.spentPercentage}%</span>
+                    </div>
+                    <div class="w-full bg-slate-200 rounded-full h-3">
+                      <div 
+                        class={`h-3 rounded-full progress-bar ${parseInt(metrics.spentPercentage) > 90 ? 'bg-rose-500' : parseInt(metrics.spentPercentage) > 70 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                        style={{ width: metrics.spentPercentage + '%' }}
+                      ></div>
+                    </div>
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                      <span>ใช้ไป: ฿{metrics.totalSpent.toLocaleString()}</span>
+                      <span>รวม: ฿{metrics.totalBudget.toLocaleString()}</span>
+                    </div>
                   </div>
-                  <div class="w-full bg-slate-200 rounded-full h-3">
-                    <div 
-                      class={`h-3 rounded-full progress-bar ${parseInt(metrics.spentPercentage) > 90 ? 'bg-rose-500' : parseInt(metrics.spentPercentage) > 70 ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                      style={{ width: metrics.spentPercentage + '%' }}
-                    ></div>
-                  </div>
-                  <div class="flex justify-between text-xs text-slate-400 mt-1">
-                    <span>฿{metrics.totalSpent.toLocaleString()}</span>
-                    <span>฿{metrics.totalBudget.toLocaleString()}</span>
+
+                  <div class="bg-white rounded-xl border border-slate-200 p-6">
+                    <div class="flex justify-between items-center mb-2">
+                      <span class="text-sm font-medium text-slate-700">🎯 สถานะโปรเจค</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                      {statuses.filter(s => ['active', 'completed', 'planning'].includes(s.value)).map(s => {
+                        const count = projects.filter(p => p.status === s.value).length;
+                        return (
+                          <div key={s.value} class="bg-slate-50 rounded-lg p-3 text-center">
+                            <div class="text-2xl font-bold text-slate-700">{count}</div>
+                            <div class="text-xs text-slate-500">{s.label.replace(/[📋🟢✅]/g, '').trim()}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
 
@@ -1199,14 +677,14 @@
                   <div class="divide-y divide-slate-100">
                     {projects.slice(0, 5).map(p => (
                       <div key={p.id} class="p-4 hover:bg-slate-50 transition flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                          <span class="text-2xl">{getCategoryIcon(p.category)}</span>
-                          <div>
-                            <p class="font-semibold text-slate-900">{p.name}</p>
+                        <div class="flex items-center gap-3 min-w-0">
+                          <span class="text-2xl flex-shrink-0">{getCategoryIcon(p.category)}</span>
+                          <div class="min-w-0">
+                            <p class="font-semibold text-slate-900 truncate">{p.name}</p>
                             <p class="text-xs text-slate-500">{formatDate(p.startDate)} - {formatDate(p.endDate)}</p>
                           </div>
                         </div>
-                        <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-3 flex-shrink-0">
                           {getStatusBadge(p.status)}
                           <span class="text-sm font-medium text-slate-700">฿{(p.spent || 0).toLocaleString()}</span>
                         </div>
@@ -1214,7 +692,11 @@
                     ))}
                     {projects.length === 0 && (
                       <div class="p-8 text-center text-slate-400">
-                        <p>ยังไม่มีโปรเจค กรุณาเพิ่มโปรเจคใหม่</p>
+                        <p class="text-4xl mb-2">📭</p>
+                        <p>ยังไม่มีโปรเจค</p>
+                        <button onClick={() => openModal()} class="mt-2 text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                          + เพิ่มโปรเจคแรก
+                        </button>
                       </div>
                     )}
                   </div>
@@ -1230,31 +712,46 @@
                     <input 
                       type="text" 
                       placeholder="🔍 ค้นหาโปรเจค..."
-                      class="flex-1 min-w-[200px] px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      class="flex-1 min-w-[180px] px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                     />
-                    <select class="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
-                      <option value="">ทั้งหมด</option>
+                    <select 
+                      value={filterCategory}
+                      onChange={(e) => setFilterCategory(e.target.value)}
+                      class="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value="all">📂 ทั้งหมด</option>
                       {categories.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                     </select>
-                    <select class="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
-                      <option value="">สถานะทั้งหมด</option>
+                    <select 
+                      value={filterStatus}
+                      onChange={(e) => setFilterStatus(e.target.value)}
+                      class="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value="all">📊 สถานะทั้งหมด</option>
                       {statuses.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                     </select>
+                    <span class="text-xs text-slate-400 ml-auto">
+                      {filteredProjects.length} รายการ
+                    </span>
                   </div>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {projects.map(p => (
+                  {filteredProjects.map(p => (
                     <div key={p.id} class="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition p-4">
                       <div class="flex justify-between items-start mb-3">
-                        <div class="flex items-center gap-2">
-                          <span class="text-2xl">{getCategoryIcon(p.category)}</span>
-                          <h4 class="font-bold text-slate-900">{p.name}</h4>
+                        <div class="flex items-center gap-2 min-w-0">
+                          <span class="text-2xl flex-shrink-0">{getCategoryIcon(p.category)}</span>
+                          <h4 class="font-bold text-slate-900 truncate">{p.name}</h4>
                         </div>
                         {getStatusBadge(p.status)}
                       </div>
                       
-                      <p class="text-sm text-slate-500 line-clamp-2 mb-3">{p.description || 'ไม่มีรายละเอียด'}</p>
+                      <p class="text-sm text-slate-500 line-clamp-2 mb-3 min-h-[40px]">
+                        {p.description || 'ไม่มีรายละเอียด'}
+                      </p>
                       
                       <div class="grid grid-cols-2 gap-2 text-sm mb-3">
                         <div><span class="text-slate-500">งบประมาณ:</span> <span class="font-medium">฿{(p.budget || 0).toLocaleString()}</span></div>
@@ -1265,7 +762,7 @@
 
                       <div class="text-xs text-slate-400 mb-3">
                         📅 {formatDate(p.startDate)} - {formatDate(p.endDate)}
-                        {p.endDate && <span class="ml-2">⏳ {getDaysRemaining(p.endDate)}</span>}
+                        {p.endDate && <span class="ml-2">{getDaysRemaining(p.endDate)}</span>}
                       </div>
 
                       <div class="flex gap-2">
@@ -1273,26 +770,32 @@
                           onClick={() => openModal(p)}
                           class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg text-sm font-medium transition"
                         >
-                          แก้ไข
+                          ✏️ แก้ไข
                         </button>
                         <button 
                           onClick={() => deleteProject(p.id)}
                           class="flex-1 bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg text-sm font-medium transition"
                         >
-                          ลบ
+                          🗑️ ลบ
                         </button>
                       </div>
                     </div>
                   ))}
                 </div>
 
-                {projects.length === 0 && (
+                {filteredProjects.length === 0 && (
                   <div class="bg-white rounded-xl border border-slate-200 p-12 text-center text-slate-400">
                     <p class="text-4xl mb-2">📭</p>
-                    <p>ยังไม่มีโปรเจคในระบบ</p>
-                    <button onClick={() => openModal()} class="mt-4 text-indigo-600 hover:text-indigo-800 font-medium">
-                      + เพิ่มโปรเจคแรกของคุณ
-                    </button>
+                    <p>{searchTerm || filterCategory !== 'all' || filterStatus !== 'all' ? 'ไม่พบโปรเจคที่ค้นหา' : 'ยังไม่มีโปรเจคในระบบ'}</p>
+                    {(searchTerm || filterCategory !== 'all' || filterStatus !== 'all') ? (
+                      <button onClick={() => { setSearchTerm(''); setFilterCategory('all'); setFilterStatus('all'); }} class="mt-2 text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                        ล้างตัวกรอง
+                      </button>
+                    ) : (
+                      <button onClick={() => openModal()} class="mt-2 text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                        + เพิ่มโปรเจคแรกของคุณ
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -1302,11 +805,20 @@
             {activeTab === 'calendar' && (
               <div class="fade-in bg-white rounded-xl border border-slate-200 p-4">
                 <CalendarComponent projects={projects} />
+                <div class="mt-4 flex flex-wrap gap-4 justify-center text-xs text-slate-500 border-t pt-4">
+                  <span><span class="inline-block w-3 h-3 rounded-full bg-emerald-500 mr-1"></span> Active</span>
+                  <span><span class="inline-block w-3 h-3 rounded-full bg-blue-500 mr-1"></span> Completed</span>
+                  <span><span class="inline-block w-3 h-3 rounded-full bg-amber-500 mr-1"></span> Paused</span>
+                  <span><span class="inline-block w-3 h-3 rounded-full bg-red-500 mr-1"></span> Cancelled</span>
+                  <span><span class="inline-block w-3 h-3 rounded-full bg-slate-400 mr-1"></span> Planning</span>
+                </div>
               </div>
             )}
           </div>
 
-          {/* Modal */}
+          {/* ============================================================ */}
+          {/* 📝 MODAL - Add/Edit Project */}
+          {/* ============================================================ */}
           {showModal && (
             <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 modal-backdrop" onClick={closeModal}>
               <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
@@ -1487,9 +999,12 @@
           )}
         </div>
       );
-    };
+    }
 
-    ReactDOM.createRoot(document.getElementById('root')).render(<AppWrapper />);
+    // ============================================================
+    // 🚀 RENDER APP
+    // ============================================================
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   </script>
 </body>
 </html>
