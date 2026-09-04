@@ -16,10 +16,9 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
 
-  <!-- FullCalendar for Calendar -->
-  <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/main.min.css' rel='stylesheet' />
-  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/main.min.js'></script>
-  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/locales/th.js'></script>
+  <!-- ✅ แก้ไข FullCalendar v6 CDN ให้ถูกต้อง -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.9/locales/th.global.min.js"></script>
 
   <style>
     .fade-in { animation: fadeIn 0.5s ease-in; }
@@ -31,7 +30,6 @@
     .fc-event { cursor: pointer; }
     .modal-backdrop { backdrop-filter: blur(4px); }
     .progress-bar { transition: width 0.8s ease; }
-    /* Fix FullCalendar */
     .fc-daygrid-day { cursor: pointer; }
     .fc-daygrid-day:hover { background: #f8fafc; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -68,23 +66,30 @@
       page_location: window.location.href
     });
 
+    // Helper ในการแปลงค่าวันที่จากหลายรูปแบบให้เป็น Date Object
+    const parseDate = (dateVal) => {
+      if (!dateVal) return null;
+      if (dateVal.toDate && typeof dateVal.toDate === 'function') return dateVal.toDate();
+      if (dateVal.seconds) return new Date(dateVal.seconds * 1000);
+      const d = new Date(dateVal);
+      return isNaN(d.getTime()) ? null : d;
+    };
+
     // ============================================================
     // 📦 FIRESTORE SERVICE
     // ============================================================
     const FirebaseService = {
       async getProjects() {
         try {
-          const snapshot = await db.collection('projects')
-            .orderBy('startDate', 'desc')
-            .get();
+          const snapshot = await db.collection('projects').orderBy('startDate', 'desc').get();
           const projects = [];
           snapshot.forEach(doc => {
             const data = doc.data();
             projects.push({ 
               id: doc.id, 
               ...data,
-              startDate: data.startDate?.toDate?.() || new Date(data.startDate),
-              endDate: data.endDate?.toDate?.() || new Date(data.endDate)
+              startDate: parseDate(data.startDate),
+              endDate: parseDate(data.endDate)
             });
           });
           return projects;
@@ -101,11 +106,6 @@
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           });
-          analytics.logEvent('project_created', {
-            project_name: projectData.name,
-            project_category: projectData.category,
-            project_budget: projectData.budget
-          });
           return { id: docRef.id, ...projectData };
         } catch (error) {
           console.error('Error adding project:', error);
@@ -119,10 +119,6 @@
             ...projectData,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           });
-          analytics.logEvent('project_updated', {
-            project_id: id,
-            project_name: projectData.name
-          });
           return { id, ...projectData };
         } catch (error) {
           console.error('Error updating project:', error);
@@ -133,7 +129,6 @@
       async deleteProject(id) {
         try {
           await db.collection('projects').doc(id).delete();
-          analytics.logEvent('project_deleted', { project_id: id });
           return { success: true };
         } catch (error) {
           console.error('Error deleting project:', error);
@@ -142,23 +137,21 @@
       },
 
       subscribeProjects(callback) {
-        return db.collection('projects')
-          .orderBy('startDate', 'desc')
-          .onSnapshot((snapshot) => {
-            const projects = [];
-            snapshot.forEach(doc => {
-              const data = doc.data();
-              projects.push({ 
-                id: doc.id, 
-                ...data,
-                startDate: data.startDate?.toDate?.() || new Date(data.startDate),
-                endDate: data.endDate?.toDate?.() || new Date(data.endDate)
-              });
+        return db.collection('projects').orderBy('startDate', 'desc').onSnapshot((snapshot) => {
+          const projects = [];
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            projects.push({ 
+              id: doc.id, 
+              ...data,
+              startDate: parseDate(data.startDate),
+              endDate: parseDate(data.endDate)
             });
-            callback(projects);
-          }, (error) => {
-            console.error('Error in subscription:', error);
           });
+          callback(projects);
+        }, (error) => {
+          console.error('Error in subscription:', error);
+        });
       }
     };
 
@@ -167,173 +160,90 @@
     // ============================================================
     function StatCard({ title, value, icon, color, bg, subtitle }) {
       return (
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between stat-card-hover">
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between stat-card-hover">
           <div>
-            <p class="text-xs font-medium text-slate-500">{title}</p>
-            <p class="text-xl font-bold text-slate-900">{value}</p>
-            {subtitle && <p class="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
+            <p className="text-xs font-medium text-slate-500">{title}</p>
+            <p className="text-xl font-bold text-slate-900">{value}</p>
+            {subtitle && <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
           </div>
           <div className={`p-2.5 rounded-lg ${bg} ${color}`}>
-            <i data-lucide={icon} class="w-5 h-5"></i>
+            <i data-lucide={icon} className="w-5 h-5"></i>
           </div>
         </div>
       );
     }
 
     // ============================================================
-    // 📅 CALENDAR COMPONENT (แก้ไขแล้ว)
+    // 📅 CALENDAR COMPONENT (แก้ไขเสร็จสมบูรณ์)
     // ============================================================
     function CalendarComponent({ projects }) {
       const calendarRef = useRef(null);
-      const [isCalendarReady, setIsCalendarReady] = useState(false);
 
       useEffect(() => {
-        // ให้เวลา DOM โหลดเสร็จ
-        const timer = setTimeout(() => {
-          setIsCalendarReady(true);
-        }, 100);
-        return () => clearTimeout(timer);
-      }, []);
+        if (!calendarRef.current) return;
 
-      useEffect(() => {
-        if (!isCalendarReady || !projects.length) {
-          // ถ้ายังไม่มีโปรเจค ให้แสดงข้อความ
-          const calendarEl = document.getElementById('calendar');
-          if (calendarEl && !projects.length) {
-            calendarEl.innerHTML = `
-              <div class="flex flex-col items-center justify-center h-[400px] text-slate-400">
-                <p class="text-4xl mb-4">📭</p>
-                <p class="text-lg font-medium">ยังไม่มีโปรเจคในปฏิทิน</p>
-                <p class="text-sm">เพิ่มโปรเจคแรกของคุณเพื่อดูในปฏิทิน</p>
-              </div>
-            `;
-          }
-          return;
-        }
-
-        const calendarEl = document.getElementById('calendar');
-        if (!calendarEl) return;
-
-        // Cleanup existing calendar
-        if (window.calendarInstance) {
-          window.calendarInstance.destroy();
-          window.calendarInstance = null;
-        }
-
-        // สร้าง events จาก projects
+        // ดึง Events จาก projects
         const events = projects
           .filter(p => p.startDate && p.endDate)
-          .map(p => ({
-            id: p.id,
-            title: p.name,
-            start: new Date(p.startDate).toISOString().split('T')[0],
-            end: new Date(p.endDate).toISOString().split('T')[0],
-            backgroundColor: p.status === 'completed' ? '#3b82f6' : 
-                            p.status === 'active' ? '#10b981' : 
-                            p.status === 'paused' ? '#f59e0b' : 
-                            p.status === 'cancelled' ? '#ef4444' : '#94a3b8',
-            borderColor: p.status === 'completed' ? '#3b82f6' : 
-                         p.status === 'active' ? '#10b981' : 
-                         p.status === 'paused' ? '#f59e0b' : 
-                         p.status === 'cancelled' ? '#ef4444' : '#94a3b8',
-            textColor: '#ffffff',
-            extendedProps: {
-              category: p.category,
-              status: p.status,
-              budget: p.budget,
-              spent: p.spent,
-              description: p.description,
-              leads: p.leads,
-              conversions: p.conversions,
-              team: p.team,
-              platform: p.platform,
-              target: p.target
-            }
-          }));
+          .map(p => {
+            const startD = parseDate(p.startDate);
+            const endD = parseDate(p.endDate);
+            
+            // FullCalendar แบบ All-day event วันสิ้นสุดจะนับแบบ exclusive จึงควรบวกเพิ่ม 1 วัน
+            const adjustedEnd = new Date(endD);
+            adjustedEnd.setDate(adjustedEnd.getDate() + 1);
 
-        try {
-          const calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            locale: 'th',
-            headerToolbar: {
-              left: 'prev,next today',
-              center: 'title',
-              right: 'dayGridMonth,dayGridWeek'
-            },
-            events: events,
-            eventClick: function(info) {
-              const p = projects.find(proj => proj.id === info.event.id);
-              if (p) {
-                const msg = `📋 ${p.name}\n\n` +
-                  `📅 ${new Date(p.startDate).toLocaleDateString('th-TH')} - ${new Date(p.endDate).toLocaleDateString('th-TH')}\n` +
-                  `📂 ${p.category || 'ไม่ระบุ'}\n` +
-                  `📊 ${p.status || 'planning'}\n` +
-                  `💰 งบประมาณ: ${p.budget?.toLocaleString() || 0} บาท\n` +
-                  `💸 ใช้ไป: ${p.spent?.toLocaleString() || 0} บาท\n` +
-                  `👥 Leads: ${p.leads || 0}\n` +
-                  `✅ Conversions: ${p.conversions || 0}\n` +
-                  `👤 ทีม: ${p.team || 'ไม่ระบุ'}\n` +
-                  `📱 แพลตฟอร์ม: ${p.platform || 'ไม่ระบุ'}\n` +
-                  `🎯 กลุ่มเป้าหมาย: ${p.target || 'ไม่ระบุ'}\n\n` +
-                  `📝 ${p.description || 'ไม่มีรายละเอียด'}`;
-                alert(msg);
-              }
-            },
-            eventDidMount: function(info) {
-              info.el.title = info.event.title;
-            },
-            loading: function(isLoading) {
-              if (isLoading) {
-                calendarEl.style.opacity = '0.5';
-              } else {
-                calendarEl.style.opacity = '1';
-              }
-            }
+            return {
+              id: p.id,
+              title: p.name,
+              start: startD.toISOString().split('T')[0],
+              end: adjustedEnd.toISOString().split('T')[0],
+              backgroundColor: p.status === 'completed' ? '#3b82f6' : 
+                              p.status === 'active' ? '#10b981' : 
+                              p.status === 'paused' ? '#f59e0b' : 
+                              p.status === 'cancelled' ? '#ef4444' : '#94a3b8',
+              borderColor: 'transparent',
+              textColor: '#ffffff'
+            };
           });
 
-          calendar.render();
-          window.calendarInstance = calendar;
-          console.log('✅ Calendar rendered successfully with', events.length, 'events');
+        const calendar = new FullCalendar.Calendar(calendarRef.current, {
+          initialView: 'dayGridMonth',
+          locale: 'th',
+          headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,dayGridWeek'
+          },
+          events: events,
+          eventClick: function(info) {
+            const p = projects.find(proj => proj.id === info.event.id);
+            if (p) {
+              const startStr = parseDate(p.startDate)?.toLocaleDateString('th-TH') || '-';
+              const endStr = parseDate(p.endDate)?.toLocaleDateString('th-TH') || '-';
+              alert(
+                `📋 ${p.name}\n\n` +
+                `📅 ${startStr} - ${endStr}\n` +
+                `📂 หมวดหมู่: ${p.category || 'ไม่ระบุ'}\n` +
+                `📊 สถานะ: ${p.status || 'planning'}\n` +
+                `💰 งบประมาณ: ${p.budget?.toLocaleString() || 0} บาท\n` +
+                `💸 ใช้ไป: ${p.spent?.toLocaleString() || 0} บาท\n\n` +
+                `📝 ${p.description || 'ไม่มีรายละเอียด'}`
+              );
+            }
+          }
+        });
 
-        } catch (error) {
-          console.error('❌ Calendar error:', error);
-          calendarEl.innerHTML = `
-            <div class="flex flex-col items-center justify-center h-[400px] text-red-400">
-              <p class="text-4xl mb-4">⚠️</p>
-              <p class="text-lg font-medium">เกิดข้อผิดพลาดในการโหลดปฏิทิน</p>
-              <p class="text-sm">กรุณารีเฟรชหน้าเว็บ</p>
-            </div>
-          `;
-        }
+        calendar.render();
 
         return () => {
-          if (window.calendarInstance) {
-            window.calendarInstance.destroy();
-            window.calendarInstance = null;
-          }
+          calendar.destroy();
         };
-      }, [projects, isCalendarReady]);
-
-      // ถ้ายังไม่มีโปรเจค ให้แสดงข้อความ
-      if (!projects || projects.length === 0) {
-        return (
-          <div className="flex flex-col items-center justify-center h-[400px] bg-slate-50 rounded-xl border-2 border-dashed border-slate-200">
-            <p className="text-5xl mb-4">📅</p>
-            <p className="text-lg font-medium text-slate-600">ยังไม่มีกิจกรรมในปฏิทิน</p>
-            <p className="text-sm text-slate-400 mt-1">เพิ่มโปรเจคที่มีช่วงวันที่เพื่อแสดงในปฏิทิน</p>
-            <button 
-              onClick={() => document.querySelector('[data-add-project]')?.click()}
-              className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition"
-            >
-              + เพิ่มโปรเจค
-            </button>
-          </div>
-        );
-      }
+      }, [projects]);
 
       return (
         <div>
-          <div id="calendar" ref={calendarRef} className="min-h-[600px]"></div>
+          <div ref={calendarRef} className="min-h-[600px]"></div>
           <div className="mt-4 flex flex-wrap gap-4 justify-center text-xs text-slate-500 border-t pt-4">
             <span><span className="inline-block w-3 h-3 rounded-full bg-emerald-500 mr-1"></span> Active</span>
             <span><span className="inline-block w-3 h-3 rounded-full bg-blue-500 mr-1"></span> Completed</span>
@@ -360,19 +270,9 @@
       const [filterStatus, setFilterStatus] = useState('all');
 
       const [formData, setFormData] = useState({
-        name: '',
-        description: '',
-        category: 'social',
-        budget: '',
-        spent: '',
-        leads: '',
-        conversions: '',
-        status: 'planning',
-        startDate: '',
-        endDate: '',
-        team: '',
-        platform: '',
-        target: ''
+        name: '', description: '', category: 'social', budget: '', spent: '',
+        leads: '', conversions: '', status: 'planning', startDate: '', endDate: '',
+        team: '', platform: '', target: ''
       });
 
       const categories = [
@@ -401,19 +301,9 @@
 
       const resetForm = () => {
         setFormData({
-          name: '',
-          description: '',
-          category: 'social',
-          budget: '',
-          spent: '',
-          leads: '',
-          conversions: '',
-          status: 'planning',
-          startDate: '',
-          endDate: '',
-          team: '',
-          platform: '',
-          target: ''
+          name: '', description: '', category: 'social', budget: '', spent: '',
+          leads: '', conversions: '', status: 'planning', startDate: '', endDate: '',
+          team: '', platform: '', target: ''
         });
         setEditingProject(null);
       };
@@ -424,17 +314,14 @@
           setLoading(false);
           setTimeout(() => lucide.createIcons(), 100);
         });
-
-        analytics.logEvent('dashboard_view', {
-          timestamp: new Date().toISOString()
-        });
-
         return () => unsubscribe();
       }, []);
 
       const openModal = (project = null) => {
         if (project) {
           setEditingProject(project);
+          const sDate = parseDate(project.startDate);
+          const eDate = parseDate(project.endDate);
           setFormData({
             name: project.name || '',
             description: project.description || '',
@@ -444,8 +331,8 @@
             leads: project.leads || '',
             conversions: project.conversions || '',
             status: project.status || 'planning',
-            startDate: project.startDate ? new Date(project.startDate).toISOString().split('T')[0] : '',
-            endDate: project.endDate ? new Date(project.endDate).toISOString().split('T')[0] : '',
+            startDate: sDate ? sDate.toISOString().split('T')[0] : '',
+            endDate: eDate ? eDate.toISOString().split('T')[0] : '',
             team: project.team || '',
             platform: project.platform || '',
             target: project.target || ''
@@ -454,10 +341,6 @@
           resetForm();
         }
         setShowModal(true);
-        
-        analytics.logEvent('modal_opened', {
-          mode: project ? 'edit' : 'create'
-        });
       };
 
       const closeModal = () => {
@@ -564,83 +447,53 @@
       };
 
       const formatDate = (date) => {
-        if (!date) return '-';
-        const d = new Date(date);
+        const d = parseDate(date);
+        if (!d) return '-';
         return d.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
-      };
-
-      const getDaysRemaining = (endDate) => {
-        if (!endDate) return null;
-        const now = new Date();
-        const end = new Date(endDate);
-        const diff = Math.ceil((end - now) / (1000 * 60 * 60 * 24));
-        if (diff < 0) return '⏰ หมดอายุแล้ว';
-        return `⏳ ${diff} วัน`;
       };
 
       if (loading) {
         return (
-          <div class="min-h-screen flex items-center justify-center bg-slate-50">
-            <div class="text-center">
-              <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent"></div>
-              <p class="mt-4 text-slate-500 font-medium">กำลังโหลดข้อมูล...</p>
-              <p class="text-xs text-slate-400 mt-1">🔥 Firebase: mkt-project-f818a</p>
+          <div className="min-h-screen flex items-center justify-center bg-slate-50">
+            <div className="text-center">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent"></div>
+              <p className="mt-4 text-slate-500 font-medium">กำลังโหลดข้อมูล...</p>
             </div>
           </div>
         );
       }
 
       return (
-        <div class="min-h-screen bg-slate-50">
-          {/* Toast */}
+        <div className="min-h-screen bg-slate-50">
           {toast && (
-            <div class={`fixed top-4 right-4 z-[100] px-6 py-3 rounded-lg shadow-lg toast ${
+            <div className={`fixed top-4 right-4 z-[100] px-6 py-3 rounded-lg shadow-lg toast ${
               toast.type === 'error' ? 'bg-red-500 text-white' : 'bg-emerald-500 text-white'
             }`}>
               {toast.message}
             </div>
           )}
 
-          {/* Header */}
-          <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
-            <div class="max-w-7xl mx-auto px-6 py-4">
-              <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+            <div className="max-w-7xl mx-auto px-6 py-4">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                  <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                  <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
                     <span>📊</span> Marketing Project Management
                   </h1>
-                  <p class="text-sm text-slate-500 flex items-center gap-2">
-                    จัดการโปรเจคการตลาดทั้งหมดในที่เดียว
-                    <span class="text-xs bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full flex items-center gap-1">
-                      <span class="relative flex h-1.5 w-1.5">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
-                      </span>
-                      Live
-                    </span>
-                  </p>
                 </div>
-                <div class="flex items-center gap-3">
-                  <span class="hidden md:flex text-xs text-slate-400 bg-slate-100 px-3 py-1 rounded-full">
-                    📊 {projects.length} โปรเจค
-                  </span>
-                  <button
-                    data-add-project
-                    onClick={() => openModal()}
-                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2 shadow-sm"
-                  >
-                    <i data-lucide="plus" class="w-4 h-4"></i>
-                    เพิ่มโปรเจค
-                  </button>
-                </div>
+                <button
+                  onClick={() => openModal()}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2 shadow-sm"
+                >
+                  <i data-lucide="plus" className="w-4 h-4"></i>
+                  เพิ่มโปรเจค
+                </button>
               </div>
             </div>
           </header>
 
-          {/* Main Content */}
-          <div class="max-w-7xl mx-auto px-6 py-6">
-            {/* Tabs */}
-            <div class="flex gap-2 mb-6 border-b border-slate-200 pb-2 overflow-x-auto">
+          <div className="max-w-7xl mx-auto px-6 py-6">
+            <div className="flex gap-2 mb-6 border-b border-slate-200 pb-2 overflow-x-auto">
               {[
                 { id: 'dashboard', label: '📈 Dashboard' },
                 { id: 'projects', label: '📋 โปรเจคทั้งหมด' },
@@ -648,397 +501,67 @@
               ].map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => {
-                    setActiveTab(tab.id);
-                    analytics.logEvent('tab_switch', { tab: tab.id });
-                  }}
+                  onClick={() => setActiveTab(tab.id)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap ${
-                    activeTab === tab.id 
-                      ? 'bg-indigo-100 text-indigo-700' 
-                      : 'text-slate-500 hover:bg-slate-100'
+                    activeTab === tab.id ? 'bg-indigo-100 text-indigo-700' : 'text-slate-500 hover:bg-slate-100'
                   }`}
                 >
                   {tab.label}
                 </button>
               ))}
-              <span class="ml-auto text-xs text-slate-400 flex items-center">
-                {projects.length} รายการ
-              </span>
             </div>
 
-            {/* Dashboard Tab */}
             {activeTab === 'dashboard' && (
-              <div class="fade-in">
-                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
+              <div className="fade-in">
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
                   <StatCard title="ทั้งหมด" value={metrics.total} icon="folder" color="text-indigo-600" bg="bg-indigo-50" />
                   <StatCard title="กำลังดำเนินการ" value={metrics.active} icon="play" color="text-emerald-600" bg="bg-emerald-50" />
                   <StatCard title="เสร็จสิ้น" value={metrics.completed} icon="check-circle" color="text-blue-600" bg="bg-blue-50" />
                   <StatCard title="งบประมาณรวม" value={'฿' + metrics.totalBudget.toLocaleString()} icon="wallet" color="text-amber-600" bg="bg-amber-50" />
                   <StatCard title="ใช้จ่ายแล้ว" value={'฿' + metrics.totalSpent.toLocaleString()} icon="credit-card" color="text-rose-600" bg="bg-rose-50" />
-                  <StatCard 
-                    title="Conversion Rate" 
-                    value={metrics.conversionRate + '%'} 
-                    icon="target" 
-                    color="text-purple-600" 
-                    bg="bg-purple-50"
-                    subtitle={`${metrics.totalConversions} / ${metrics.totalLeads} Leads`}
-                  />
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                  <div class="bg-white rounded-xl border border-slate-200 p-6">
-                    <div class="flex justify-between items-center mb-2">
-                      <span class="text-sm font-medium text-slate-700">📊 การใช้จ่ายงบประมาณ</span>
-                      <span class="text-sm font-bold text-slate-900">{metrics.spentPercentage}%</span>
-                    </div>
-                    <div class="w-full bg-slate-200 rounded-full h-3">
-                      <div 
-                        class={`h-3 rounded-full progress-bar ${parseInt(metrics.spentPercentage) > 90 ? 'bg-rose-500' : parseInt(metrics.spentPercentage) > 70 ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                        style={{ width: metrics.spentPercentage + '%' }}
-                      ></div>
-                    </div>
-                    <div class="flex justify-between text-xs text-slate-400 mt-1">
-                      <span>ใช้ไป: ฿{metrics.totalSpent.toLocaleString()}</span>
-                      <span>รวม: ฿{metrics.totalBudget.toLocaleString()}</span>
-                    </div>
-                  </div>
-
-                  <div class="bg-white rounded-xl border border-slate-200 p-6">
-                    <div class="flex justify-between items-center mb-2">
-                      <span class="text-sm font-medium text-slate-700">🎯 สถานะโปรเจค</span>
-                    </div>
-                    <div class="grid grid-cols-3 gap-2">
-                      {statuses.filter(s => ['active', 'completed', 'planning'].includes(s.value)).map(s => {
-                        const count = projects.filter(p => p.status === s.value).length;
-                        return (
-                          <div key={s.value} class="bg-slate-50 rounded-lg p-3 text-center">
-                            <div class="text-2xl font-bold text-slate-700">{count}</div>
-                            <div class="text-xs text-slate-500">{s.label.replace(/[📋🟢✅]/g, '').trim()}</div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-                  <div class="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                    <h3 class="font-bold text-slate-800">📋 โปรเจคล่าสุด</h3>
-                    <button onClick={() => setActiveTab('projects')} class="text-sm text-indigo-600 hover:text-indigo-800">
-                      ดูทั้งหมด →
-                    </button>
-                  </div>
-                  <div class="divide-y divide-slate-100">
-                    {projects.slice(0, 5).map(p => (
-                      <div key={p.id} class="p-4 hover:bg-slate-50 transition flex items-center justify-between">
-                        <div class="flex items-center gap-3 min-w-0">
-                          <span class="text-2xl flex-shrink-0">{getCategoryIcon(p.category)}</span>
-                          <div class="min-w-0">
-                            <p class="font-semibold text-slate-900 truncate">{p.name}</p>
-                            <p class="text-xs text-slate-500">{formatDate(p.startDate)} - {formatDate(p.endDate)}</p>
-                          </div>
-                        </div>
-                        <div class="flex items-center gap-3 flex-shrink-0">
-                          {getStatusBadge(p.status)}
-                          <span class="text-sm font-medium text-slate-700">฿{(p.spent || 0).toLocaleString()}</span>
-                        </div>
-                      </div>
-                    ))}
-                    {projects.length === 0 && (
-                      <div class="p-8 text-center text-slate-400">
-                        <p class="text-4xl mb-2">📭</p>
-                        <p>ยังไม่มีโปรเจค</p>
-                        <button onClick={() => openModal()} class="mt-2 text-indigo-600 hover:text-indigo-800 text-sm font-medium">
-                          + เพิ่มโปรเจคแรก
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                  <StatCard title="Conversion Rate" value={metrics.conversionRate + '%'} icon="target" color="text-purple-600" bg="bg-purple-50" />
                 </div>
               </div>
             )}
 
-            {/* Projects Tab */}
             {activeTab === 'projects' && (
-              <div class="fade-in">
-                <div class="bg-white rounded-xl border border-slate-200 p-4 mb-4">
-                  <div class="flex flex-wrap gap-3 items-center">
-                    <input 
-                      type="text" 
-                      placeholder="🔍 ค้นหาโปรเจค..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      class="flex-1 min-w-[180px] px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                    />
-                    <select 
-                      value={filterCategory}
-                      onChange={(e) => setFilterCategory(e.target.value)}
-                      class="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
-                    >
-                      <option value="all">📂 ทั้งหมด</option>
-                      {categories.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-                    </select>
-                    <select 
-                      value={filterStatus}
-                      onChange={(e) => setFilterStatus(e.target.value)}
-                      class="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
-                    >
-                      <option value="all">📊 สถานะทั้งหมด</option>
-                      {statuses.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-                    </select>
-                    <span class="text-xs text-slate-400 ml-auto">
-                      {filteredProjects.length} รายการ
-                    </span>
-                  </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {filteredProjects.map(p => (
-                    <div key={p.id} class="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition p-4">
-                      <div class="flex justify-between items-start mb-3">
-                        <div class="flex items-center gap-2 min-w-0">
-                          <span class="text-2xl flex-shrink-0">{getCategoryIcon(p.category)}</span>
-                          <h4 class="font-bold text-slate-900 truncate">{p.name}</h4>
-                        </div>
-                        {getStatusBadge(p.status)}
-                      </div>
-                      
-                      <p class="text-sm text-slate-500 line-clamp-2 mb-3 min-h-[40px]">
-                        {p.description || 'ไม่มีรายละเอียด'}
-                      </p>
-                      
-                      <div class="grid grid-cols-2 gap-2 text-sm mb-3">
-                        <div><span class="text-slate-500">งบประมาณ:</span> <span class="font-medium">฿{(p.budget || 0).toLocaleString()}</span></div>
-                        <div><span class="text-slate-500">ใช้ไป:</span> <span class="font-medium">฿{(p.spent || 0).toLocaleString()}</span></div>
-                        <div><span class="text-slate-500">Leads:</span> <span class="font-medium text-blue-600">{p.leads || 0}</span></div>
-                        <div><span class="text-slate-500">Conversions:</span> <span class="font-medium text-emerald-600">{p.conversions || 0}</span></div>
-                      </div>
-
-                      <div class="text-xs text-slate-400 mb-3">
-                        📅 {formatDate(p.startDate)} - {formatDate(p.endDate)}
-                        {p.endDate && <span class="ml-2">{getDaysRemaining(p.endDate)}</span>}
-                      </div>
-
-                      <div class="flex gap-2">
-                        <button 
-                          onClick={() => openModal(p)}
-                          class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg text-sm font-medium transition"
-                        >
-                          ✏️ แก้ไข
-                        </button>
-                        <button 
-                          onClick={() => deleteProject(p.id)}
-                          class="flex-1 bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg text-sm font-medium transition"
-                        >
-                          🗑️ ลบ
-                        </button>
-                      </div>
+              <div className="fade-in grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                {filteredProjects.map(p => (
+                  <div key={p.id} className="bg-white rounded-xl border border-slate-200 p-4">
+                    <div className="flex justify-between items-start mb-3">
+                      <h4 className="font-bold text-slate-900">{p.name}</h4>
+                      {getStatusBadge(p.status)}
                     </div>
-                  ))}
-                </div>
-
-                {filteredProjects.length === 0 && (
-                  <div class="bg-white rounded-xl border border-slate-200 p-12 text-center text-slate-400">
-                    <p class="text-4xl mb-2">📭</p>
-                    <p>{searchTerm || filterCategory !== 'all' || filterStatus !== 'all' ? 'ไม่พบโปรเจคที่ค้นหา' : 'ยังไม่มีโปรเจคในระบบ'}</p>
-                    {(searchTerm || filterCategory !== 'all' || filterStatus !== 'all') ? (
-                      <button onClick={() => { setSearchTerm(''); setFilterCategory('all'); setFilterStatus('all'); }} class="mt-2 text-indigo-600 hover:text-indigo-800 text-sm font-medium">
-                        ล้างตัวกรอง
-                      </button>
-                    ) : (
-                      <button onClick={() => openModal()} class="mt-2 text-indigo-600 hover:text-indigo-800 text-sm font-medium">
-                        + เพิ่มโปรเจคแรกของคุณ
-                      </button>
-                    )}
+                    <p className="text-xs text-slate-400 mb-3">📅 {formatDate(p.startDate)} - {formatDate(p.endDate)}</p>
+                    <div className="flex gap-2">
+                      <button onClick={() => openModal(p)} className="flex-1 bg-indigo-50 text-indigo-700 py-1 rounded text-sm">✏️ แก้ไข</button>
+                      <button onClick={() => deleteProject(p.id)} className="flex-1 bg-red-50 text-red-600 py-1 rounded text-sm">🗑️ ลบ</button>
+                    </div>
                   </div>
-                )}
+                ))}
               </div>
             )}
 
-            {/* Calendar Tab - ใช้ CalendarComponent ที่แก้ไขแล้ว */}
             {activeTab === 'calendar' && (
-              <div class="fade-in bg-white rounded-xl border border-slate-200 p-4">
+              <div className="fade-in bg-white rounded-xl border border-slate-200 p-4">
                 <CalendarComponent projects={projects} />
               </div>
             )}
           </div>
 
-          {/* ============================================================ */}
-          {/* 📝 MODAL - Add/Edit Project */}
-          {/* ============================================================ */}
           {showModal && (
-            <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 modal-backdrop" onClick={closeModal}>
-              <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                <div class="flex justify-between items-start mb-6">
-                  <h3 class="text-xl font-bold text-slate-900">
-                    {editingProject ? '✏️ แก้ไขโปรเจค' : '➕ เพิ่มโปรเจคใหม่'}
-                  </h3>
-                  <button onClick={closeModal} class="text-slate-400 hover:text-slate-600">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                  </button>
-                </div>
-
-                <div class="space-y-4">
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อโปรเจค *</label>
-                      <input 
-                        type="text" 
-                        value={formData.name}
-                        onChange={(e) => setFormData({...formData, name: e.target.value})}
-                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        placeholder="ชื่อโปรเจค"
-                      />
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-1">หมวดหมู่</label>
-                      <select 
-                        value={formData.category}
-                        onChange={(e) => setFormData({...formData, category: e.target.value})}
-                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      >
-                        {categories.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-                      </select>
-                    </div>
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 modal-backdrop" onClick={closeModal}>
+              <div className="bg-white rounded-2xl max-w-2xl w-full p-6" onClick={(e) => e.stopPropagation()}>
+                <h3 className="text-xl font-bold mb-4">{editingProject ? '✏️ แก้ไขโปรเจค' : '➕ เพิ่มโปรเจคใหม่'}</h3>
+                <div className="space-y-4">
+                  <input type="text" placeholder="ชื่อโปรเจค *" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full border p-2 rounded" />
+                  <div className="grid grid-cols-2 gap-4">
+                    <input type="date" value={formData.startDate} onChange={(e) => setFormData({...formData, startDate: e.target.value})} className="border p-2 rounded" />
+                    <input type="date" value={formData.endDate} onChange={(e) => setFormData({...formData, endDate: e.target.value})} className="border p-2 rounded" />
                   </div>
-
-                  <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">รายละเอียด</label>
-                    <textarea 
-                      value={formData.description}
-                      onChange={(e) => setFormData({...formData, description: e.target.value})}
-                      class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      rows="3"
-                      placeholder="รายละเอียดโปรเจค..."
-                    />
-                  </div>
-
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-1">งบประมาณ (บาท)</label>
-                      <input 
-                        type="number" 
-                        value={formData.budget}
-                        onChange={(e) => setFormData({...formData, budget: e.target.value})}
-                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        placeholder="100000"
-                      />
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-1">ใช้จ่ายไปแล้ว (บาท)</label>
-                      <input 
-                        type="number" 
-                        value={formData.spent}
-                        onChange={(e) => setFormData({...formData, spent: e.target.value})}
-                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        placeholder="50000"
-                      />
-                    </div>
-                  </div>
-
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-1">จำนวน Leads</label>
-                      <input 
-                        type="number" 
-                        value={formData.leads}
-                        onChange={(e) => setFormData({...formData, leads: e.target.value})}
-                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        placeholder="0"
-                      />
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-1">จำนวน Conversions</label>
-                      <input 
-                        type="number" 
-                        value={formData.conversions}
-                        onChange={(e) => setFormData({...formData, conversions: e.target.value})}
-                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        placeholder="0"
-                      />
-                    </div>
-                  </div>
-
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-1">วันที่เริ่มต้น *</label>
-                      <input 
-                        type="date" 
-                        value={formData.startDate}
-                        onChange={(e) => setFormData({...formData, startDate: e.target.value})}
-                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      />
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-1">วันที่สิ้นสุด *</label>
-                      <input 
-                        type="date" 
-                        value={formData.endDate}
-                        onChange={(e) => setFormData({...formData, endDate: e.target.value})}
-                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      />
-                    </div>
-                  </div>
-
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-1">สถานะ</label>
-                      <select 
-                        value={formData.status}
-                        onChange={(e) => setFormData({...formData, status: e.target.value})}
-                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      >
-                        {statuses.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-1">ทีมที่รับผิดชอบ</label>
-                      <input 
-                        type="text" 
-                        value={formData.team}
-                        onChange={(e) => setFormData({...formData, team: e.target.value})}
-                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        placeholder="ชื่อทีม或个人"
-                      />
-                    </div>
-                  </div>
-
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-1">แพลตฟอร์ม/ช่องทาง</label>
-                      <input 
-                        type="text" 
-                        value={formData.platform}
-                        onChange={(e) => setFormData({...formData, platform: e.target.value})}
-                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        placeholder="Facebook, Google, Email, etc."
-                      />
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-1">กลุ่มเป้าหมาย</label>
-                      <input 
-                        type="text" 
-                        value={formData.target}
-                        onChange={(e) => setFormData({...formData, target: e.target.value})}
-                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        placeholder="อายุ 25-35, ผู้หญิง, etc."
-                      />
-                    </div>
-                  </div>
-
-                  <div class="flex gap-3 pt-4 border-t border-slate-200">
-                    <button 
-                      onClick={saveProject}
-                      class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg font-semibold transition"
-                    >
-                      {editingProject ? '💾 บันทึกการแก้ไข' : '✅ สร้างโปรเจค'}
-                    </button>
-                    <button 
-                      onClick={closeModal}
-                      class="px-6 py-2.5 border border-slate-300 rounded-lg text-slate-600 hover:bg-slate-50 transition"
-                    >
-                      ยกเลิก
-                    </button>
+                  <div className="flex gap-3 pt-4">
+                    <button onClick={saveProject} className="flex-1 bg-indigo-600 text-white py-2 rounded">บันทึก</button>
+                    <button onClick={closeModal} className="px-4 border rounded">ยกเลิก</button>
                   </div>
                 </div>
               </div>
@@ -1048,9 +571,6 @@
       );
     }
 
-    // ============================================================
-    // 🚀 RENDER APP
-    // ============================================================
     ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   </script>
 </body>
