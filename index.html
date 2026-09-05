@@ -223,7 +223,13 @@
                 `📂 หมวดหมู่: ${p.category || 'ไม่ระบุ'}\n` +
                 `📊 สถานะ: ${p.status || 'planning'}\n` +
                 `💰 งบประมาณ: ${p.budget?.toLocaleString() || 0} บาท\n` +
-                `💸 ใช้ไป: ${p.spent?.toLocaleString() || 0} บาท\n\n` +
+                `💸 ใช้ไป: ${p.spent?.toLocaleString() || 0} บาท\n` +
+                `👥 ผู้เข้าชม: ${(p.visitors || 0).toLocaleString()} คน\n` +
+                `🎯 Leads: ${(p.leads || 0).toLocaleString()} คน\n` +
+                `🚗 ทดลองขับ: ${(p.testDrives || 0).toLocaleString()} คน\n` +
+                `📞 Follow-up: ${(p.followUps || 0).toLocaleString()} คน\n` +
+                `💰 ปิดการขาย: ${(p.conversions || 0).toLocaleString()} ราย\n` +
+                `📈 Conversion Rate: ${(Number(p.leads) || 0) > 0 ? (((Number(p.conversions) || 0) / (Number(p.leads) || 0)) * 100).toFixed(1) : '0.0'}%\n\n`
                 `📝 ${p.description || 'ไม่มีรายละเอียด'}`
               );
             }
@@ -278,7 +284,8 @@
 
       const [formData, setFormData] = useState({
         name: '', description: '', category: 'social', budget: '', spent: '',
-        leads: '', conversions: '', status: 'planning', startDate: '', endDate: '',
+        leads: '', conversions: '', visitors: '', testDrives: '', followUps: '',
+        salesUnits: '', salesValue: '', status: 'planning', startDate: '', endDate: '',
         team: '', platform: '', target: ''
       });
 
@@ -309,7 +316,8 @@
       const resetForm = () => {
         setFormData({
           name: '', description: '', category: 'social', budget: '', spent: '',
-          leads: '', conversions: '', status: 'planning', startDate: '', endDate: '',
+          leads: '', conversions: '', visitors: '', testDrives: '', followUps: '',
+          salesUnits: '', salesValue: '', status: 'planning', startDate: '', endDate: '',
           team: '', platform: '', target: ''
         });
         setEditingProject(null);
@@ -337,6 +345,11 @@
             spent: project.spent || '',
             leads: project.leads || '',
             conversions: project.conversions || '',
+            visitors: project.visitors || '',
+            testDrives: project.testDrives || '',
+            followUps: project.followUps || '',
+            salesUnits: project.salesUnits || '',
+            salesValue: project.salesValue || '',
             status: project.status || 'planning',
             startDate: sDate ? sDate.toISOString().split('T')[0] : '',
             endDate: eDate ? eDate.toISOString().split('T')[0] : '',
@@ -374,6 +387,11 @@
           spent: parseInt(formData.spent) || 0,
           leads: parseInt(formData.leads) || 0,
           conversions: parseInt(formData.conversions) || 0,
+          visitors: parseInt(formData.visitors) || 0,
+          testDrives: parseInt(formData.testDrives) || 0,
+          followUps: parseInt(formData.followUps) || 0,
+          salesUnits: parseInt(formData.salesUnits) || 0,
+          salesValue: parseFloat(formData.salesValue) || 0,
           status: formData.status,
           startDate: new Date(formData.startDate),
           endDate: new Date(formData.endDate),
@@ -431,10 +449,24 @@
         const totalSpent = projects.reduce((sum, p) => sum + (p.spent || 0), 0);
         const totalLeads = projects.reduce((sum, p) => sum + (p.leads || 0), 0);
         const totalConversions = projects.reduce((sum, p) => sum + (p.conversions || 0), 0);
+        const totalVisitors = projects.reduce((sum, p) => sum + (p.visitors || 0), 0);
+        const totalTestDrives = projects.reduce((sum, p) => sum + (p.testDrives || 0), 0);
+        const totalFollowUps = projects.reduce((sum, p) => sum + (p.followUps || 0), 0);
+        const totalSalesUnits = projects.reduce((sum, p) => sum + (p.salesUnits || 0), 0);
+        const totalSalesValue = projects.reduce((sum, p) => sum + (p.salesValue || 0), 0);
         const conversionRate = totalLeads > 0 ? ((totalConversions / totalLeads) * 100).toFixed(1) : 0;
+        const visitorToLeadRate = totalVisitors > 0 ? ((totalLeads / totalVisitors) * 100).toFixed(1) : 0;
         const spentPercentage = totalBudget > 0 ? ((totalSpent / totalBudget) * 100).toFixed(0) : 0;
-        return { total, active, completed, totalBudget, totalSpent, totalLeads, totalConversions, conversionRate, spentPercentage };
+        return { total, active, completed, totalBudget, totalSpent, totalLeads, totalConversions,
+          totalVisitors, totalTestDrives, totalFollowUps, totalSalesUnits, totalSalesValue,
+          conversionRate, visitorToLeadRate, spentPercentage };
       }, [projects]);
+
+      const getProjectConversionRate = (project) => {
+        const leads = Number(project?.leads) || 0;
+        const conversions = Number(project?.conversions) || 0;
+        return leads > 0 ? ((conversions / leads) * 100).toFixed(1) : '0.0';
+      };
 
       const getStatusBadge = (status) => {
         const statusMap = {
@@ -522,6 +554,11 @@
                   <StatCard title="งบประมาณรวม" value={'฿' + metrics.totalBudget.toLocaleString()} icon="wallet" color="text-amber-600" bg="bg-amber-50" />
                   <StatCard title="ใช้จ่ายแล้ว" value={'฿' + metrics.totalSpent.toLocaleString()} icon="credit-card" color="text-rose-600" bg="bg-rose-50" />
                   <StatCard title="Conversion Rate" value={metrics.conversionRate + '%'} icon="target" color="text-purple-600" bg="bg-purple-50" />
+                  <StatCard title="ผู้เข้าชมกิจกรรม" value={metrics.totalVisitors.toLocaleString()} icon="users" color="text-cyan-600" bg="bg-cyan-50" />
+                  <StatCard title="ลูกค้ามุ่งหวัง" value={metrics.totalLeads.toLocaleString()} icon="user-plus" color="text-violet-600" bg="bg-violet-50" />
+                  <StatCard title="ทดลองขับ" value={metrics.totalTestDrives.toLocaleString()} icon="car" color="text-sky-600" bg="bg-sky-50" />
+                  <StatCard title="Follow-up" value={metrics.totalFollowUps.toLocaleString()} icon="phone-call" color="text-orange-600" bg="bg-orange-50" />
+                  <StatCard title="ปิดการขาย" value={metrics.totalSalesUnits.toLocaleString()} icon="badge-check" color="text-green-600" bg="bg-green-50" />
                 </div>
               </div>
             )}
@@ -607,6 +644,57 @@
                     <div>
                       <label className="block text-xs font-semibold text-slate-600 mb-1">ใช้ไปแล้ว (บาท)</label>
                       <input type="number" placeholder="0" value={formData.spent} onChange={(e) => setFormData({...formData, spent: e.target.value})} className="w-full border border-slate-300 p-2 rounded-lg text-sm outline-none" />
+                    </div>
+                  </div>
+
+                  {/* 📊 Conversion Rate / Event Lead Tracking */}
+                  <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-4 space-y-3">
+                    <div>
+                      <h4 className="font-bold text-indigo-900">📊 Conversion Rate / เก็บข้อมูลลูกค้ามุ่งหวัง</h4>
+                      <p className="text-xs text-slate-500 mt-1">บันทึกผลจากผู้เข้าชมกิจกรรมจนถึงการปิดการขาย ระบบคำนวณ Conversion Rate อัตโนมัติ</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-600 mb-1">👥 ผู้เข้าชมกิจกรรม</label>
+                        <input type="number" min="0" placeholder="0" value={formData.visitors} onChange={(e) => setFormData({...formData, visitors: e.target.value})} className="w-full border border-slate-300 p-2 rounded-lg text-sm outline-none bg-white" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-600 mb-1">🎯 ลูกค้ามุ่งหวัง (Leads)</label>
+                        <input type="number" min="0" placeholder="0" value={formData.leads} onChange={(e) => setFormData({...formData, leads: e.target.value})} className="w-full border border-slate-300 p-2 rounded-lg text-sm outline-none bg-white" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-600 mb-1">🚗 ทดลองขับ</label>
+                        <input type="number" min="0" placeholder="0" value={formData.testDrives} onChange={(e) => setFormData({...formData, testDrives: e.target.value})} className="w-full border border-slate-300 p-2 rounded-lg text-sm outline-none bg-white" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-600 mb-1">📞 นัดหมาย Follow-up</label>
+                        <input type="number" min="0" placeholder="0" value={formData.followUps} onChange={(e) => setFormData({...formData, followUps: e.target.value})} className="w-full border border-slate-300 p-2 rounded-lg text-sm outline-none bg-white" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-600 mb-1">💰 ปิดการขาย (Conversions)</label>
+                        <input type="number" min="0" placeholder="0" value={formData.conversions} onChange={(e) => setFormData({...formData, conversions: e.target.value})} className="w-full border border-slate-300 p-2 rounded-lg text-sm outline-none bg-white" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-600 mb-1">🚘 จำนวนรถที่ขายได้</label>
+                        <input type="number" min="0" placeholder="0" value={formData.salesUnits} onChange={(e) => setFormData({...formData, salesUnits: e.target.value})} className="w-full border border-slate-300 p-2 rounded-lg text-sm outline-none bg-white" />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-600 mb-1">💵 มูลค่าการขาย (บาท)</label>
+                        <input type="number" min="0" step="0.01" placeholder="0" value={formData.salesValue} onChange={(e) => setFormData({...formData, salesValue: e.target.value})} className="w-full border border-slate-300 p-2 rounded-lg text-sm outline-none bg-white" />
+                      </div>
+                      <div className="rounded-lg bg-white border border-purple-200 p-3">
+                        <div className="text-xs text-slate-500">📈 Conversion Rate</div>
+                        <div className="text-2xl font-bold text-purple-700">
+                          {(Number(formData.leads) || 0) > 0
+                            ? (((Number(formData.conversions) || 0) / (Number(formData.leads) || 0)) * 100).toFixed(1)
+                            : '0.0'}%
+                        </div>
+                        <div className="text-[11px] text-slate-400">Conversions ÷ Leads × 100</div>
+                      </div>
                     </div>
                   </div>
 
