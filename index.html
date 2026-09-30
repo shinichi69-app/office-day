@@ -214,9 +214,9 @@
 
     // ============================================================
     // 🚗 AUTO FUNNEL COMPONENT (แผนผังธุรกิจรถยนต์)
+    // ✅ ปรับให้ % ทุกขั้นคำนวณเทียบกับ "ผู้สนใจ (Inquiries)" เป็นฐาน
     // ============================================================
     function AutoFunnel({ data }) {
-      // 4 ขั้นตอนหลักของธุรกิจรถยนต์
       const steps = [
         { label: 'ผู้สนใจ', sub: 'Inquiries', value: data.inquiries, icon: 'users', color: 'from-slate-600 to-slate-700', bg: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-200', iconBg: 'bg-slate-100' },
         { label: 'ทดลองขับ', sub: 'Test Drives', value: data.testDrives, icon: 'steering-wheel', color: 'from-blue-500 to-blue-600', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200', iconBg: 'bg-blue-100' },
@@ -224,11 +224,12 @@
         { label: 'ส่งมอบรถ', sub: 'Deliveries', value: data.deliveries, icon: 'key', color: 'from-emerald-500 to-emerald-600', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', iconBg: 'bg-emerald-100' }
       ];
 
+      // ✅ คำนวณ % ทุกขั้นเทียบกับ "ผู้สนใจ" เป็นฐาน
       const rates = [
         '100%',
         data.inquiries > 0 ? ((data.testDrives / data.inquiries) * 100).toFixed(1) + '%' : '0%',
-        data.testDrives > 0 ? ((data.bookings / data.testDrives) * 100).toFixed(1) + '%' : '0%',
-        data.bookings > 0 ? ((data.deliveries / data.bookings) * 100).toFixed(1) + '%' : '0%'
+        data.inquiries > 0 ? ((data.bookings / data.inquiries) * 100).toFixed(1) + '%' : '0%',
+        data.inquiries > 0 ? ((data.deliveries / data.inquiries) * 100).toFixed(2) + '%' : '0%'
       ];
 
       const overallRate = data.inquiries > 0 ? ((data.deliveries / data.inquiries) * 100).toFixed(2) + '%' : '0%';
@@ -241,7 +242,7 @@
                 <i data-lucide="funnel" className="w-5 h-5 text-blue-600"></i>
                 แผนผังการขายรถยนต์ (Automotive Sales Funnel)
               </h3>
-              <p className="text-sm text-slate-500 mt-1">ติดตามอัตราการแปลงจากผู้สนใจจนถึงการส่งมอบรถจริง</p>
+              <p className="text-sm text-slate-500 mt-1">อัตราการแปลงทุกขั้นตอนคำนวณเทียบกับ <span className="font-semibold text-slate-700">"ผู้สนใจ"</span> เป็นฐาน</p>
             </div>
             <div className="bg-blue-50 border border-blue-100 rounded-lg px-4 py-2 flex items-center gap-3">
               <span className="text-xs font-bold text-blue-700 uppercase tracking-wide">Overall Conversion</span>
@@ -265,11 +266,11 @@
                       </div>
                     </div>
                     <div className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                      {(step.value || 0).toLocaleString()} <span className="text-sm font-normal text-slate-500">คัน/คน</span>
+                      {(step.value || 0).toLocaleString()} <span className="text-sm font-normal text-slate-500">คน/คัน</span>
                     </div>
                     <div className="mt-3 pt-3 border-t border-slate-200/60">
                       <div className="flex justify-between items-center">
-                        <span className="text-[11px] font-medium text-slate-500">Conversion</span>
+                        <span className="text-[11px] font-medium text-slate-500">% ของผู้สนใจ</span>
                         <span className={`text-sm font-bold ${step.text}`}>{rates[idx]}</span>
                       </div>
                       <div className="w-full bg-slate-200/60 rounded-full h-1.5 mt-1.5 overflow-hidden">
@@ -316,7 +317,12 @@
             if (p) {
               const startStr = parseDate(p.startDate)?.toLocaleDateString('th-TH') || '-';
               const endStr = parseDate(p.endDate)?.toLocaleDateString('th-TH') || '-';
-              alert(`🚗 ${p.name}\n\n📅 ${startStr} - ${endStr}\n📂 หมวดหมู่: ${p.category || 'ไม่ระบุ'}\n📊 สถานะ: ${p.status || 'planning'}\n💰 งบประมาณ: ${(p.budget || 0).toLocaleString()} บาท\n💸 ใช้ไป: ${(p.spent || 0).toLocaleString()} บาท\n\n--- Automotive Funnel ---\n👥 ผู้สนใจ: ${(p.inquiries || 0).toLocaleString()}\n🚗 ทดลองขับ: ${(p.testDrives || 0).toLocaleString()}\n📝 จองรถ: ${(p.bookings || 0).toLocaleString()}\n🔑 ส่งมอบ: ${(p.deliveries || 0).toLocaleString()}\n\n📈 Conversion Rate: ${(p.inquiries || 0) > 0 ? (((p.deliveries || 0) / (p.inquiries || 0)) * 100).toFixed(2) : '0.00'}%\n\n📝 ${p.description || 'ไม่มีรายละเอียด'}`);
+              const inquiries = p.inquiries || 0;
+              const testDrives = p.testDrives || 0;
+              const bookings = p.bookings || 0;
+              const deliveries = p.deliveries || 0;
+              const pct = (v) => inquiries > 0 ? ((v / inquiries) * 100).toFixed(2) + '%' : '0.00%';
+              alert(`🚗 ${p.name}\n\n📅 ${startStr} - ${endStr}\n📂 หมวดหมู่: ${p.category || 'ไม่ระบุ'}\n📊 สถานะ: ${p.status || 'planning'}\n💰 งบประมาณ: ${(p.budget || 0).toLocaleString()} บาท\n💸 ใช้ไป: ${(p.spent || 0).toLocaleString()} บาท\n\n--- Automotive Funnel (เทียบกับผู้สนใจ) ---\n👥 ผู้สนใจ: ${inquiries.toLocaleString()} (100%)\n🚗 ทดลองขับ: ${testDrives.toLocaleString()} (${pct(testDrives)})\n📝 จองรถ: ${bookings.toLocaleString()} (${pct(bookings)})\n🔑 ส่งมอบ: ${deliveries.toLocaleString()} (${pct(deliveries)})\n\n📈 Overall Conversion: ${pct(deliveries)}\n\n📝 ${p.description || 'ไม่มีรายละเอียด'}`);
             }
           }
         });
@@ -359,7 +365,6 @@
         status: 'planning', startDate: '', endDate: '', team: '', platform: '', target: ''
       });
 
-      // หมวดหมู่เฉพาะทางธุรกิจรถยนต์
       const categories = [
         { value: 'digital', label: 'Digital Lead Gen', emoji: '📱' },
         { value: 'motorshow', label: 'Motor Show / Exhibition', emoji: '🏢' },
@@ -503,11 +508,12 @@
         const totalDeliveries = dashboardProjects.reduce((sum, p) => sum + (p.deliveries || 0), 0);
         const totalFollowUps = dashboardProjects.reduce((sum, p) => sum + (p.followUps || 0), 0);
         
+        // ✅ คำนวณ % ทุกขั้นเทียบกับ "ผู้สนใจ" เป็นฐาน
         const testDriveRate = totalInquiries > 0 ? ((totalTestDrives / totalInquiries) * 100).toFixed(1) : 0;
-        const bookingRate = totalTestDrives > 0 ? ((totalBookings / totalTestDrives) * 100).toFixed(1) : 0;
-        const deliveryRate = totalBookings > 0 ? ((totalDeliveries / totalBookings) * 100).toFixed(1) : 0;
+        const bookingRate = totalInquiries > 0 ? ((totalBookings / totalInquiries) * 100).toFixed(1) : 0;
+        const deliveryRate = totalInquiries > 0 ? ((totalDeliveries / totalInquiries) * 100).toFixed(2) : 0;
         const overallConversion = totalInquiries > 0 ? ((totalDeliveries / totalInquiries) * 100).toFixed(2) : 0;
-        const cpl = totalInquiries > 0 ? (totalSpent / totalInquiries).toFixed(0) : 0; // Cost Per Lead
+        const cpl = totalInquiries > 0 ? (totalSpent / totalInquiries).toFixed(0) : 0;
         
         return { total, active, completed, totalBudget, totalSpent, totalInquiries, totalTestDrives, totalBookings, totalDeliveries, totalFollowUps, testDriveRate, bookingRate, deliveryRate, overallConversion, cpl };
       }, [dashboardProjects]);
@@ -673,6 +679,7 @@
                         </thead>
                         <tbody>
                           {categoryBreakdown.map((cat) => {
+                            // ✅ คำนวณ Conversion เทียบกับ "ผู้สนใจ" เป็นฐาน
                             const conv = cat.totalInquiries > 0 ? ((cat.totalDeliveries / cat.totalInquiries) * 100).toFixed(2) : '0.00';
                             const spentPercent = cat.totalBudget > 0 ? ((cat.totalSpent / cat.totalBudget) * 100).toFixed(0) : 0;
                             return (
@@ -751,9 +758,11 @@
                     </div>
                   ) : (
                     filteredProjects.map(p => {
-                      const testDriveRate = (p.inquiries || 0) > 0 ? (((p.testDrives || 0) / (p.inquiries || 0)) * 100).toFixed(0) : 0;
-                      const bookingRate = (p.testDrives || 0) > 0 ? (((p.bookings || 0) / (p.testDrives || 0)) * 100).toFixed(0) : 0;
-                      const deliveryRate = (p.bookings || 0) > 0 ? (((p.deliveries || 0) / (p.bookings || 0)) * 100).toFixed(0) : 0;
+                      // ✅ คำนวณ % ทุกขั้นเทียบกับ "ผู้สนใจ" เป็นฐาน
+                      const inquiries = p.inquiries || 0;
+                      const testDriveRate = inquiries > 0 ? (((p.testDrives || 0) / inquiries) * 100).toFixed(0) : 0;
+                      const bookingRate = inquiries > 0 ? (((p.bookings || 0) / inquiries) * 100).toFixed(0) : 0;
+                      const deliveryRate = inquiries > 0 ? (((p.deliveries || 0) / inquiries) * 100).toFixed(0) : 0;
                       const spentPercent = (p.budget || 0) > 0 ? (((p.spent || 0) / (p.budget || 0)) * 100).toFixed(0) : 0;
 
                       return (
@@ -770,8 +779,14 @@
                             {formatDate(p.startDate)} - {formatDate(p.endDate)}
                           </p>
 
+                          {/* ✅ แสดง % เทียบกับ "ผู้สนใจ" */}
                           <div className="grid grid-cols-4 gap-2 mb-4 p-3 bg-slate-50 rounded-lg border border-slate-100">
                             <div className="text-center">
+                              <p className="text-[10px] text-slate-500 font-semibold uppercase">ผู้สนใจ</p>
+                              <p className="text-sm font-bold text-slate-700">{inquiries.toLocaleString()}</p>
+                              <p className="text-[9px] text-slate-500 font-medium">100%</p>
+                            </div>
+                            <div className="text-center border-l border-slate-200">
                               <p className="text-[10px] text-slate-500 font-semibold uppercase">ทดลองขับ</p>
                               <p className="text-sm font-bold text-blue-700">{(p.testDrives || 0).toLocaleString()}</p>
                               <p className="text-[9px] text-blue-600 font-medium">{testDriveRate}%</p>
@@ -785,10 +800,6 @@
                               <p className="text-[10px] text-slate-500 font-semibold uppercase">ส่งมอบ</p>
                               <p className="text-sm font-bold text-emerald-700">{(p.deliveries || 0).toLocaleString()}</p>
                               <p className="text-[9px] text-emerald-600 font-medium">{deliveryRate}%</p>
-                            </div>
-                            <div className="text-center border-l border-slate-200">
-                              <p className="text-[10px] text-slate-500 font-semibold uppercase">Follow-up</p>
-                              <p className="text-sm font-bold text-orange-700">{(p.followUps || 0).toLocaleString()}</p>
                             </div>
                           </div>
 
@@ -889,31 +900,44 @@
                       <h4 className="font-bold text-blue-900 flex items-center gap-2 text-sm uppercase tracking-wide">
                         <i data-lucide="target" className="w-4 h-4"></i> ข้อมูล Automotive Sales Funnel
                       </h4>
-                      <p className="text-xs text-slate-500 mt-1">บันทึกผลตั้งแต่ผู้สนใจจนถึงการส่งมอบรถ ระบบจะคำนวณ Conversion Rate ให้อัตโนมัติ</p>
+                      <p className="text-xs text-slate-500 mt-1">ทุกขั้นตอนคำนวณ % เทียบกับ <span className="font-semibold text-slate-700">"ผู้สนใจ"</span> เป็นฐาน</p>
                     </div>
 
-                    {/* Funnel Preview */}
-                    <div className="bg-white rounded-lg p-4 border border-blue-200 shadow-sm">
-                      <p className="text-xs text-slate-500 mb-3 font-bold uppercase tracking-wide">📊 Funnel Preview</p>
-                      <div className="grid grid-cols-4 gap-2 text-center">
-                        <div className="p-2 rounded-lg bg-slate-50 border border-slate-200">
-                          <p className="text-[10px] text-slate-700 font-bold uppercase">ผู้สนใจ</p>
-                          <p className="text-lg font-extrabold text-slate-900">{parseInt(formData.inquiries) || 0}</p>
+                    {/* Funnel Preview - แสดง % เทียบกับ "ผู้สนใจ" */}
+                    {(() => {
+                      const inq = parseInt(formData.inquiries) || 0;
+                      const td = parseInt(formData.testDrives) || 0;
+                      const bk = parseInt(formData.bookings) || 0;
+                      const dl = parseInt(formData.deliveries) || 0;
+                      const pct = (v) => inq > 0 ? ((v / inq) * 100).toFixed(1) + '%' : '0.0%';
+                      return (
+                        <div className="bg-white rounded-lg p-4 border border-blue-200 shadow-sm">
+                          <p className="text-xs text-slate-500 mb-3 font-bold uppercase tracking-wide">📊 Funnel Preview (% เทียบกับผู้สนใจ)</p>
+                          <div className="grid grid-cols-4 gap-2 text-center">
+                            <div className="p-2 rounded-lg bg-slate-50 border border-slate-200">
+                              <p className="text-[10px] text-slate-700 font-bold uppercase">ผู้สนใจ</p>
+                              <p className="text-lg font-extrabold text-slate-900">{inq}</p>
+                              <p className="text-[10px] text-slate-500 font-semibold">100%</p>
+                            </div>
+                            <div className="p-2 rounded-lg bg-blue-50 border border-blue-200">
+                              <p className="text-[10px] text-blue-700 font-bold uppercase">ทดลองขับ</p>
+                              <p className="text-lg font-extrabold text-slate-900">{td}</p>
+                              <p className="text-[10px] text-blue-600 font-semibold">{pct(td)}</p>
+                            </div>
+                            <div className="p-2 rounded-lg bg-amber-50 border border-amber-200">
+                              <p className="text-[10px] text-amber-700 font-bold uppercase">จอง</p>
+                              <p className="text-lg font-extrabold text-slate-900">{bk}</p>
+                              <p className="text-[10px] text-amber-600 font-semibold">{pct(bk)}</p>
+                            </div>
+                            <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-200">
+                              <p className="text-[10px] text-emerald-700 font-bold uppercase">ส่งมอบ</p>
+                              <p className="text-lg font-extrabold text-slate-900">{dl}</p>
+                              <p className="text-[10px] text-emerald-600 font-semibold">{pct(dl)}</p>
+                            </div>
+                          </div>
                         </div>
-                        <div className="p-2 rounded-lg bg-blue-50 border border-blue-200">
-                          <p className="text-[10px] text-blue-700 font-bold uppercase">ทดลองขับ</p>
-                          <p className="text-lg font-extrabold text-slate-900">{parseInt(formData.testDrives) || 0}</p>
-                        </div>
-                        <div className="p-2 rounded-lg bg-amber-50 border border-amber-200">
-                          <p className="text-[10px] text-amber-700 font-bold uppercase">จอง</p>
-                          <p className="text-lg font-extrabold text-slate-900">{parseInt(formData.bookings) || 0}</p>
-                        </div>
-                        <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-200">
-                          <p className="text-[10px] text-emerald-700 font-bold uppercase">ส่งมอบ</p>
-                          <p className="text-lg font-extrabold text-slate-900">{parseInt(formData.deliveries) || 0}</p>
-                        </div>
-                      </div>
-                    </div>
+                      );
+                    })()}
 
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       <div>
