@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>[ MARKETING://ROOT ] - Hacker Dashboard</title>
+  <title>Marketing Manager // Terminal</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -20,512 +20,322 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --hacker-green: #00ff41;
-      --hacker-green-dim: #00cc33;
-      --hacker-green-dark: #00802080;
-      --hacker-bg: #000814;
-      --hacker-bg-panel: #001a0d;
-      --hacker-amber: #ffb000;
-      --hacker-red: #ff0040;
-      --hacker-cyan: #00d9ff;
+      --bg: #0a0a0a;
+      --surface: #121212;
+      --surface-2: #1a1a1a;
+      --border: #262626;
+      --border-light: #333;
+      --text: #ffffff;
+      --text-dim: #999;
+      --text-faint: #666;
+      --accent: #ffffff;
+      --success: #4ade80;
+      --warning: #fbbf24;
+      --danger: #ef4444;
     }
 
     * { box-sizing: border-box; }
 
-    body {
-      font-family: 'Share Tech Mono', 'Fira Code', monospace;
-      background: var(--hacker-bg);
-      color: var(--hacker-green);
-      overflow-x: hidden;
-      position: relative;
+    html, body {
+      font-family: 'JetBrains Mono', 'SF Mono', Monaco, monospace;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.5;
       min-height: 100vh;
-      text-shadow: 0 0 2px rgba(0, 255, 65, 0.5);
     }
 
-    /* Matrix Rain Canvas */
-    #matrix-canvas {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      opacity: 0.15;
-      pointer-events: none;
-    }
-
-    /* CRT Scanlines */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background: repeating-linear-gradient(
-        0deg,
-        rgba(0, 0, 0, 0.15),
-        rgba(0, 0, 0, 0.15) 1px,
-        transparent 1px,
-        transparent 3px
-      );
-      pointer-events: none;
-      z-index: 9999;
-    }
-
-    /* CRT Flicker */
-    body::after {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background: rgba(18, 16, 16, 0);
-      opacity: 0;
-      z-index: 9998;
-      pointer-events: none;
-      animation: flicker 0.15s infinite;
-    }
-
-    @keyframes flicker {
-      0% { opacity: 0.27861; }
-      5% { opacity: 0.34769; }
-      10% { opacity: 0.23604; }
-      15% { opacity: 0.90626; }
-      20% { opacity: 0.18128; }
-      25% { opacity: 0.83891; }
-      30% { opacity: 0.65583; }
-      35% { opacity: 0.67807; }
-      40% { opacity: 0.26559; }
-      45% { opacity: 0.84693; }
-      50% { opacity: 0.96019; }
-      55% { opacity: 0.08594; }
-      60% { opacity: 0.20313; }
-      65% { opacity: 0.71988; }
-      70% { opacity: 0.53455; }
-      75% { opacity: 0.37288; }
-      80% { opacity: 0.71428; }
-      85% { opacity: 0.70419; }
-      90% { opacity: 0.7003; }
-      95% { opacity: 0.36108; }
-      100% { opacity: 0.24387; }
-    }
-
-    /* Vignette */
-    .vignette {
-      position: fixed;
-      inset: 0;
-      background: radial-gradient(ellipse at center, transparent 0%, transparent 40%, rgba(0,0,0,0.7) 100%);
-      pointer-events: none;
-      z-index: 1;
-    }
-
-    .fade-in { animation: fadeIn 0.3s steps(8); }
-    @keyframes fadeIn { 
-      from { opacity: 0; } 
-      to { opacity: 1; } 
-    }
-
-    /* Terminal window */
-    .terminal-window {
-      background: rgba(0, 20, 10, 0.85);
-      border: 1px solid var(--hacker-green-dark);
-      box-shadow: 
-        0 0 20px rgba(0, 255, 65, 0.2),
-        inset 0 0 30px rgba(0, 255, 65, 0.05);
-      position: relative;
-    }
-
-    .terminal-titlebar {
-      background: linear-gradient(180deg, rgba(0, 40, 20, 0.9) 0%, rgba(0, 20, 10, 0.9) 100%);
-      border-bottom: 1px solid var(--hacker-green-dark);
-      padding: 6px 12px;
-      font-size: 11px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .terminal-dot {
-      width: 10px; height: 10px;
-      border-radius: 50%;
-      display: inline-block;
-    }
-
-    .terminal-body {
-      padding: 16px;
+    /* Subtle grid background */
+    body {
+      background-image: 
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 40px 40px;
     }
 
     /* Blinking cursor */
     .cursor {
       display: inline-block;
-      background: var(--hacker-green);
+      background: var(--text);
+      width: 9px;
+      height: 1.1em;
+      vertical-align: text-bottom;
+      margin-left: 3px;
       animation: blink 1s step-end infinite;
-      width: 8px;
-      height: 1em;
-      vertical-align: middle;
-      margin-left: 2px;
     }
     @keyframes blink {
-      0%, 50% { opacity: 1; }
-      51%, 100% { opacity: 0; }
+      50% { opacity: 0; }
     }
 
-    /* Typing animation */
-    .typing {
-      display: inline-block;
-      overflow: hidden;
-      white-space: nowrap;
-      animation: typing 2s steps(40);
-    }
-    @keyframes typing {
-      from { width: 0; }
-      to { width: 100%; }
+    .fade-in { animation: fadeIn 0.3s ease-out; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Glitch effect */
-    .glitch {
-      position: relative;
-      display: inline-block;
-      animation: glitch-skew 4s infinite linear alternate-reverse;
-    }
-    .glitch::before, .glitch::after {
-      content: attr(data-text);
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-    }
-    .glitch::before {
-      color: var(--hacker-red);
-      animation: glitch-effect 3s infinite linear alternate-reverse;
-      clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
-      transform: translate(-2px);
-    }
-    .glitch::after {
-      color: var(--hacker-cyan);
-      animation: glitch-effect 2s infinite linear alternate-reverse;
-      clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%);
-      transform: translate(2px);
-    }
-    @keyframes glitch-effect {
-      0%, 100% { transform: translate(0); }
-      20% { transform: translate(-3px, 2px); }
-      40% { transform: translate(-2px, -2px); }
-      60% { transform: translate(3px, 2px); }
-      80% { transform: translate(2px, -2px); }
-    }
-    @keyframes glitch-skew {
-      0%, 100% { transform: skew(0deg); }
-      20% { transform: skew(-0.5deg); }
-      40% { transform: skew(0.5deg); }
-    }
-
-    /* Hacker button */
-    .hacker-btn {
-      background: transparent;
-      border: 1px solid var(--hacker-green);
-      color: var(--hacker-green);
-      padding: 8px 16px;
-      font-family: inherit;
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      cursor: pointer;
-      position: relative;
+    /* Card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
       transition: all 0.2s;
     }
-    .hacker-btn:hover {
-      background: var(--hacker-green);
-      color: var(--hacker-bg);
-      box-shadow: 0 0 20px var(--hacker-green);
-      text-shadow: none;
+    .card:hover {
+      border-color: var(--border-light);
     }
-    .hacker-btn-primary {
-      background: var(--hacker-green);
-      color: var(--hacker-bg);
-      font-weight: bold;
+
+    .card-hover:hover {
+      border-color: var(--text);
+      transform: translateY(-2px);
     }
-    .hacker-btn-primary:hover {
+
+    /* Header */
+    .mono-header {
+      letter-spacing: -0.02em;
+    }
+
+    /* Buttons */
+    .btn-primary {
+      background: var(--text);
+      color: var(--bg);
+      font-weight: 600;
+      transition: all 0.15s;
+    }
+    .btn-primary:hover {
+      background: #e5e5e5;
+      transform: translateY(-1px);
+    }
+    .btn-ghost {
       background: transparent;
-      color: var(--hacker-green);
+      color: var(--text);
+      border: 1px solid var(--border-light);
+      transition: all 0.15s;
     }
-    .hacker-btn-danger {
-      border-color: var(--hacker-red);
-      color: var(--hacker-red);
+    .btn-ghost:hover {
+      background: var(--surface-2);
+      border-color: var(--text);
     }
-    .hacker-btn-danger:hover {
-      background: var(--hacker-red);
-      color: var(--hacker-bg);
-      box-shadow: 0 0 20px var(--hacker-red);
+    .btn-danger {
+      background: transparent;
+      color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: var(--danger);
     }
 
     /* Input */
-    .hacker-input {
-      background: rgba(0, 10, 5, 0.8);
-      border: 1px solid var(--hacker-green-dark);
-      color: var(--hacker-green);
-      padding: 10px 12px;
+    .input {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 14px;
       font-family: inherit;
-      font-size: 13px;
-      width: 100%;
+      font-size: 15px;
       outline: none;
-      transition: all 0.2s;
-    }
-    .hacker-input:focus {
-      border-color: var(--hacker-green);
-      box-shadow: 0 0 10px rgba(0, 255, 65, 0.5), inset 0 0 5px rgba(0, 255, 65, 0.1);
-    }
-    .hacker-input::placeholder { color: rgba(0, 255, 65, 0.3); }
-
-    .hacker-select {
-      background: rgba(0, 10, 5, 0.8);
-      border: 1px solid var(--hacker-green-dark);
-      color: var(--hacker-green);
-      padding: 10px 12px;
-      font-family: inherit;
       width: 100%;
-      outline: none;
+      transition: all 0.15s;
     }
-    .hacker-select:focus {
-      border-color: var(--hacker-green);
-      box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+    .input:focus {
+      border-color: var(--text);
+      background: var(--bg);
     }
-    .hacker-select option {
-      background: var(--hacker-bg);
-      color: var(--hacker-green);
-    }
-
-    /* Terminal progress bar */
-    .terminal-progress {
-      font-family: 'Fira Code', monospace;
-      letter-spacing: 0;
-      color: var(--hacker-green);
+    .input::placeholder { color: var(--text-faint); }
+    select.input option {
+      background: var(--surface);
+      color: var(--text);
     }
 
-    /* Stat card */
-    .stat-card {
-      transition: all 0.2s;
-      cursor: pointer;
+    /* Progress bar */
+    .progress-track {
+      background: var(--surface-2);
+      height: 6px;
+      overflow: hidden;
     }
-    .stat-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 0 30px rgba(0, 255, 65, 0.4);
-      border-color: var(--hacker-green);
+    .progress-fill {
+      height: 100%;
+      background: var(--text);
+      transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .stat-card:hover .stat-value {
-      text-shadow: 0 0 15px var(--hacker-green), 0 0 25px var(--hacker-green);
+    .progress-fill-success { background: var(--success); }
+    .progress-fill-warning { background: var(--warning); }
+    .progress-fill-danger { background: var(--danger); }
+
+    /* Label */
+    .label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    /* Status badges */
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      padding: 3px 10px;
+      border: 1px solid;
+      display: inline-block;
+    }
+    .badge-planning { color: var(--text-dim); border-color: var(--border-light); }
+    .badge-active { color: var(--success); border-color: var(--success); }
+    .badge-paused { color: var(--warning); border-color: var(--warning); }
+    .badge-completed { color: var(--text); border-color: var(--text); }
+    .badge-cancelled { color: var(--danger); border-color: var(--danger); }
+
+    /* Tab */
+    .tab {
+      padding: 10px 18px;
+      color: var(--text-faint);
+      border-bottom: 2px solid transparent;
+      font-weight: 500;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .tab:hover { color: var(--text-dim); }
+    .tab-active {
+      color: var(--text);
+      border-bottom-color: var(--text);
     }
 
     /* Scrollbar */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: var(--hacker-bg); }
-    ::-webkit-scrollbar-thumb { 
-      background: var(--hacker-green-dark);
-      border: 1px solid var(--hacker-green);
-    }
-    ::-webkit-scrollbar-thumb:hover { background: var(--hacker-green); }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border-light); }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
 
-    /* FullCalendar hacker theme */
-    .fc { font-size: 0.85rem; font-family: inherit; color: var(--hacker-green); }
-    .fc-theme-standard td, .fc-theme-standard th { border-color: rgba(0, 255, 65, 0.2); }
-    .fc-theme-standard .fc-scrollgrid { border-color: rgba(0, 255, 65, 0.3); }
-    .fc .fc-col-header-cell-cushion { color: var(--hacker-green); padding: 8px; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; }
-    .fc .fc-daygrid-day-number { color: var(--hacker-green); padding: 6px; }
-    .fc .fc-day-today { background: rgba(0, 255, 65, 0.1) !important; }
-    .fc .fc-day-other { opacity: 0.4; }
+    /* FullCalendar theme */
+    .fc { font-size: 13px; font-family: inherit; color: var(--text); }
+    .fc-theme-standard td, .fc-theme-standard th { border-color: var(--border); }
+    .fc-theme-standard .fc-scrollgrid { border-color: var(--border); background: var(--surface); }
+    .fc .fc-col-header-cell { background: var(--surface-2); }
+    .fc .fc-col-header-cell-cushion { color: var(--text-dim); padding: 12px; font-weight: 600; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+    .fc .fc-daygrid-day-number { color: var(--text); padding: 8px; font-size: 14px; }
+    .fc .fc-day-today { background: rgba(255,255,255,0.04) !important; }
+    .fc .fc-day-other { opacity: 0.35; }
     .fc .fc-button-primary {
-      background: transparent !important;
-      border: 1px solid var(--hacker-green-dark) !important;
-      color: var(--hacker-green) !important;
-      text-transform: uppercase;
-      font-size: 11px;
-      letter-spacing: 1px;
+      background: var(--surface-2) !important;
+      border: 1px solid var(--border) !important;
+      color: var(--text) !important;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 500;
     }
-    .fc .fc-button-primary:hover { 
-      background: var(--hacker-green) !important; 
-      color: var(--hacker-bg) !important;
-    }
+    .fc .fc-button-primary:hover { background: var(--border) !important; }
     .fc .fc-button-primary:not(:disabled).fc-button-active { 
-      background: var(--hacker-green) !important; 
-      color: var(--hacker-bg) !important;
+      background: var(--text) !important; 
+      color: var(--bg) !important;
+      border-color: var(--text) !important;
     }
     .fc-event { 
       cursor: pointer; 
-      border: 1px solid rgba(0, 255, 65, 0.5) !important;
-      background: rgba(0, 20, 10, 0.8) !important;
+      border: 1px solid var(--border-light) !important;
+      background: var(--surface-2) !important;
       padding: 2px 6px;
       font-size: 11px;
-      font-family: inherit;
+      border-radius: 2px;
     }
-    .fc-event:hover { box-shadow: 0 0 10px currentColor; }
+    .fc-event:hover { border-color: var(--text) !important; }
 
     /* Modal */
     .modal-backdrop { 
-      backdrop-filter: blur(3px) contrast(1.2); 
-      background-color: rgba(0, 0, 0, 0.85); 
+      backdrop-filter: blur(8px);
+      background-color: rgba(0, 0, 0, 0.8); 
     }
 
     /* Toast */
-    .toast { animation: slideIn 0.3s steps(8); }
-    @keyframes slideIn { 
-      from { opacity: 0; transform: translateX(100%); } 
-      to { opacity: 1; transform: translateX(0); } 
+    .toast { animation: slideIn 0.3s ease; }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
     }
 
-    /* Progress bar with terminal style */
-    .progress-bar { 
-      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
-      background: var(--hacker-green);
-      box-shadow: 0 0 8px var(--hacker-green);
-    }
-
-    /* Status indicators */
-    .status-online {
-      color: var(--hacker-green);
-      text-shadow: 0 0 5px var(--hacker-green);
-    }
-    .status-warning {
-      color: var(--hacker-amber);
-      text-shadow: 0 0 5px var(--hacker-amber);
-    }
-    .status-critical {
-      color: var(--hacker-red);
-      text-shadow: 0 0 5px var(--hacker-red);
-      animation: blink 1s step-end infinite;
-    }
-
-    /* Bracket decoration */
-    .bracket::before { content: '[ '; opacity: 0.5; }
-    .bracket::after { content: ' ]'; opacity: 0.5; }
-
-    /* Tab active */
-    .tab-active {
-      background: rgba(0, 255, 65, 0.15);
-      color: var(--hacker-green);
-      border: 1px solid var(--hacker-green);
-      text-shadow: 0 0 8px var(--hacker-green);
-    }
-
-    /* ASCII art style borders using box-drawing */
-    .ascii-box {
+    /* Pulse dot */
+    .pulse-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
       position: relative;
-      padding: 20px;
     }
-
-    /* Header line */
-    .header-line {
-      background: linear-gradient(90deg, 
-        var(--hacker-green) 0%, 
-        transparent 50%, 
-        var(--hacker-green) 100%);
-      height: 1px;
-      opacity: 0.4;
-    }
-
-    /* Loading dots */
-    .loading-dots::after {
+    .pulse-dot::after {
       content: '';
-      animation: dots 1.5s steps(4) infinite;
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 1px solid var(--success);
+      animation: pulse 2s infinite;
     }
-    @keyframes dots {
-      0%, 20% { content: ''; }
-      40% { content: '.'; }
-      60% { content: '..'; }
-      80%, 100% { content: '...'; }
-    }
-
-    /* Pulse ring */
-    .pulse-ring {
-      animation: pulse-ring 2s ease-out infinite;
-    }
-    @keyframes pulse-ring {
-      0% { box-shadow: 0 0 0 0 rgba(0, 255, 65, 0.7); }
-      100% { box-shadow: 0 0 0 15px rgba(0, 255, 65, 0); }
+    @keyframes pulse {
+      0% { transform: scale(0.5); opacity: 1; }
+      100% { transform: scale(1.5); opacity: 0; }
     }
 
-    /* Boot text */
-    .boot-text {
-      font-family: 'VT323', monospace;
-      font-size: 14px;
-      line-height: 1.4;
+    /* Terminal prompt */
+    .prompt::before {
+      content: '> ';
+      color: var(--text-dim);
     }
 
-    /* Large VT323 for ASCII feel */
-    .vt323 { font-family: 'VT323', monospace; }
-
-    /* Funnel connector arrow */
-    .funnel-arrow::after {
-      content: '===>';
-      color: var(--hacker-green);
-      font-weight: bold;
-      text-shadow: 0 0 5px var(--hacker-green);
-    }
-    @media (max-width: 768px) {
-      .funnel-arrow::after { content: '⬇'; }
-    }
-
-    /* Highlight amber text */
-    .text-amber { color: var(--hacker-amber); }
-    .text-red { color: var(--hacker-red); }
-    .text-cyan { color: var(--hacker-cyan); }
-    .text-green { color: var(--hacker-green); }
-
-    /* Data stream animation */
-    @keyframes stream {
-      0% { background-position: 0 0; }
-      100% { background-position: 0 100px; }
-    }
-
-    /* Terminal window hover glow */
-    .terminal-window:hover {
-      box-shadow: 
-        0 0 30px rgba(0, 255, 65, 0.3),
-        inset 0 0 30px rgba(0, 255, 65, 0.08);
-    }
-
-    /* ASCII logo style */
-    .ascii-logo {
-      font-family: 'VT323', monospace;
-      letter-spacing: 1px;
+    /* Big number */
+    .big-num {
+      font-size: 42px;
+      font-weight: 700;
       line-height: 1;
-      white-space: pre;
+      letter-spacing: -0.03em;
+    }
+
+    /* Section divider */
+    .divider {
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Funnel connector */
+    .funnel-connector { position: relative; }
+    @media (min-width: 768px) {
+      .funnel-connector:not(:last-child)::after {
+        content: '→';
+        position: absolute;
+        right: -18px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-faint);
+        font-size: 20px;
+        z-index: 2;
+      }
+    }
+
+    /* Hover arrow */
+    .hover-arrow {
+      position: relative;
+    }
+    .hover-arrow::after {
+      content: '→';
+      margin-left: 4px;
+      opacity: 0;
+      transition: all 0.15s;
+    }
+    .hover-arrow:hover::after {
+      opacity: 1;
+      margin-left: 8px;
+    }
+
+    /* Top border accent */
+    .top-accent {
+      border-top: 2px solid var(--text);
     }
   </style>
 </head>
-<body class="antialiased">
-  <canvas id="matrix-canvas"></canvas>
-  <div class="vignette"></div>
-  <div id="root" class="relative z-10"></div>
-
-  <script>
-    // ═══ MATRIX RAIN ═══
-    const canvas = document.getElementById('matrix-canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    
-    const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノ$#@%&*+=/\\<>{}[]()';
-    const fontSize = 14;
-    const columns = canvas.width / fontSize;
-    const drops = Array(Math.floor(columns)).fill(1);
-    
-    function drawMatrix() {
-      ctx.fillStyle = 'rgba(0, 8, 20, 0.08)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#00ff41';
-      ctx.font = fontSize + 'px "Fira Code", monospace';
-      
-      for (let i = 0; i < drops.length; i++) {
-        const text = chars[Math.floor(Math.random() * chars.length)];
-        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
-        drops[i]++;
-      }
-    }
-    setInterval(drawMatrix, 50);
-    
-    window.addEventListener('resize', () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    });
-  </script>
+<body>
+  <div id="root"></div>
 
   <script type="text/babel">
     const { useState, useEffect, useRef, useMemo } = React;
@@ -541,7 +351,6 @@
     };
 
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    
     const db = firebase.firestore();
     const auth = firebase.auth();
 
@@ -559,12 +368,7 @@
           const projects = [];
           snapshot.forEach(doc => {
             const data = doc.data();
-            projects.push({ 
-              id: doc.id, 
-              ...data,
-              startDate: parseDate(data.startDate),
-              endDate: parseDate(data.endDate)
-            });
+            projects.push({ id: doc.id, ...data, startDate: parseDate(data.startDate), endDate: parseDate(data.endDate) });
           });
           callback(projects);
         }, (error) => console.error('Subscription error:', error));
@@ -589,181 +393,103 @@
       }
     };
 
-    // ═══════════════════════════════════════════
-    // 🔐 LOGIN - HACKER TERMINAL STYLE
-    // ═══════════════════════════════════════════
+    // ═══ LOGIN ═══
     function LoginComponent() {
       const [email, setEmail] = useState('');
       const [password, setPassword] = useState('');
       const [isRegister, setIsRegister] = useState(false);
       const [loading, setLoading] = useState(false);
       const [error, setError] = useState('');
-      const [bootLog, setBootLog] = useState([]);
-
-      useEffect(() => {
-        const bootMessages = [
-          { text: '[BOOT] Initializing kernel...', delay: 100 },
-          { text: '[BOOT] Loading network modules...', delay: 300 },
-          { text: '[BOOT] Establishing secure connection...', delay: 500 },
-          { text: '[OK] Encryption: AES-256-GCM ✓', delay: 700, ok: true },
-          { text: '[OK] Firewall: ACTIVE ✓', delay: 900, ok: true },
-          { text: '[SYS] Awaiting authentication...', delay: 1200 },
-        ];
-        bootMessages.forEach(m => {
-          setTimeout(() => setBootLog(prev => [...prev, m]), m.delay);
-        });
-      }, []);
 
       const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError('');
-        setBootLog(prev => [...prev, { text: `[AUTH] Attempting login as ${email}...`, delay: 0 }]);
         try {
           if (isRegister) await auth.createUserWithEmailAndPassword(email, password);
           else await auth.signInWithEmailAndPassword(email, password);
-          setBootLog(prev => [...prev, { text: '[ACCESS] GRANTED ✓', delay: 0, ok: true }]);
         } catch (err) {
-          let msg = 'ACCESS DENIED';
-          if (err.code === 'auth/user-not-found') msg = 'ERR: USER NOT FOUND';
-          else if (err.code === 'auth/wrong-password') msg = 'ERR: INVALID CREDENTIALS';
-          else if (err.code === 'auth/email-already-in-use') msg = 'ERR: EMAIL ALREADY REGISTERED';
-          else if (err.code === 'auth/weak-password') msg = 'ERR: PASSWORD MIN 6 CHARS';
+          let msg = 'เกิดข้อผิดพลาด';
+          if (err.code === 'auth/user-not-found') msg = 'ไม่พบบัญชี';
+          else if (err.code === 'auth/wrong-password') msg = 'รหัสผ่านไม่ถูกต้อง';
+          else if (err.code === 'auth/email-already-in-use') msg = 'อีเมลนี้ถูกใช้แล้ว';
+          else if (err.code === 'auth/weak-password') msg = 'รหัสผ่านต้องมีอย่างน้อย 6 ตัว';
           setError(msg);
-          setBootLog(prev => [...prev, { text: `[FAIL] ${msg}`, delay: 0, error: true }]);
         } finally {
           setLoading(false);
         }
       };
 
       return (
-        <div className="min-h-screen flex items-center justify-center p-4 relative">
-          <div className="terminal-window w-full max-w-lg fade-in">
-            <div className="terminal-titlebar">
-              <span className="terminal-dot bg-red-500"></span>
-              <span className="terminal-dot bg-amber-500"></span>
-              <span className="terminal-dot bg-green-500"></span>
-              <span className="ml-2 text-green-400 text-xs">root@marketing:~/auth ~</span>
-              <span className="ml-auto text-xs text-green-500/60">[ENCRYPTED]</span>
+        <div className="min-h-screen flex items-center justify-center p-4">
+          <div className="w-full max-w-md">
+            <div className="mb-10 text-center">
+              <div className="text-xs tracking-[0.3em] text-white/40 mb-4">// MARKETING TERMINAL v2.0</div>
+              <h1 className="text-5xl font-bold mono-header mb-2">ACCESS_</h1>
+              <p className="text-white/50 text-sm">ระบบจัดการแคมเปญการตลาด</p>
             </div>
-            <div className="terminal-body">
-              {/* ASCII Logo */}
-              <div className="ascii-logo text-center mb-4 text-green" style={{fontSize: '10px'}}>
-{`  ███╗   ███╗ █████╗ ██████╗ ██╗  ██╗
-  ████╗ ████║██╔══██╗██╔══██╗██║ ██╔╝
-  ██╔████╔██║███████║██████╔╝█████╔╝ 
-  ██║╚██╔╝██║██╔══██║██╔══██╗██╔═██╗ 
-  ██║ ╚═╝ ██║██║  ██║██║  ██║██║  ██╗
-  ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝`}
-              </div>
-              <div className="text-center mb-4">
-                <div className="text-xs text-green-400/80 uppercase tracking-[0.3em]">
-                  ═══ MARKETING MANAGER ═══
-                </div>
-                <div className="text-[10px] text-green-400/50 mt-1">
-                  v2.0.7 // SECURE TERMINAL // CLASSIFIED
-                </div>
+
+            <div className="card p-8">
+              <div className="mb-6 text-xs tracking-widest text-white/40">
+                [{isRegister ? 'NEW_USER' : 'LOGIN'}]
               </div>
 
-              {/* Boot log */}
-              <div className="boot-text mb-4 max-h-32 overflow-y-auto border border-green-900/50 p-2 bg-black/40">
-                {bootLog.map((log, i) => (
-                  <div key={i} className={log.ok ? 'text-green' : log.error ? 'text-red' : 'text-green-400/70'}>
-                    &gt; {log.text}
-                  </div>
-                ))}
-                {loading && <div className="text-amber-400">&gt; [AUTH] Processing<span className="loading-dots"></span></div>}
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-3">
+              <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label className="block text-xs text-green-400/80 mb-1 uppercase tracking-wider">
-                    <span className="text-green">&gt; USERNAME / EMAIL:</span>
-                  </label>
+                  <label className="label block mb-2">Email</label>
                   <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} 
-                    className="hacker-input" 
-                    placeholder="root@system.local" required />
+                    className="input" placeholder="user@domain.com" required />
                 </div>
                 <div>
-                  <label className="block text-xs text-green-400/80 mb-1 uppercase tracking-wider">
-                    <span className="text-green">&gt; PASSPHRASE:</span>
-                  </label>
+                  <label className="label block mb-2">Password</label>
                   <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} 
-                    className="hacker-input" 
-                    placeholder="••••••••••" required />
+                    className="input" placeholder="••••••••" required />
                 </div>
 
                 {error && (
-                  <div className="p-3 bg-red-500/10 border border-red-500/50 text-red text-xs uppercase tracking-wider">
-                    <span className="status-critical">[FAIL]</span> {error}
+                  <div className="p-3 border border-red-500/30 text-red-400 text-sm">
+                    [ERROR] {error}
                   </div>
                 )}
 
-                <button type="submit" disabled={loading} className="w-full hacker-btn hacker-btn-primary">
-                  {loading ? '[ AUTHENTICATING... ]' : (isRegister ? '[ REGISTER NEW IDENTITY ]' : '[ EXECUTE LOGIN ]')}
+                <button type="submit" disabled={loading} className="w-full btn-primary py-3 text-sm tracking-widest">
+                  {loading ? 'PROCESSING...' : (isRegister ? 'REGISTER' : 'LOGIN')}
                 </button>
               </form>
 
-              <div className="mt-4 pt-3 border-t border-green-900/50 text-center">
+              <div className="mt-6 pt-6 border-t border-white/10 text-center">
                 <button onClick={() => { setIsRegister(!isRegister); setError(''); }} 
-                  className="text-xs text-green-400/70 hover:text-green uppercase tracking-wider">
-                  {isRegister ? '&lt; BACK TO LOGIN' : '&gt; CREATE NEW ACCOUNT'}
+                  className="text-sm text-white/60 hover:text-white transition hover-arrow">
+                  {isRegister ? 'กลับหน้า Login' : 'สร้างบัญชีใหม่'}
                 </button>
               </div>
-
-              <div className="mt-4 text-[10px] text-green-400/40 text-center uppercase tracking-wider">
-                ═══ ALL CONNECTIONS ARE MONITORED ═══
-              </div>
             </div>
           </div>
         </div>
       );
     }
 
-    // ═══════════════════════════════════════════
-    // 📊 STAT CARD
-    // ═══════════════════════════════════════════
-    function StatCard({ title, value, icon, subtitle, variant }) {
-      const variantColors = {
-        green: 'text-green',
-        amber: 'text-amber',
-        red: 'text-red',
-        cyan: 'text-cyan'
-      };
-      const colorClass = variantColors[variant] || 'text-green';
-      
+    // ═══ STAT CARD ═══
+    function StatCard({ label, value, hint, icon }) {
       return (
-        <div className="terminal-window stat-card">
-          <div className="terminal-titlebar">
-            <span className="terminal-dot bg-green-500 pulse-ring"></span>
-            <span className="text-[10px] text-green-400/80 uppercase tracking-wider">◆ {title}</span>
+        <div className="card card-hover p-6">
+          <div className="flex items-start justify-between mb-6">
+            <div className="label">{label}</div>
+            {icon && <i data-lucide={icon} className="w-4 h-4 text-white/40"></i>}
           </div>
-          <div className="terminal-body">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex-1">
-                <div className={`stat-value text-3xl font-bold ${colorClass} vt323`} style={{fontSize: '38px'}}>
-                  {value}
-                </div>
-                {subtitle && <div className="text-[11px] text-green-400/60 mt-2 uppercase tracking-wider">{subtitle}</div>}
-              </div>
-              <div className={`${colorClass}`} style={{filter: 'drop-shadow(0 0 6px currentColor)'}}>
-                <i data-lucide={icon} className="w-6 h-6"></i>
-              </div>
-            </div>
-          </div>
+          <div className="big-num mono-header">{value}</div>
+          {hint && <div className="mt-3 text-xs text-white/50">{hint}</div>}
         </div>
       );
     }
 
-    // ═══════════════════════════════════════════
-    // 🚗 AUTO FUNNEL
-    // ═══════════════════════════════════════════
+    // ═══ AUTO FUNNEL ═══
     function AutoFunnel({ data }) {
       const steps = [
-        { label: 'INQUIRIES', sub: 'ลูกค้ามุ่งหวัง', value: data.inquiries, icon: 'users', color: 'green' },
-        { label: 'TEST DRIVES', sub: 'ทดลองขับ', value: data.testDrives, icon: 'car', color: 'cyan' },
-        { label: 'BOOKINGS', sub: 'จองรถ', value: data.bookings, icon: 'calendar-check', color: 'amber' },
-        { label: 'DELIVERIES', sub: 'ส่งมอบ', value: data.deliveries, icon: 'key', color: 'red' }
+        { label: 'INQUIRIES', sub: 'ลูกค้ามุ่งหวัง', value: data.inquiries, num: '01' },
+        { label: 'TEST DRIVES', sub: 'ทดลองขับ', value: data.testDrives, num: '02' },
+        { label: 'BOOKINGS', sub: 'จองรถ', value: data.bookings, num: '03' },
+        { label: 'DELIVERIES', sub: 'ส่งมอบ', value: data.deliveries, num: '04' }
       ];
 
       const rates = [
@@ -773,76 +499,49 @@
         data.inquiries > 0 ? ((data.deliveries / data.inquiries) * 100).toFixed(2) + '%' : '0.0%'
       ];
 
-      const overallRate = data.inquiries > 0 ? ((data.deliveries / data.inquiries) * 100).toFixed(2) + '%' : '0.00%';
-
-      const colorMap = {
-        green: 'text-green',
-        cyan: 'text-cyan',
-        amber: 'text-amber',
-        red: 'text-red'
-      };
-
-      // Terminal progress: [████████░░] 80%
-      const renderTerminalProgress = (pct) => {
-        const val = Math.min(parseFloat(pct), 100);
-        const filled = Math.round(val / 10);
-        const empty = 10 - filled;
-        return '[' + '█'.repeat(filled) + '░'.repeat(empty) + '] ' + pct;
-      };
+      const overallRate = data.inquiries > 0 ? ((data.deliveries / data.inquiries) * 100).toFixed(2) : '0.00';
 
       return (
-        <div className="terminal-window fade-in">
-          <div className="terminal-titlebar">
-            <span className="terminal-dot bg-red-500"></span>
-            <span className="terminal-dot bg-amber-500"></span>
-            <span className="terminal-dot bg-green-500"></span>
-            <span className="ml-2 text-[11px] text-green-400 uppercase tracking-wider">
-              ◆ SALES_FUNNEL.exe — LIVE ANALYTICS
-            </span>
-            <span className="ml-auto text-[10px] text-amber-400 uppercase tracking-wider">
-              OVERALL: {overallRate}
-            </span>
+        <div className="card p-8 fade-in">
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+            <div>
+              <div className="text-xs tracking-[0.3em] text-white/40 mb-2">// SALES_FUNNEL</div>
+              <h2 className="text-2xl font-bold mono-header">Automotive Pipeline</h2>
+              <p className="text-sm text-white/50 mt-1">อัตรา conversion เทียบกับ INQUIRIES เป็นฐาน</p>
+            </div>
+            <div className="card p-5 top-accent">
+              <div className="text-xs tracking-[0.2em] text-white/40 mb-1">OVERALL</div>
+              <div className="text-3xl font-bold mono-header">{overallRate}%</div>
+            </div>
           </div>
-          <div className="terminal-body">
-            <div className="mb-4 text-xs text-green-400/70">
-              <span className="text-green">&gt;</span> analyzing conversion pipeline...
-              <span className="text-green-400/50"> (baseline: INQUIRIES)</span>
-            </div>
 
-            <div className="flex flex-col md:flex-row items-stretch gap-3 md:gap-2">
-              {steps.map((step, idx) => (
-                <React.Fragment key={idx}>
-                  <div className={`flex-1 ${idx < steps.length - 1 ? 'md:flex-none md:w-auto funnel-arrow md:pr-3' : ''}`}>
-                    <div className="terminal-window stat-card h-full">
-                      <div className="terminal-titlebar">
-                        <span className={`terminal-dot ${step.color === 'green' ? 'bg-green-500' : step.color === 'cyan' ? 'bg-cyan-400' : step.color === 'amber' ? 'bg-amber-400' : 'bg-red-400'}`}></span>
-                        <span className={`text-[10px] ${colorMap[step.color]} uppercase tracking-wider`}>{step.label}</span>
-                      </div>
-                      <div className="terminal-body text-center">
-                        <div className="mb-2">
-                          <i data-lucide={step.icon} className={`w-5 h-5 inline ${colorMap[step.color]}`} style={{filter: 'drop-shadow(0 0 5px currentColor)'}}></i>
-                        </div>
-                        <div className={`vt323 font-bold ${colorMap[step.color]}`} style={{fontSize: '32px'}}>
-                          {(step.value || 0).toLocaleString()}
-                        </div>
-                        <div className="text-[10px] text-green-400/50 uppercase tracking-wider mb-3">{step.sub}</div>
-                        <div className="text-[11px] text-green-400/80 terminal-progress">
-                          {renderTerminalProgress(rates[idx])}
-                        </div>
-                      </div>
-                    </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {steps.map((step, idx) => (
+              <div key={idx} className="funnel-connector">
+                <div className="card-hover card p-5 h-full">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-xs tracking-widest text-white/30">{step.num}</span>
+                    <span className="text-xs tracking-widest text-white/60">{step.label}</span>
                   </div>
-                </React.Fragment>
-              ))}
-            </div>
+                  <div className="big-num mono-header mb-1">{(step.value || 0).toLocaleString()}</div>
+                  <div className="text-xs text-white/50 mb-4">{step.sub}</div>
+                  <div className="divider mb-3"></div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-[10px] tracking-widest text-white/40">RATE</span>
+                    <span className="text-sm font-semibold">{rates[idx]}</span>
+                  </div>
+                  <div className="progress-track">
+                    <div className="progress-fill" style={{ width: `${Math.min(parseFloat(rates[idx]), 100)}%` }}></div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       );
     }
 
-    // ═══════════════════════════════════════════
-    // 📅 CALENDAR
-    // ═══════════════════════════════════════════
+    // ═══ CALENDAR ═══
     function CalendarComponent({ projects }) {
       const calendarRef = useRef(null);
 
@@ -857,9 +556,8 @@
             id: p.id, title: p.name,
             start: startD.toISOString().split('T')[0],
             end: adjustedEnd.toISOString().split('T')[0],
-            backgroundColor: p.status === 'completed' ? '#00ff41' : p.status === 'active' ? '#00d9ff' : p.status === 'paused' ? '#ffb000' : p.status === 'cancelled' ? '#ff0040' : '#00802080',
-            borderColor: 'rgba(0, 255, 65, 0.5)',
-            textColor: '#000814'
+            backgroundColor: p.status === 'completed' ? '#ffffff' : p.status === 'active' ? '#999' : p.status === 'paused' ? '#666' : p.status === 'cancelled' ? '#333' : '#555',
+            borderColor: 'transparent', textColor: p.status === 'completed' ? '#000' : '#fff'
           };
         });
 
@@ -877,23 +575,7 @@
               const bookings = p.bookings || 0;
               const deliveries = p.deliveries || 0;
               const pct = (v) => inquiries > 0 ? ((v / inquiries) * 100).toFixed(2) + '%' : '0.00%';
-              alert(`
-╔══════════════════════════════════════╗
-║ MISSION: ${p.name.padEnd(26)}║
-╠══════════════════════════════════════╣
-║ DATE:  ${startStr} - ${endStr}
-║ CAT:   ${p.category || 'N/A'}
-║ STAT:  ${p.status || 'planning'}
-║ BUDG:  ฿${(p.budget || 0).toLocaleString()}
-║ SPENT: ฿${(p.spent || 0).toLocaleString()}
-╠══════════════════════════════════════╣
-║ FUNNEL ANALYSIS:
-║   INQUIRIES:  ${inquiries.toLocaleString()} (100%)
-║   TEST DRIVE: ${testDrives.toLocaleString()} (${pct(testDrives)})
-║   BOOKINGS:   ${bookings.toLocaleString()} (${pct(bookings)})
-║   DELIVERIES: ${deliveries.toLocaleString()} (${pct(deliveries)})
-║   CONVERSION: ${pct(deliveries)}
-╚══════════════════════════════════════╝`);
+              alert(`${p.name}\n\n${startStr} - ${endStr}\nหมวดหมู่: ${p.category || '-'}\nสถานะ: ${p.status}\nงบประมาณ: ฿${(p.budget || 0).toLocaleString()}\nใช้ไป: ฿${(p.spent || 0).toLocaleString()}\n\nFunnel:\nInquiries: ${inquiries.toLocaleString()} (100%)\nTest Drives: ${testDrives.toLocaleString()} (${pct(testDrives)})\nBookings: ${bookings.toLocaleString()} (${pct(bookings)})\nDeliveries: ${deliveries.toLocaleString()} (${pct(deliveries)})\n\nOverall: ${pct(deliveries)}\n\n${p.description || '-'}`);
             }
           }
         });
@@ -904,19 +586,17 @@
       return (
         <div>
           <div ref={calendarRef} className="min-h-[600px]"></div>
-          <div className="mt-4 pt-4 border-t border-green-900/50 flex flex-wrap gap-3 justify-center items-center text-[11px] uppercase tracking-wider">
-            <span className="flex items-center gap-2"><span className="w-2 h-2 bg-cyan-400" style={{boxShadow: '0 0 5px #00d9ff'}}></span> ACTIVE</span>
-            <span className="flex items-center gap-2"><span className="w-2 h-2 bg-green-500" style={{boxShadow: '0 0 5px #00ff41'}}></span> COMPLETED</span>
-            <span className="flex items-center gap-2"><span className="w-2 h-2 bg-amber-400" style={{boxShadow: '0 0 5px #ffb000'}}></span> PAUSED</span>
-            <span className="flex items-center gap-2"><span className="w-2 h-2 bg-red-500" style={{boxShadow: '0 0 5px #ff0040'}}></span> CANCELLED</span>
+          <div className="mt-6 pt-6 border-t border-white/10 flex flex-wrap gap-5 justify-center text-xs">
+            <span className="flex items-center gap-2 text-white/60"><span className="w-2.5 h-2.5 bg-[#999]"></span>Active</span>
+            <span className="flex items-center gap-2 text-white/60"><span className="w-2.5 h-2.5 bg-white"></span>Completed</span>
+            <span className="flex items-center gap-2 text-white/60"><span className="w-2.5 h-2.5 bg-[#666]"></span>Paused</span>
+            <span className="flex items-center gap-2 text-white/60"><span className="w-2.5 h-2.5 bg-[#333]"></span>Cancelled</span>
           </div>
         </div>
       );
     }
 
-    // ═══════════════════════════════════════════
-    // 🎯 MAIN APP
-    // ═══════════════════════════════════════════
+    // ═══ MAIN APP ═══
     function App() {
       const [user, setUser] = useState(null);
       const [authLoading, setAuthLoading] = useState(true);
@@ -929,23 +609,17 @@
       const [filterCategory, setFilterCategory] = useState('all');
       const [filterStatus, setFilterStatus] = useState('all');
       const [dashboardFilter, setDashboardFilter] = useState('all');
-      const [time, setTime] = useState(new Date());
-
-      useEffect(() => {
-        const timer = setInterval(() => setTime(new Date()), 1000);
-        return () => clearInterval(timer);
-      }, []);
 
       const [formData, setFormData] = useState({
         name: '', description: '', category: 'digital', budget: '', spent: '',
         inquiries: '', testDrives: '', bookings: '', deliveries: '', followUps: '', 
-        status: 'planning', startDate: '', endDate: '', team: '', platform: '', target: ''
+        status: 'planning', startDate: '', endDate: ''
       });
 
       const categories = [
         { value: 'digital', label: 'Digital Lead Gen', code: 'DIG' },
-        { value: 'motorshow', label: 'Motor Show', code: 'MSH' },
-        { value: 'testdrive', label: 'Test Drive', code: 'TST' },
+        { value: 'motorshow', label: 'Motor Show', code: 'SHOW' },
+        { value: 'testdrive', label: 'Test Drive', code: 'DRV' },
         { value: 'dealer', label: 'Dealer / Roadshow', code: 'DLR' },
         { value: 'service', label: 'Service', code: 'SRV' },
         { value: 'crm', label: 'CRM', code: 'CRM' },
@@ -969,7 +643,7 @@
         setFormData({
           name: '', description: '', category: 'digital', budget: '', spent: '',
           inquiries: '', testDrives: '', bookings: '', deliveries: '', followUps: '', 
-          status: 'planning', startDate: '', endDate: '', team: '', platform: '', target: ''
+          status: 'planning', startDate: '', endDate: ''
         });
         setEditingProject(null);
       };
@@ -995,7 +669,7 @@
 
       const handleLogout = async () => {
         await auth.signOut();
-        showToast('[SYS] Session terminated', 'success');
+        showToast('ออกจากระบบเรียบร้อย', 'success');
       };
 
       const openModal = (project = null) => {
@@ -1010,8 +684,7 @@
             bookings: project.bookings || '', deliveries: project.deliveries || '', followUps: project.followUps || '',
             status: project.status || 'planning',
             startDate: sDate ? sDate.toISOString().split('T')[0] : '',
-            endDate: eDate ? eDate.toISOString().split('T')[0] : '',
-            team: project.team || '', platform: project.platform || '', target: project.target || ''
+            endDate: eDate ? eDate.toISOString().split('T')[0] : ''
           });
         } else { resetForm(); }
         setShowModal(true);
@@ -1019,11 +692,11 @@
 
       const saveProject = async () => {
         if (!formData.name || !formData.startDate || !formData.endDate) {
-          showToast('[ERR] Mission name and dates required', 'error');
+          showToast('กรุณากรอกชื่อและวันที่', 'error');
           return;
         }
         if (new Date(formData.startDate) > new Date(formData.endDate)) {
-          showToast('[ERR] Invalid date range', 'error');
+          showToast('วันที่เริ่มต้นต้องน้อยกว่าวันที่สิ้นสุด', 'error');
           return;
         }
 
@@ -1033,28 +706,27 @@
           inquiries: parseInt(formData.inquiries) || 0, testDrives: parseInt(formData.testDrives) || 0,
           bookings: parseInt(formData.bookings) || 0, deliveries: parseInt(formData.deliveries) || 0,
           followUps: parseInt(formData.followUps) || 0, status: formData.status,
-          startDate: new Date(formData.startDate), endDate: new Date(formData.endDate),
-          team: formData.team || '', platform: formData.platform || '', target: formData.target || ''
+          startDate: new Date(formData.startDate), endDate: new Date(formData.endDate)
         };
 
         try {
           if (editingProject) await FirebaseService.updateProject(editingProject.id, dataToSave);
           else await FirebaseService.addProject(dataToSave);
-          showToast(editingProject ? '[OK] Mission updated' : '[OK] Mission deployed', 'success');
+          showToast(editingProject ? 'อัปเดตสำเร็จ' : 'สร้างใหม่สำเร็จ', 'success');
           setShowModal(false);
           resetForm();
         } catch (error) {
-          showToast('[FAIL] ' + error.message, 'error');
+          showToast('เกิดข้อผิดพลาด', 'error');
         }
       };
 
       const deleteProject = async (id) => {
-        if (!confirm('⚠ PURGE MISSION DATA? This cannot be undone.')) return;
+        if (!confirm('ต้องการลบแคมเปญนี้?')) return;
         try {
           await FirebaseService.deleteProject(id);
-          showToast('[PURGE] Mission erased', 'success');
+          showToast('ลบเรียบร้อย', 'success');
         } catch (error) {
-          showToast('[FAIL] Deletion error', 'error');
+          showToast('เกิดข้อผิดพลาด', 'error');
         }
       };
 
@@ -1076,7 +748,6 @@
       const metrics = useMemo(() => {
         const total = dashboardProjects.length;
         const active = dashboardProjects.filter(p => p.status === 'active').length;
-        const completed = dashboardProjects.filter(p => p.status === 'completed').length;
         const totalBudget = dashboardProjects.reduce((sum, p) => sum + (p.budget || 0), 0);
         const totalSpent = dashboardProjects.reduce((sum, p) => sum + (p.spent || 0), 0);
         const totalInquiries = dashboardProjects.reduce((sum, p) => sum + (p.inquiries || 0), 0);
@@ -1085,7 +756,7 @@
         const totalDeliveries = dashboardProjects.reduce((sum, p) => sum + (p.deliveries || 0), 0);
         const totalFollowUps = dashboardProjects.reduce((sum, p) => sum + (p.followUps || 0), 0);
         const cpl = totalInquiries > 0 ? (totalSpent / totalInquiries).toFixed(0) : 0;
-        return { total, active, completed, totalBudget, totalSpent, totalInquiries, totalTestDrives, totalBookings, totalDeliveries, totalFollowUps, cpl };
+        return { total, active, totalBudget, totalSpent, totalInquiries, totalTestDrives, totalBookings, totalDeliveries, totalFollowUps, cpl };
       }, [dashboardProjects]);
 
       const categoryBreakdown = useMemo(() => {
@@ -1109,39 +780,28 @@
 
       const getStatusBadge = (status) => {
         const map = {
-          planning: { label: 'PLANNING', color: 'text-green-400/60', border: 'border-green-400/40' },
-          active: { label: 'ACTIVE', color: 'text-cyan', border: 'border-cyan-400', pulse: true },
-          paused: { label: 'PAUSED', color: 'text-amber', border: 'border-amber-400' },
-          completed: { label: 'DONE', color: 'text-green', border: 'border-green-500' },
-          cancelled: { label: 'KILLED', color: 'text-red', border: 'border-red-500' }
+          planning: 'badge-planning',
+          active: 'badge-active',
+          paused: 'badge-paused',
+          completed: 'badge-completed',
+          cancelled: 'badge-cancelled'
         };
-        const s = map[status] || map.planning;
-        return <span className={`px-2 py-0.5 border ${s.border} ${s.color} text-[10px] font-bold uppercase tracking-wider ${s.pulse ? 'pulse-ring' : ''}`}>[{s.label}]</span>;
+        const label = (statuses.find(s => s.value === status) || statuses[0]).label;
+        return <span className={`badge ${map[status] || 'badge-planning'}`}>{label.toUpperCase()}</span>;
       };
 
       const formatDate = (date) => {
         const d = parseDate(date);
-        if (!d) return '----.--.--';
+        if (!d) return '-';
         return d.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
       };
 
       if (authLoading) {
         return (
           <div className="min-h-screen flex items-center justify-center">
-            <div className="terminal-window w-full max-w-md fade-in">
-              <div className="terminal-titlebar">
-                <span className="terminal-dot bg-red-500"></span>
-                <span className="terminal-dot bg-amber-500"></span>
-                <span className="terminal-dot bg-green-500"></span>
-                <span className="ml-2 text-[11px] text-green-400 uppercase tracking-wider">BOOT_SEQUENCE</span>
-              </div>
-              <div className="terminal-body boot-text">
-                <div>[BOOT] Starting MARKETING v2.0.7...</div>
-                <div>[BOOT] Verifying identity<span className="loading-dots"></span></div>
-                <div>[OK] Decrypting modules ✓</div>
-                <div>[OK] Loading dashboard ✓</div>
-                <div className="mt-4 text-green">&gt; <span className="cursor"></span></div>
-              </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold mb-2">LOADING_<span className="cursor"></span></div>
+              <div className="text-sm text-white/40">กำลังเริ่มต้นระบบ</div>
             </div>
           </div>
         );
@@ -1150,58 +810,42 @@
       if (!user) return <LoginComponent />;
 
       return (
-        <div className="min-h-screen relative">
+        <div className="min-h-screen">
           {toast && (
-            <div className={`fixed top-4 right-4 z-[100] terminal-window toast p-3 min-w-[280px] ${toast.type === 'error' ? 'border-red-500' : 'border-green-500'}`} style={{borderWidth: '1px', borderStyle: 'solid'}}>
-              <div className="flex items-center gap-2 text-xs uppercase tracking-wider">
-                <i data-lucide={toast.type === 'error' ? 'x' : 'check'} className={`w-4 h-4 ${toast.type === 'error' ? 'text-red' : 'text-green'}`}></i>
-                <span className={toast.type === 'error' ? 'text-red' : 'text-green'}>{toast.message}</span>
-              </div>
+            <div className={`fixed top-5 right-5 z-[100] card toast px-5 py-3 flex items-center gap-2 ${toast.type === 'error' ? 'border-red-500/40' : 'border-white/30'}`}>
+              <i data-lucide={toast.type === 'error' ? 'x' : 'check'} className={`w-4 h-4 ${toast.type === 'error' ? 'text-red-400' : 'text-white'}`}></i>
+              <span className="text-sm">{toast.message}</span>
             </div>
           )}
 
-          {/* HEADER */}
-          <header className="sticky top-0 z-40 terminal-window border-b border-green-900/50">
-            <div className="terminal-titlebar flex justify-between items-center">
+          <header className="sticky top-0 z-40 border-b border-white/10 bg-black/80 backdrop-blur">
+            <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <span className="text-[11px] text-green uppercase tracking-widest font-bold">
-                  [ MARKETING://ROOT ]
-                </span>
-                <span className="hidden md:inline text-[10px] text-green-400/60 uppercase tracking-wider">
-                  v2.0.7 // {time.toLocaleTimeString('en-US', { hour12: false })}
-                </span>
-              </div>
-              <div className="flex items-center gap-3 text-[10px] uppercase tracking-wider">
-                <span className="hidden md:flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 bg-green-500 pulse-ring"></span>
-                  <span className="text-green status-online">ONLINE</span>
-                </span>
-                <span className="text-green-400/60 hidden sm:inline">USER: {user.email}</span>
-              </div>
-            </div>
-            <div className="px-4 py-3 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-              <div>
-                <h1 className="glitch text-2xl font-bold uppercase tracking-widest vt323" style={{fontSize: '32px'}} data-text="> MAINFRAME_ACCESS">
-                  &gt; MAINFRAME_ACCESS
-                </h1>
-                <div className="text-[10px] text-green-400/60 uppercase tracking-[0.3em]">
-                  ═══ MARKETING OPERATIONS TERMINAL ═══
+                <div className="w-10 h-10 bg-white text-black flex items-center justify-center font-bold">
+                  M
+                </div>
+                <div>
+                  <div className="font-bold text-lg mono-header">MARKETING_TERMINAL</div>
+                  <div className="flex items-center gap-2 text-xs text-white/40">
+                    <span className="pulse-dot"></span>
+                    <span>{user.email}</span>
+                  </div>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <button onClick={() => openModal()} className="hacker-btn hacker-btn-primary text-[11px]">
-                  + DEPLOY MISSION
+              <div className="flex items-center gap-2">
+                <button onClick={() => openModal()} className="btn-primary px-5 py-2.5 text-sm tracking-wider">
+                  + NEW
                 </button>
-                <button onClick={handleLogout} className="hacker-btn hacker-btn-danger text-[11px]">
-                  &gt; LOGOUT
+                <button onClick={handleLogout} className="btn-ghost px-5 py-2.5 text-sm tracking-wider">
+                  LOGOUT
                 </button>
               </div>
             </div>
           </header>
 
-          <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="max-w-7xl mx-auto px-6 py-6">
             {/* TABS */}
-            <div className="flex gap-1 mb-4 overflow-x-auto pb-1">
+            <div className="flex gap-0 mb-8 border-b border-white/10 overflow-x-auto">
               {[
                 { id: 'dashboard', label: 'DASHBOARD' },
                 { id: 'breakdown', label: 'ANALYTICS' },
@@ -1209,47 +853,39 @@
                 { id: 'calendar', label: 'TIMELINE' }
               ].map((tab) => (
                 <button key={tab.id} onClick={() => setActiveTab(tab.id)} 
-                  className={`px-4 py-2 text-[11px] font-bold uppercase tracking-widest transition whitespace-nowrap ${activeTab === tab.id ? 'tab-active' : 'text-green-400/60 hover:text-green border border-transparent hover:border-green-900/50'}`}>
-                  &gt; {tab.label}
+                  className={`tab ${activeTab === tab.id ? 'tab-active' : ''}`}>
+                  {tab.label}
                 </button>
               ))}
             </div>
 
             {/* DASHBOARD */}
             {activeTab === 'dashboard' && (
-              <div className="fade-in space-y-4">
-                <div className="terminal-window">
-                  <div className="terminal-titlebar">
-                    <span className="terminal-dot bg-green-500"></span>
-                    <span className="text-[10px] text-green-400 uppercase tracking-wider">◆ FILTER_MODULE</span>
-                  </div>
-                  <div className="terminal-body">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-[10px] text-green-400/70 uppercase tracking-widest mr-2">&gt; SELECT:</span>
-                      <button onClick={() => setDashboardFilter('all')} className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider border ${dashboardFilter === 'all' ? 'bg-green text-black border-green' : 'border-green-900/50 text-green-400/60 hover:border-green'}`}>ALL [{projects.length}]</button>
-                      <button onClick={() => setDashboardFilter('active')} className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider border ${dashboardFilter === 'active' ? 'bg-cyan-400 text-black border-cyan-400' : 'border-green-900/50 text-green-400/60 hover:border-green'}`}>ACTIVE [{projects.filter(p => p.status === 'active').length}]</button>
-                      {categories.map(cat => {
-                        const count = projects.filter(p => p.category === cat.value).length;
-                        if (count === 0) return null;
-                        return (
-                          <button key={cat.value} onClick={() => setDashboardFilter(cat.value)} 
-                            className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider border ${dashboardFilter === cat.value ? 'bg-green text-black border-green' : 'border-green-900/50 text-green-400/60 hover:border-green'}`}>
-                            [{cat.code}] ({count})
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
+              <div className="fade-in space-y-6">
+                <div className="card p-4 flex flex-wrap items-center gap-2">
+                  <span className="label mr-2">FILTER:</span>
+                  <button onClick={() => setDashboardFilter('all')} className={`px-4 py-1.5 text-xs tracking-widest ${dashboardFilter === 'all' ? 'bg-white text-black' : 'text-white/60 hover:text-white'}`}>ALL [{projects.length}]</button>
+                  <button onClick={() => setDashboardFilter('active')} className={`px-4 py-1.5 text-xs tracking-widest ${dashboardFilter === 'active' ? 'bg-white text-black' : 'text-white/60 hover:text-white'}`}>ACTIVE [{projects.filter(p => p.status === 'active').length}]</button>
+                  {categories.map(cat => {
+                    const count = projects.filter(p => p.category === cat.value).length;
+                    if (count === 0) return null;
+                    return (
+                      <button key={cat.value} onClick={() => setDashboardFilter(cat.value)} 
+                        className={`px-4 py-1.5 text-xs tracking-widest ${dashboardFilter === cat.value ? 'bg-white text-black' : 'text-white/60 hover:text-white'}`}>
+                        [{cat.code}] ({count})
+                      </button>
+                    );
+                  })}
                 </div>
 
                 <AutoFunnel data={{ inquiries: metrics.totalInquiries, testDrives: metrics.totalTestDrives, bookings: metrics.totalBookings, deliveries: metrics.totalDeliveries }} />
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                  <StatCard title="MISSIONS" value={metrics.total} icon="folder" variant="green" subtitle={`active: ${metrics.active}`} />
-                  <StatCard title="BUDGET" value={`฿${metrics.totalBudget.toLocaleString()}`} icon="wallet" variant="amber" />
-                  <StatCard title="EXPENDITURE" value={`฿${metrics.totalSpent.toLocaleString()}`} icon="credit-card" variant="red" subtitle={`${metrics.totalBudget > 0 ? ((metrics.totalSpent/metrics.totalBudget)*100).toFixed(0) : 0}% consumed`} />
-                  <StatCard title="COST/LEAD" value={`฿${parseInt(metrics.cpl || 0).toLocaleString()}`} icon="target" variant="cyan" subtitle="cpl metric" />
-                  <StatCard title="FOLLOW-UP" value={metrics.totalFollowUps.toLocaleString()} icon="phone-call" variant="green" subtitle="contacts" />
+                <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+                  <StatCard label="MISSIONS" value={metrics.total} icon="folder" hint={`${metrics.active} active`} />
+                  <StatCard label="BUDGET" value={`฿${metrics.totalBudget.toLocaleString()}`} icon="wallet" />
+                  <StatCard label="SPENT" value={`฿${metrics.totalSpent.toLocaleString()}`} icon="credit-card" hint={`${metrics.totalBudget > 0 ? ((metrics.totalSpent/metrics.totalBudget)*100).toFixed(0) : 0}% used`} />
+                  <StatCard label="COST/LEAD" value={`฿${parseInt(metrics.cpl || 0).toLocaleString()}`} icon="target" hint="per inquiry" />
+                  <StatCard label="FOLLOW-UP" value={metrics.totalFollowUps.toLocaleString()} icon="phone" />
                 </div>
               </div>
             )}
@@ -1258,32 +894,30 @@
             {activeTab === 'breakdown' && (
               <div className="fade-in">
                 {categoryBreakdown.length === 0 ? (
-                  <div className="terminal-window p-12 text-center">
-                    <div className="text-4xl vt323 mb-3">[ NO DATA ]</div>
-                    <div className="text-xs text-green-400/60 uppercase tracking-wider">&gt; awaiting mission deployment</div>
+                  <div className="card p-16 text-center">
+                    <div className="text-3xl font-bold mb-2">[ NO DATA ]</div>
+                    <div className="text-sm text-white/40">ยังไม่มีข้อมูล</div>
                   </div>
                 ) : (
-                  <div className="terminal-window">
-                    <div className="terminal-titlebar">
-                      <span className="terminal-dot bg-red-500"></span>
-                      <span className="terminal-dot bg-amber-500"></span>
-                      <span className="terminal-dot bg-green-500"></span>
-                      <span className="ml-2 text-[11px] text-green-400 uppercase tracking-wider">
-                        ◆ ANALYTICS_REPORT.txt
-                      </span>
+                  <div className="card overflow-hidden">
+                    <div className="p-6 border-b border-white/10 flex justify-between items-center">
+                      <div>
+                        <div className="text-xs tracking-[0.3em] text-white/40 mb-1">// ANALYTICS</div>
+                        <h2 className="text-xl font-bold mono-header">Breakdown by Category</h2>
+                      </div>
                     </div>
                     <div className="overflow-x-auto">
-                      <table className="w-full text-xs">
+                      <table className="w-full">
                         <thead>
-                          <tr className="border-b border-green-900/50 text-[10px] text-green-400/70 uppercase tracking-wider">
-                            <th className="text-left p-3">[ CATEGORY ]</th>
-                            <th className="text-right p-3">MIS</th>
-                            <th className="text-right p-3">INQ</th>
-                            <th className="text-right p-3 text-cyan">TST</th>
-                            <th className="text-right p-3 text-amber">BK</th>
-                            <th className="text-right p-3 text-red">DLR</th>
-                            <th className="text-right p-3">CONV</th>
-                            <th className="text-right p-3">BUDGET</th>
+                          <tr className="border-b border-white/10">
+                            <th className="text-left p-4 label">Category</th>
+                            <th className="text-right p-4 label">Count</th>
+                            <th className="text-right p-4 label">Inq</th>
+                            <th className="text-right p-4 label">Test</th>
+                            <th className="text-right p-4 label">Book</th>
+                            <th className="text-right p-4 label">Delv</th>
+                            <th className="text-right p-4 label">Conv%</th>
+                            <th className="text-right p-4 label">Budget</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1291,40 +925,43 @@
                             const conv = cat.totalInquiries > 0 ? ((cat.totalDeliveries / cat.totalInquiries) * 100).toFixed(2) : '0.00';
                             const spentPercent = cat.totalBudget > 0 ? ((cat.totalSpent / cat.totalBudget) * 100).toFixed(0) : 0;
                             return (
-                              <tr key={cat.value} className="border-b border-green-900/30 hover:bg-green-900/20 transition">
-                                <td className="p-3 text-green uppercase tracking-wider">[{cat.code}] <span className="text-green-400/80 normal-case">{cat.label}</span></td>
-                                <td className="text-right p-3">{cat.count}</td>
-                                <td className="text-right p-3">{cat.totalInquiries.toLocaleString()}</td>
-                                <td className="text-right p-3 text-cyan">{cat.totalTestDrives.toLocaleString()}</td>
-                                <td className="text-right p-3 text-amber">{cat.totalBookings.toLocaleString()}</td>
-                                <td className="text-right p-3 text-red font-bold">{cat.totalDeliveries.toLocaleString()}</td>
-                                <td className="text-right p-3">
-                                  <span className="px-2 py-0.5 border border-green text-green text-[10px]">{conv}%</span>
+                              <tr key={cat.value} className="border-b border-white/5 hover:bg-white/[0.02] transition">
+                                <td className="p-4">
+                                  <div className="font-semibold">[{cat.code}]</div>
+                                  <div className="text-xs text-white/50">{cat.label}</div>
                                 </td>
-                                <td className="text-right p-3">
-                                  <div className="text-[9px] text-green-400/60 mb-1">฿{cat.totalSpent.toLocaleString()}/{cat.totalBudget.toLocaleString()}</div>
-                                  <div className="w-24 ml-auto text-[9px] text-green terminal-progress">
-                                    [{('█'.repeat(Math.min(Math.round(spentPercent/10), 10)) + '░'.repeat(Math.max(10 - Math.round(spentPercent/10), 0))) + ']'} {spentPercent}%
+                                <td className="text-right p-4">{cat.count}</td>
+                                <td className="text-right p-4">{cat.totalInquiries.toLocaleString()}</td>
+                                <td className="text-right p-4">{cat.totalTestDrives.toLocaleString()}</td>
+                                <td className="text-right p-4">{cat.totalBookings.toLocaleString()}</td>
+                                <td className="text-right p-4 font-bold">{cat.totalDeliveries.toLocaleString()}</td>
+                                <td className="text-right p-4">
+                                  <span className="badge badge-completed">{conv}%</span>
+                                </td>
+                                <td className="text-right p-4">
+                                  <div className="text-xs text-white/50 mb-1.5">฿{cat.totalSpent.toLocaleString()} / {cat.totalBudget.toLocaleString()}</div>
+                                  <div className="progress-track w-28 ml-auto">
+                                    <div className={`progress-fill ${spentPercent > 90 ? 'progress-fill-danger' : spentPercent > 70 ? 'progress-fill-warning' : 'progress-fill-success'}`} style={{ width: `${Math.min(spentPercent, 100)}%` }}></div>
                                   </div>
                                 </td>
                               </tr>
                             );
                           })}
-                          <tr className="bg-green-900/20 font-bold border-t border-green-500">
-                            <td className="p-3 text-green uppercase tracking-wider">[ TOTAL ]</td>
-                            <td className="text-right p-3">{categoryBreakdown.reduce((s, c) => s + c.count, 0)}</td>
-                            <td className="text-right p-3">{categoryBreakdown.reduce((s, c) => s + c.totalInquiries, 0).toLocaleString()}</td>
-                            <td className="text-right p-3 text-cyan">{categoryBreakdown.reduce((s, c) => s + c.totalTestDrives, 0).toLocaleString()}</td>
-                            <td className="text-right p-3 text-amber">{categoryBreakdown.reduce((s, c) => s + c.totalBookings, 0).toLocaleString()}</td>
-                            <td className="text-right p-3 text-red">{categoryBreakdown.reduce((s, c) => s + c.totalDeliveries, 0).toLocaleString()}</td>
-                            <td className="text-right p-3">
+                          <tr className="bg-white/[0.03] border-t border-white/20 font-bold">
+                            <td className="p-4">[TOTAL]</td>
+                            <td className="text-right p-4">{categoryBreakdown.reduce((s, c) => s + c.count, 0)}</td>
+                            <td className="text-right p-4">{categoryBreakdown.reduce((s, c) => s + c.totalInquiries, 0).toLocaleString()}</td>
+                            <td className="text-right p-4">{categoryBreakdown.reduce((s, c) => s + c.totalTestDrives, 0).toLocaleString()}</td>
+                            <td className="text-right p-4">{categoryBreakdown.reduce((s, c) => s + c.totalBookings, 0).toLocaleString()}</td>
+                            <td className="text-right p-4">{categoryBreakdown.reduce((s, c) => s + c.totalDeliveries, 0).toLocaleString()}</td>
+                            <td className="text-right p-4">
                               {(() => {
                                 const v = categoryBreakdown.reduce((s, c) => s + c.totalInquiries, 0);
                                 const d = categoryBreakdown.reduce((s, c) => s + c.totalDeliveries, 0);
-                                return <span className="px-2 py-0.5 border border-green text-green text-[10px]">{v > 0 ? ((d/v)*100).toFixed(2) + '%' : '0.00%'}</span>;
+                                return <span className="badge badge-completed">{v > 0 ? ((d/v)*100).toFixed(2) + '%' : '0.00%'}</span>;
                               })()}
                             </td>
-                            <td className="text-right p-3">฿{categoryBreakdown.reduce((s, c) => s + c.totalSpent, 0).toLocaleString()}</td>
+                            <td className="text-right p-4">฿{categoryBreakdown.reduce((s, c) => s + c.totalSpent, 0).toLocaleString()}</td>
                           </tr>
                         </tbody>
                       </table>
@@ -1336,41 +973,35 @@
 
             {/* MISSIONS */}
             {activeTab === 'projects' && (
-              <div className="fade-in space-y-3">
-                <div className="terminal-window">
-                  <div className="terminal-titlebar">
-                    <span className="terminal-dot bg-green-500"></span>
-                    <span className="text-[10px] text-green-400 uppercase tracking-wider">◆ QUERY_PARAMETERS</span>
-                  </div>
-                  <div className="terminal-body">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <div>
-                        <label className="block text-[10px] text-green-400/80 mb-1 uppercase tracking-wider">&gt; SEARCH:</label>
-                        <input type="text" placeholder="pattern..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="hacker-input text-[11px]" />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] text-green-400/80 mb-1 uppercase tracking-wider">&gt; CATEGORY:</label>
-                        <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} className="hacker-select text-[11px]">
-                          <option value="all">[ ALL ]</option>
-                          {categories.map(cat => <option key={cat.value} value={cat.value}>[{cat.code}] {cat.label}</option>)}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-[10px] text-green-400/80 mb-1 uppercase tracking-wider">&gt; STATUS:</label>
-                        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="hacker-select text-[11px]">
-                          <option value="all">[ ALL ]</option>
-                          {statuses.map(st => <option key={st.value} value={st.value}>[{st.label.toUpperCase()}]</option>)}
-                        </select>
-                      </div>
+              <div className="fade-in space-y-5">
+                <div className="card p-5">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="label block mb-2">Search</label>
+                      <input type="text" placeholder="ค้นหา..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="input" />
+                    </div>
+                    <div>
+                      <label className="label block mb-2">Category</label>
+                      <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} className="input">
+                        <option value="all">[ ALL ]</option>
+                        {categories.map(cat => <option key={cat.value} value={cat.value}>[{cat.code}] {cat.label}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="label block mb-2">Status</label>
+                      <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="input">
+                        <option value="all">[ ALL ]</option>
+                        {statuses.map(st => <option key={st.value} value={st.value}>{st.label}</option>)}
+                      </select>
                     </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                   {filteredProjects.length === 0 ? (
-                    <div className="col-span-full terminal-window p-12 text-center">
-                      <div className="text-4xl vt323 mb-3">[ NO MATCHES ]</div>
-                      <div className="text-xs text-green-400/60 uppercase tracking-wider">&gt; refine query parameters</div>
+                    <div className="col-span-full card p-16 text-center">
+                      <div className="text-3xl font-bold mb-2">[ NO MATCHES ]</div>
+                      <div className="text-sm text-white/40">ไม่พบแคมเปญ</div>
                     </div>
                   ) : (
                     filteredProjects.map(p => {
@@ -1379,65 +1010,67 @@
                       const bookingRate = inquiries > 0 ? (((p.bookings || 0) / inquiries) * 100).toFixed(0) : 0;
                       const deliveryRate = inquiries > 0 ? (((p.deliveries || 0) / inquiries) * 100).toFixed(0) : 0;
                       const spentPercent = (p.budget || 0) > 0 ? (((p.spent || 0) / (p.budget || 0)) * 100).toFixed(0) : 0;
+                      const cat = categories.find(c => c.value === p.category);
 
                       return (
-                        <div key={p.id} className="terminal-window stat-card">
-                          <div className="terminal-titlebar flex justify-between">
-                            <div className="flex items-center gap-2">
-                              <span className="terminal-dot bg-green-500 pulse-ring"></span>
-                              <span className="text-[10px] text-green uppercase tracking-wider">MISSION_{p.id.substring(0,6)}</span>
+                        <div key={p.id} className="card card-hover p-6">
+                          <div className="flex justify-between items-start mb-4 gap-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="text-xs tracking-[0.2em] text-white/40 mb-1">[{cat?.code || 'OTH'}]</div>
+                              <h4 className="font-bold text-lg mono-header truncate">{p.name}</h4>
                             </div>
                             {getStatusBadge(p.status)}
                           </div>
-                          <div className="terminal-body">
-                            <h4 className="font-bold text-green text-sm mb-1 truncate">{p.name}</h4>
-                            <div className="text-[10px] text-green-400/60 uppercase tracking-wider mb-3">
-                              [{(categories.find(c => c.value === p.category) || {}).code || 'OTH'}] {formatDate(p.startDate)} → {formatDate(p.endDate)}
-                            </div>
 
-                            <div className="grid grid-cols-4 gap-1 mb-3 p-2 border border-green-900/50 bg-black/30 text-center">
-                              <div>
-                                <div className="text-[8px] text-green-400/60 uppercase">INQ</div>
-                                <div className="text-green font-bold vt323" style={{fontSize: '18px'}}>{inquiries.toLocaleString()}</div>
-                                <div className="text-[8px] text-green-400/50">100%</div>
-                              </div>
-                              <div className="border-l border-green-900/50">
-                                <div className="text-[8px] text-cyan uppercase">TST</div>
-                                <div className="text-cyan font-bold vt323" style={{fontSize: '18px'}}>{(p.testDrives || 0).toLocaleString()}</div>
-                                <div className="text-[8px] text-cyan">{testDriveRate}%</div>
-                              </div>
-                              <div className="border-l border-green-900/50">
-                                <div className="text-[8px] text-amber uppercase">BK</div>
-                                <div className="text-amber font-bold vt323" style={{fontSize: '18px'}}>{(p.bookings || 0).toLocaleString()}</div>
-                                <div className="text-[8px] text-amber">{bookingRate}%</div>
-                              </div>
-                              <div className="border-l border-green-900/50">
-                                <div className="text-[8px] text-red uppercase">DLR</div>
-                                <div className="text-red font-bold vt323" style={{fontSize: '18px'}}>{(p.deliveries || 0).toLocaleString()}</div>
-                                <div className="text-[8px] text-red">{deliveryRate}%</div>
-                              </div>
-                            </div>
+                          <div className="text-xs text-white/50 mb-5">
+                            {formatDate(p.startDate)} → {formatDate(p.endDate)}
+                          </div>
 
-                            <div className="mb-3">
-                              <div className="flex justify-between text-[9px] text-green-400/70 mb-1 uppercase tracking-wider">
-                                <span>&gt; BUDGET_UTILIZATION</span>
-                                <span className={spentPercent > 90 ? 'text-red' : spentPercent > 70 ? 'text-amber' : 'text-green'}>
-                                  {spentPercent}%
-                                </span>
-                              </div>
-                              <div className="text-[10px] terminal-progress text-green">
-                                [{('█'.repeat(Math.min(Math.round(spentPercent/10), 10)) + '░'.repeat(Math.max(10 - Math.round(spentPercent/10), 0))) + ']'} ฿{(p.spent || 0).toLocaleString()}/{(p.budget || 0).toLocaleString()}
-                              </div>
+                          <div className="grid grid-cols-4 gap-1 mb-5 p-3 bg-white/[0.03] border border-white/10">
+                            <div className="text-center">
+                              <div className="text-[9px] tracking-widest text-white/40 mb-1">INQ</div>
+                              <div className="text-lg font-bold">{inquiries.toLocaleString()}</div>
+                              <div className="text-[9px] text-white/40">100%</div>
                             </div>
+                            <div className="text-center border-l border-white/10">
+                              <div className="text-[9px] tracking-widest text-white/40 mb-1">TST</div>
+                              <div className="text-lg font-bold">{(p.testDrives || 0).toLocaleString()}</div>
+                              <div className="text-[9px] text-white/40">{testDriveRate}%</div>
+                            </div>
+                            <div className="text-center border-l border-white/10">
+                              <div className="text-[9px] tracking-widest text-white/40 mb-1">BK</div>
+                              <div className="text-lg font-bold">{(p.bookings || 0).toLocaleString()}</div>
+                              <div className="text-[9px] text-white/40">{bookingRate}%</div>
+                            </div>
+                            <div className="text-center border-l border-white/10">
+                              <div className="text-[9px] tracking-widest text-white/40 mb-1">DLV</div>
+                              <div className="text-lg font-bold">{(p.deliveries || 0).toLocaleString()}</div>
+                              <div className="text-[9px] text-white/40">{deliveryRate}%</div>
+                            </div>
+                          </div>
 
-                            <div className="flex gap-2 pt-3 border-t border-green-900/50">
-                              <button onClick={() => openModal(p)} className="flex-1 hacker-btn text-[10px] py-1.5">
-                                &gt; EDIT
-                              </button>
-                              <button onClick={() => deleteProject(p.id)} className="flex-1 hacker-btn hacker-btn-danger text-[10px] py-1.5">
-                                &gt; PURGE
-                              </button>
+                          <div className="mb-5">
+                            <div className="flex justify-between text-[10px] tracking-widest text-white/50 mb-2">
+                              <span>BUDGET</span>
+                              <span className={spentPercent > 90 ? 'text-red-400' : spentPercent > 70 ? 'text-yellow-400' : 'text-green-400'}>
+                                {spentPercent}%
+                              </span>
                             </div>
+                            <div className="progress-track">
+                              <div className={`progress-fill ${spentPercent > 90 ? 'progress-fill-danger' : spentPercent > 70 ? 'progress-fill-warning' : 'progress-fill-success'}`} style={{ width: `${Math.min(spentPercent, 100)}%` }}></div>
+                            </div>
+                            <div className="text-[11px] text-white/40 mt-1.5 text-right">
+                              ฿{(p.spent || 0).toLocaleString()} / {(p.budget || 0).toLocaleString()}
+                            </div>
+                          </div>
+
+                          <div className="flex gap-2 pt-4 border-t border-white/10">
+                            <button onClick={() => openModal(p)} className="flex-1 btn-ghost py-2 text-xs tracking-widest">
+                              EDIT
+                            </button>
+                            <button onClick={() => deleteProject(p.id)} className="flex-1 btn-danger py-2 text-xs tracking-widest">
+                              DELETE
+                            </button>
                           </div>
                         </div>
                       );
@@ -1447,18 +1080,10 @@
               </div>
             )}
 
-            {/* TIMELINE */}
+            {/* CALENDAR */}
             {activeTab === 'calendar' && (
-              <div className="fade-in terminal-window">
-                <div className="terminal-titlebar">
-                  <span className="terminal-dot bg-red-500"></span>
-                  <span className="terminal-dot bg-amber-500"></span>
-                  <span className="terminal-dot bg-green-500"></span>
-                  <span className="ml-2 text-[11px] text-green-400 uppercase tracking-wider">◆ TIMELINE.cron</span>
-                </div>
-                <div className="terminal-body">
-                  <CalendarComponent projects={projects} />
-                </div>
+              <div className="fade-in card p-6">
+                <CalendarComponent projects={projects} />
               </div>
             )}
           </div>
@@ -1466,62 +1091,64 @@
           {/* MODAL */}
           {showModal && (
             <div className="fixed inset-0 flex items-center justify-center z-50 p-4 modal-backdrop" onClick={() => setShowModal(false)}>
-              <div className="terminal-window max-w-2xl w-full max-h-[90vh] overflow-y-auto fade-in" onClick={(e) => e.stopPropagation()}>
-                <div className="terminal-titlebar">
-                  <span className="terminal-dot bg-red-500"></span>
-                  <span className="terminal-dot bg-amber-500"></span>
-                  <span className="terminal-dot bg-green-500"></span>
-                  <span className="ml-2 text-[11px] text-green-400 uppercase tracking-wider">
-                    ◆ {editingProject ? 'MODIFY_MISSION.sh' : 'DEPLOY_MISSION.sh'}
-                  </span>
-                  <button onClick={() => setShowModal(false)} className="ml-auto text-green-400 hover:text-red text-xs">[ X ]</button>
-                </div>
-                <div className="terminal-body space-y-4">
+              <div className="card max-w-2xl w-full p-8 max-h-[90vh] overflow-y-auto fade-in" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center justify-between mb-6 pb-6 border-b border-white/10">
                   <div>
-                    <label className="block text-[10px] text-green-400/80 mb-1 uppercase tracking-wider">&gt; MISSION_CODENAME *</label>
-                    <input type="text" placeholder="operation_name" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="hacker-input" />
+                    <div className="text-xs tracking-[0.3em] text-white/40 mb-1">// {editingProject ? 'EDIT' : 'NEW'}</div>
+                    <h2 className="text-2xl font-bold mono-header">{editingProject ? 'Edit Mission' : 'New Mission'}</h2>
+                  </div>
+                  <button onClick={() => setShowModal(false)} className="btn-ghost w-10 h-10 flex items-center justify-center">
+                    <i data-lucide="x" className="w-4 h-4"></i>
+                  </button>
+                </div>
+
+                <div className="space-y-5">
+                  <div>
+                    <label className="label block mb-2">Mission Name *</label>
+                    <input type="text" placeholder="ชื่อแคมเปญ" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="input" />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-[10px] text-green-400/80 mb-1 uppercase tracking-wider">&gt; CATEGORY</label>
-                      <select value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})} className="hacker-select">
+                      <label className="label block mb-2">Category</label>
+                      <select value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})} className="input">
                         {categories.map(cat => <option key={cat.value} value={cat.value}>[{cat.code}] {cat.label}</option>)}
                       </select>
                     </div>
                     <div>
-                      <label className="block text-[10px] text-green-400/80 mb-1 uppercase tracking-wider">&gt; STATUS *</label>
-                      <select value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value})} className="hacker-select">
-                        {statuses.map(st => <option key={st.value} value={st.value}>[{st.label.toUpperCase()}]</option>)}
+                      <label className="label block mb-2">Status *</label>
+                      <select value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value})} className="input">
+                        {statuses.map(st => <option key={st.value} value={st.value}>{st.label}</option>)}
                       </select>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-[10px] text-green-400/80 mb-1 uppercase tracking-wider">&gt; START_DATE *</label>
-                      <input type="date" value={formData.startDate} onChange={(e) => setFormData({...formData, startDate: e.target.value})} className="hacker-input" />
+                      <label className="label block mb-2">Start Date *</label>
+                      <input type="date" value={formData.startDate} onChange={(e) => setFormData({...formData, startDate: e.target.value})} className="input" />
                     </div>
                     <div>
-                      <label className="block text-[10px] text-green-400/80 mb-1 uppercase tracking-wider">&gt; END_DATE *</label>
-                      <input type="date" value={formData.endDate} onChange={(e) => setFormData({...formData, endDate: e.target.value})} className="hacker-input" />
+                      <label className="label block mb-2">End Date *</label>
+                      <input type="date" value={formData.endDate} onChange={(e) => setFormData({...formData, endDate: e.target.value})} className="input" />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-[10px] text-green-400/80 mb-1 uppercase tracking-wider">&gt; BUDGET_THB</label>
-                      <input type="number" placeholder="0" value={formData.budget} onChange={(e) => setFormData({...formData, budget: e.target.value})} className="hacker-input" />
+                      <label className="label block mb-2">Budget (THB)</label>
+                      <input type="number" placeholder="0" value={formData.budget} onChange={(e) => setFormData({...formData, budget: e.target.value})} className="input" />
                     </div>
                     <div>
-                      <label className="block text-[10px] text-green-400/80 mb-1 uppercase tracking-wider">&gt; EXPENDITURE_THB</label>
-                      <input type="number" placeholder="0" value={formData.spent} onChange={(e) => setFormData({...formData, spent: e.target.value})} className="hacker-input" />
+                      <label className="label block mb-2">Spent (THB)</label>
+                      <input type="number" placeholder="0" value={formData.spent} onChange={(e) => setFormData({...formData, spent: e.target.value})} className="input" />
                     </div>
                   </div>
 
                   {/* Funnel */}
-                  <div className="border border-green-500/50 p-4 bg-green-900/10">
-                    <div className="text-[10px] text-green uppercase tracking-widest mb-3">◆ FUNNEL_PARAMETERS</div>
+                  <div className="p-5 border border-white/20 bg-white/[0.02]">
+                    <div className="text-xs tracking-[0.3em] text-white/40 mb-1">// FUNNEL</div>
+                    <h3 className="font-bold text-lg mb-4">Sales Funnel Data</h3>
 
                     {(() => {
                       const inq = parseInt(formData.inquiries) || 0;
@@ -1530,28 +1157,28 @@
                       const dl = parseInt(formData.deliveries) || 0;
                       const pct = (v) => inq > 0 ? ((v / inq) * 100).toFixed(1) + '%' : '0.0%';
                       return (
-                        <div className="border border-green-900/50 p-3 bg-black/40 mb-3">
-                          <div className="text-[9px] text-green-400/60 uppercase tracking-wider mb-2">&gt; LIVE_PREVIEW</div>
-                          <div className="grid grid-cols-4 gap-1 text-center">
+                        <div className="p-4 bg-black/40 border border-white/10 mb-4">
+                          <div className="label mb-3">LIVE PREVIEW</div>
+                          <div className="grid grid-cols-4 gap-2 text-center">
                             <div>
-                              <div className="text-[8px] text-green-400/60 uppercase">INQ</div>
-                              <div className="text-green vt323" style={{fontSize: '22px'}}>{inq}</div>
-                              <div className="text-[9px] text-green-400/60">100%</div>
+                              <div className="text-[9px] tracking-widest text-white/50 mb-1">INQ</div>
+                              <div className="text-xl font-bold">{inq}</div>
+                              <div className="text-[10px] text-white/40">100%</div>
                             </div>
-                            <div className="border-l border-green-900/50">
-                              <div className="text-[8px] text-cyan uppercase">TST</div>
-                              <div className="text-cyan vt323" style={{fontSize: '22px'}}>{td}</div>
-                              <div className="text-[9px] text-cyan">{pct(td)}</div>
+                            <div className="border-l border-white/10">
+                              <div className="text-[9px] tracking-widest text-white/50 mb-1">TST</div>
+                              <div className="text-xl font-bold">{td}</div>
+                              <div className="text-[10px] text-white/40">{pct(td)}</div>
                             </div>
-                            <div className="border-l border-green-900/50">
-                              <div className="text-[8px] text-amber uppercase">BK</div>
-                              <div className="text-amber vt323" style={{fontSize: '22px'}}>{bk}</div>
-                              <div className="text-[9px] text-amber">{pct(bk)}</div>
+                            <div className="border-l border-white/10">
+                              <div className="text-[9px] tracking-widest text-white/50 mb-1">BK</div>
+                              <div className="text-xl font-bold">{bk}</div>
+                              <div className="text-[10px] text-white/40">{pct(bk)}</div>
                             </div>
-                            <div className="border-l border-green-900/50">
-                              <div className="text-[8px] text-red uppercase">DLR</div>
-                              <div className="text-red vt323" style={{fontSize: '22px'}}>{dl}</div>
-                              <div className="text-[9px] text-red">{pct(dl)}</div>
+                            <div className="border-l border-white/10">
+                              <div className="text-[9px] tracking-widest text-white/50 mb-1">DLV</div>
+                              <div className="text-xl font-bold">{dl}</div>
+                              <div className="text-[10px] text-white/40">{pct(dl)}</div>
                             </div>
                           </div>
                         </div>
@@ -1560,47 +1187,46 @@
 
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                       <div>
-                        <label className="block text-[10px] text-green-400/80 mb-1 uppercase tracking-wider">&gt; INQUIRIES</label>
-                        <input type="number" min="0" placeholder="0" value={formData.inquiries} onChange={(e) => setFormData({...formData, inquiries: e.target.value})} className="hacker-input" />
+                        <label className="label block mb-2">Inquiries</label>
+                        <input type="number" min="0" placeholder="0" value={formData.inquiries} onChange={(e) => setFormData({...formData, inquiries: e.target.value})} className="input" />
                       </div>
                       <div>
-                        <label className="block text-[10px] text-cyan mb-1 uppercase tracking-wider">&gt; TEST_DRIVES</label>
-                        <input type="number" min="0" placeholder="0" value={formData.testDrives} onChange={(e) => setFormData({...formData, testDrives: e.target.value})} className="hacker-input" />
+                        <label className="label block mb-2">Test Drives</label>
+                        <input type="number" min="0" placeholder="0" value={formData.testDrives} onChange={(e) => setFormData({...formData, testDrives: e.target.value})} className="input" />
                       </div>
                       <div>
-                        <label className="block text-[10px] text-amber mb-1 uppercase tracking-wider">&gt; BOOKINGS</label>
-                        <input type="number" min="0" placeholder="0" value={formData.bookings} onChange={(e) => setFormData({...formData, bookings: e.target.value})} className="hacker-input" />
+                        <label className="label block mb-2">Bookings</label>
+                        <input type="number" min="0" placeholder="0" value={formData.bookings} onChange={(e) => setFormData({...formData, bookings: e.target.value})} className="input" />
                       </div>
                       <div>
-                        <label className="block text-[10px] text-red mb-1 uppercase tracking-wider">&gt; DELIVERIES</label>
-                        <input type="number" min="0" placeholder="0" value={formData.deliveries} onChange={(e) => setFormData({...formData, deliveries: e.target.value})} className="hacker-input" />
+                        <label className="label block mb-2">Deliveries</label>
+                        <input type="number" min="0" placeholder="0" value={formData.deliveries} onChange={(e) => setFormData({...formData, deliveries: e.target.value})} className="input" />
                       </div>
                       <div>
-                        <label className="block text-[10px] text-green-400/80 mb-1 uppercase tracking-wider">&gt; FOLLOW_UP</label>
-                        <input type="number" min="0" placeholder="0" value={formData.followUps} onChange={(e) => setFormData({...formData, followUps: e.target.value})} className="hacker-input" />
+                        <label className="label block mb-2">Follow-up</label>
+                        <input type="number" min="0" placeholder="0" value={formData.followUps} onChange={(e) => setFormData({...formData, followUps: e.target.value})} className="input" />
                       </div>
                     </div>
 
-                    <div className="mt-4 border border-green-500 p-3 bg-green-900/20">
-                      <div className="text-[9px] text-green-400/70 uppercase tracking-widest mb-1">◆ OVERALL_CONVERSION</div>
-                      <div className="text-3xl font-bold text-green vt323" style={{fontSize: '36px', textShadow: '0 0 10px #00ff41'}}>
+                    <div className="mt-4 p-5 bg-white text-black">
+                      <div className="text-xs tracking-[0.2em] text-black/50 mb-1">OVERALL CONVERSION</div>
+                      <div className="text-4xl font-bold mono-header">
                         {(Number(formData.inquiries) || 0) > 0 ? (((Number(formData.deliveries) || 0) / (Number(formData.inquiries) || 0)) * 100).toFixed(2) : '0.00'}%
                       </div>
-                      <div className="text-[10px] text-green-400/60">[ deliveries / inquiries ] × 100</div>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-[10px] text-green-400/80 mb-1 uppercase tracking-wider">&gt; NOTES / INTEL</label>
-                    <textarea rows="3" placeholder="mission details..." value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} className="hacker-input resize-none"></textarea>
+                    <label className="label block mb-2">Notes</label>
+                    <textarea rows="3" placeholder="รายละเอียดเพิ่มเติม" value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} className="input resize-none"></textarea>
                   </div>
 
-                  <div className="flex gap-3 pt-3 border-t border-green-900/50">
-                    <button onClick={saveProject} className="flex-1 hacker-btn hacker-btn-primary">
-                      &gt; EXECUTE
+                  <div className="flex gap-3 pt-4 border-t border-white/10">
+                    <button onClick={saveProject} className="flex-1 btn-primary py-3 text-sm tracking-widest">
+                      SAVE
                     </button>
-                    <button onClick={() => setShowModal(false)} className="hacker-btn hacker-btn-danger">
-                      &gt; ABORT
+                    <button onClick={() => setShowModal(false)} className="btn-ghost px-6 py-3 text-sm tracking-widest">
+                      CANCEL
                     </button>
                   </div>
                 </div>
