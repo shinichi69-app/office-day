@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Auto Marketing Manager Dashboard</title>
+  <title>Marketing Manager Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -218,7 +218,7 @@
     // ============================================================
     function AutoFunnel({ data }) {
       const steps = [
-        { label: 'ผู้สนใจ', sub: 'Inquiries', value: data.inquiries, icon: 'users', color: 'from-slate-600 to-slate-700', bg: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-200', iconBg: 'bg-slate-100' },
+        { label: 'ลูกค้ามุ่งหวัง', sub: 'Inquiries', value: data.inquiries, icon: 'users', color: 'from-slate-600 to-slate-700', bg: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-200', iconBg: 'bg-slate-100' },
         { label: 'ทดลองขับ', sub: 'Test Drives', value: data.testDrives, icon: 'steering-wheel', color: 'from-blue-500 to-blue-600', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200', iconBg: 'bg-blue-100' },
         { label: 'จองรถ', sub: 'Bookings', value: data.bookings, icon: 'calendar-check', color: 'from-amber-500 to-amber-600', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', iconBg: 'bg-amber-100' },
         { label: 'ส่งมอบรถ', sub: 'Deliveries', value: data.deliveries, icon: 'key', color: 'from-emerald-500 to-emerald-600', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', iconBg: 'bg-emerald-100' }
