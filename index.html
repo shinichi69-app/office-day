@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Marketing Manager // Terminal</title>
+  <title>Marketing Manager // Terminal v3.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -24,18 +24,14 @@
 
   <style>
     :root {
-      --bg: #0a0a0a;
-      --surface: #121212;
-      --surface-2: #1a1a1a;
-      --border: #262626;
-      --border-light: #333;
-      --text: #ffffff;
-      --text-dim: #999;
-      --text-faint: #666;
-      --accent: #ffffff;
-      --success: #4ade80;
-      --warning: #fbbf24;
-      --danger: #ef4444;
+      --bg: #09090b;
+      --surface: #12121a;
+      --surface-2: #1a1a25;
+      --border: #27273a;
+      --border-light: #3f3f56;
+      --text: #fafafa;
+      --text-dim: #a1a1aa;
+      --text-faint: #71717a;
     }
 
     * { box-sizing: border-box; }
@@ -49,15 +45,13 @@
       min-height: 100vh;
     }
 
-    /* Subtle grid background */
     body {
       background-image: 
-        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+        linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
       background-size: 40px 40px;
     }
 
-    /* Blinking cursor */
     .cursor {
       display: inline-block;
       background: var(--text);
@@ -67,9 +61,7 @@
       margin-left: 3px;
       animation: blink 1s step-end infinite;
     }
-    @keyframes blink {
-      50% { opacity: 0; }
-    }
+    @keyframes blink { 50% { opacity: 0; } }
 
     .fade-in { animation: fadeIn 0.3s ease-out; }
     @keyframes fadeIn {
@@ -77,35 +69,26 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Card */
     .card {
       background: var(--surface);
       border: 1px solid var(--border);
       transition: all 0.2s;
     }
-    .card:hover {
-      border-color: var(--border-light);
-    }
-
+    .card:hover { border-color: var(--border-light); }
     .card-hover:hover {
-      border-color: var(--text);
+      border-color: var(--text-dim);
       transform: translateY(-2px);
+      box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
     }
 
-    /* Header */
-    .mono-header {
-      letter-spacing: -0.02em;
-    }
-
-    /* Buttons */
     .btn-primary {
-      background: var(--text);
-      color: var(--bg);
+      background: #fafafa;
+      color: #09090b;
       font-weight: 600;
       transition: all 0.15s;
     }
     .btn-primary:hover {
-      background: #e5e5e5;
+      background: #e4e4e7;
       transform: translateY(-1px);
     }
     .btn-ghost {
@@ -120,15 +103,14 @@
     }
     .btn-danger {
       background: transparent;
-      color: var(--danger);
+      color: #ef4444;
       border: 1px solid rgba(239, 68, 68, 0.3);
     }
     .btn-danger:hover {
       background: rgba(239, 68, 68, 0.1);
-      border-color: var(--danger);
+      border-color: #ef4444;
     }
 
-    /* Input */
     .input {
       background: var(--surface-2);
       border: 1px solid var(--border);
@@ -141,31 +123,24 @@
       transition: all 0.15s;
     }
     .input:focus {
-      border-color: var(--text);
+      border-color: #8b5cf6;
       background: var(--bg);
     }
     .input::placeholder { color: var(--text-faint); }
-    select.input option {
-      background: var(--surface);
-      color: var(--text);
-    }
+    select.input option { background: var(--surface); color: var(--text); }
 
-    /* Progress bar */
     .progress-track {
       background: var(--surface-2);
       height: 6px;
       overflow: hidden;
+      border-radius: 99px;
     }
     .progress-fill {
       height: 100%;
-      background: var(--text);
+      border-radius: 99px;
       transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .progress-fill-success { background: var(--success); }
-    .progress-fill-warning { background: var(--warning); }
-    .progress-fill-danger { background: var(--danger); }
 
-    /* Label */
     .label {
       font-size: 11px;
       font-weight: 600;
@@ -174,24 +149,22 @@
       color: var(--text-dim);
     }
 
-    /* Status badges */
     .badge {
       font-size: 11px;
       font-weight: 600;
-      letter-spacing: 0.1em;
-      padding: 3px 10px;
+      letter-spacing: 0.05em;
+      padding: 4px 10px;
       border: 1px solid;
+      border-radius: 4px;
       display: inline-block;
     }
-    .badge-planning { color: var(--text-dim); border-color: var(--border-light); }
-    .badge-active { color: var(--success); border-color: var(--success); }
-    .badge-paused { color: var(--warning); border-color: var(--warning); }
-    .badge-completed { color: var(--text); border-color: var(--text); }
-    .badge-cancelled { color: var(--danger); border-color: var(--danger); }
+    .badge-active { color: #10b981; border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.1); }
+    .badge-planning { color: #a1a1aa; border-color: rgba(161, 161, 170, 0.3); background: rgba(161, 161, 170, 0.1); }
+    .badge-completed { color: #fafafa; border-color: rgba(250, 250, 250, 0.3); background: rgba(250, 250, 250, 0.1); }
+    .badge-cancelled { color: #ef4444; border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.1); }
 
-    /* Tab */
     .tab {
-      padding: 10px 18px;
+      padding: 12px 20px;
       color: var(--text-faint);
       border-bottom: 2px solid transparent;
       font-weight: 500;
@@ -200,24 +173,22 @@
     }
     .tab:hover { color: var(--text-dim); }
     .tab-active {
-      color: var(--text);
-      border-bottom-color: var(--text);
+      color: #fafafa;
+      border-bottom-color: #8b5cf6;
     }
 
-    /* Scrollbar */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: var(--bg); }
-    ::-webkit-scrollbar-thumb { background: var(--border-light); }
+    ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
 
-    /* FullCalendar theme */
     .fc { font-size: 13px; font-family: inherit; color: var(--text); }
     .fc-theme-standard td, .fc-theme-standard th { border-color: var(--border); }
     .fc-theme-standard .fc-scrollgrid { border-color: var(--border); background: var(--surface); }
     .fc .fc-col-header-cell { background: var(--surface-2); }
     .fc .fc-col-header-cell-cushion { color: var(--text-dim); padding: 12px; font-weight: 600; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
     .fc .fc-daygrid-day-number { color: var(--text); padding: 8px; font-size: 14px; }
-    .fc .fc-day-today { background: rgba(255,255,255,0.04) !important; }
+    .fc .fc-day-today { background: rgba(139, 92, 246, 0.08) !important; }
     .fc .fc-day-other { opacity: 0.35; }
     .fc .fc-button-primary {
       background: var(--surface-2) !important;
@@ -229,40 +200,36 @@
     }
     .fc .fc-button-primary:hover { background: var(--border) !important; }
     .fc .fc-button-primary:not(:disabled).fc-button-active { 
-      background: var(--text) !important; 
-      color: var(--bg) !important;
-      border-color: var(--text) !important;
+      background: #8b5cf6 !important; 
+      color: #fff !important;
+      border-color: #8b5cf6 !important;
     }
     .fc-event { 
       cursor: pointer; 
-      border: 1px solid var(--border-light) !important;
-      background: var(--surface-2) !important;
+      border: none !important;
       padding: 2px 6px;
       font-size: 11px;
-      border-radius: 2px;
+      border-radius: 3px;
+      font-weight: 500;
     }
-    .fc-event:hover { border-color: var(--text) !important; }
 
-    /* Modal */
     .modal-backdrop { 
       backdrop-filter: blur(8px);
-      background-color: rgba(0, 0, 0, 0.8); 
+      background-color: rgba(0, 0, 0, 0.85); 
     }
 
-    /* Toast */
     .toast { animation: slideIn 0.3s ease; }
     @keyframes slideIn {
       from { opacity: 0; transform: translateX(20px); }
       to { opacity: 1; transform: translateX(0); }
     }
 
-    /* Pulse dot */
     .pulse-dot {
       display: inline-block;
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: var(--success);
+      background: #10b981;
       position: relative;
     }
     .pulse-dot::after {
@@ -270,7 +237,7 @@
       position: absolute;
       inset: -4px;
       border-radius: 50%;
-      border: 1px solid var(--success);
+      border: 1px solid #10b981;
       animation: pulse 2s infinite;
     }
     @keyframes pulse {
@@ -278,60 +245,16 @@
       100% { transform: scale(1.5); opacity: 0; }
     }
 
-    /* Terminal prompt */
-    .prompt::before {
-      content: '> ';
-      color: var(--text-dim);
-    }
-
-    /* Big number */
-    .big-num {
-      font-size: 42px;
-      font-weight: 700;
-      line-height: 1;
-      letter-spacing: -0.03em;
-    }
-
-    /* Section divider */
-    .divider {
-      height: 1px;
-      background: var(--border);
-    }
-
-    /* Funnel connector */
-    .funnel-connector { position: relative; }
-    @media (min-width: 768px) {
-      .funnel-connector:not(:last-child)::after {
-        content: '→';
-        position: absolute;
-        right: -18px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--text-faint);
-        font-size: 20px;
-        z-index: 2;
-      }
-    }
-
-    /* Hover arrow */
-    .hover-arrow {
-      position: relative;
-    }
+    .divider { height: 1px; background: var(--border); }
+    
+    .hover-arrow { position: relative; }
     .hover-arrow::after {
       content: '→';
       margin-left: 4px;
       opacity: 0;
       transition: all 0.15s;
     }
-    .hover-arrow:hover::after {
-      opacity: 1;
-      margin-left: 8px;
-    }
-
-    /* Top border accent */
-    .top-accent {
-      border-top: 2px solid var(--text);
-    }
+    .hover-arrow:hover::after { opacity: 1; margin-left: 8px; }
   </style>
 </head>
 <body>
@@ -362,6 +285,20 @@
       return isNaN(d.getTime()) ? null : d;
     };
 
+    const PLATFORMS = [
+      { value: 'facebook', label: 'Facebook', badge: 'text-blue-400 border-blue-400/30 bg-blue-400/10' },
+      { value: 'tiktok', label: 'TikTok', badge: 'text-pink-400 border-pink-400/30 bg-pink-400/10' },
+      { value: 'line', label: 'Line OA', badge: 'text-emerald-400 border-emerald-400/30 bg-emerald-400/10' },
+      { value: 'website', label: 'Website', badge: 'text-violet-400 border-violet-400/30 bg-violet-400/10' },
+      { value: 'other', label: 'อื่นๆ', badge: 'text-gray-400 border-gray-400/30 bg-gray-400/10' }
+    ];
+
+    const STATUSES_ONLINE = [
+      { value: 'planned', label: 'วางแผน' },
+      { value: 'live', label: 'กำลังจัด' },
+      { value: 'completed', label: 'เสร็จสิ้น' }
+    ];
+
     const FirebaseService = {
       subscribeProjects(callback) {
         return db.collection('projects').orderBy('startDate', 'desc').onSnapshot((snapshot) => {
@@ -371,7 +308,7 @@
             projects.push({ id: doc.id, ...data, startDate: parseDate(data.startDate), endDate: parseDate(data.endDate) });
           });
           callback(projects);
-        }, (error) => console.error('Subscription error:', error));
+        });
       },
       async addProject(projectData) {
         const docRef = await db.collection('projects').add({
@@ -424,9 +361,9 @@
         <div className="min-h-screen flex items-center justify-center p-4">
           <div className="w-full max-w-md">
             <div className="mb-10 text-center">
-              <div className="text-xs tracking-[0.3em] text-white/40 mb-4">// MARKETING TERMINAL v2.0</div>
-              <h1 className="text-5xl font-bold mono-header mb-2">ACCESS_</h1>
-              <p className="text-white/50 text-sm">ระบบจัดการแคมเปญการตลาด</p>
+              <div className="text-xs tracking-[0.3em] text-white/40 mb-4">// MARKETING TERMINAL v3.0</div>
+              <h1 className="text-5xl font-bold mono-header mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-violet-400 to-emerald-400">ACCESS_</h1>
+              <p className="text-white/50 text-sm">ระบบจัดการแคมเปญและกิจกรรมการตลาด</p>
             </div>
 
             <div className="card p-8">
@@ -447,7 +384,7 @@
                 </div>
 
                 {error && (
-                  <div className="p-3 border border-red-500/30 text-red-400 text-sm">
+                  <div className="p-3 border border-red-500/30 text-red-400 text-sm bg-red-500/5">
                     [ERROR] {error}
                   </div>
                 )}
@@ -470,15 +407,26 @@
     }
 
     // ═══ STAT CARD ═══
-    function StatCard({ label, value, hint, icon }) {
+    function StatCard({ label, value, hint, icon, color = "blue" }) {
+      const colorMap = {
+        blue: "border-blue-500 text-blue-400",
+        violet: "border-violet-500 text-violet-400",
+        amber: "border-amber-500 text-amber-400",
+        green: "border-emerald-500 text-emerald-400",
+        pink: "border-pink-500 text-pink-400"
+      };
+      const theme = colorMap[color] || colorMap.blue;
+      const borderClass = theme.split(' ')[0];
+      const iconClass = theme.split(' ')[1];
+      
       return (
-        <div className="card card-hover p-6">
-          <div className="flex items-start justify-between mb-6">
+        <div className={`card card-hover p-6 border-l-4 ${borderClass} relative overflow-hidden`}>
+          <div className="flex items-start justify-between mb-4">
             <div className="label">{label}</div>
-            {icon && <i data-lucide={icon} className="w-4 h-4 text-white/40"></i>}
+            {icon && <i data-lucide={icon} className={`w-5 h-5 ${iconClass}`}></i>}
           </div>
-          <div className="big-num mono-header">{value}</div>
-          {hint && <div className="mt-3 text-xs text-white/50">{hint}</div>}
+          <div className="text-3xl font-bold mono-header mb-1">{value}</div>
+          {hint && <div className="text-xs text-white/50">{hint}</div>}
         </div>
       );
     }
@@ -486,10 +434,10 @@
     // ═══ AUTO FUNNEL ═══
     function AutoFunnel({ data }) {
       const steps = [
-        { label: 'INQUIRIES', sub: 'ลูกค้ามุ่งหวัง', value: data.inquiries, num: '01' },
-        { label: 'TEST DRIVES', sub: 'ทดลองขับ', value: data.testDrives, num: '02' },
-        { label: 'BOOKINGS', sub: 'จองรถ', value: data.bookings, num: '03' },
-        { label: 'DELIVERIES', sub: 'ส่งมอบ', value: data.deliveries, num: '04' }
+        { label: 'INQUIRIES', sub: 'ลูกค้ามุ่งหวัง', value: data.inquiries, num: '01', color: 'bg-blue-500', border: 'border-t-blue-500', text: 'text-blue-400' },
+        { label: 'TEST DRIVES', sub: 'ทดลองขับ', value: data.testDrives, num: '02', color: 'bg-violet-500', border: 'border-t-violet-500', text: 'text-violet-400' },
+        { label: 'BOOKINGS', sub: 'จองรถ', value: data.bookings, num: '03', color: 'bg-amber-500', border: 'border-t-amber-500', text: 'text-amber-400' },
+        { label: 'DELIVERIES', sub: 'ส่งมอบ', value: data.deliveries, num: '04', color: 'bg-emerald-500', border: 'border-t-emerald-500', text: 'text-emerald-400' }
       ];
 
       const rates = [
@@ -502,36 +450,34 @@
       const overallRate = data.inquiries > 0 ? ((data.deliveries / data.inquiries) * 100).toFixed(2) : '0.00';
 
       return (
-        <div className="card p-8 fade-in">
-          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+        <div className="card p-6 fade-in border-t-2 border-t-white/10">
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
             <div>
-              <div className="text-xs tracking-[0.3em] text-white/40 mb-2">// SALES_FUNNEL</div>
-              <h2 className="text-2xl font-bold mono-header">Automotive Pipeline</h2>
-              <p className="text-sm text-white/50 mt-1">อัตรา conversion เทียบกับ INQUIRIES เป็นฐาน</p>
+              <div className="text-xs tracking-[0.3em] text-white/40 mb-1">// SALES_FUNNEL</div>
+              <h2 className="text-xl font-bold mono-header">Automotive Pipeline</h2>
             </div>
-            <div className="card p-5 top-accent">
-              <div className="text-xs tracking-[0.2em] text-white/40 mb-1">OVERALL</div>
-              <div className="text-3xl font-bold mono-header">{overallRate}%</div>
+            <div className="card p-4 bg-white/5 border-white/10">
+              <div className="text-[10px] tracking-[0.2em] text-white/40 mb-1">OVERALL CONVERSION</div>
+              <div className="text-2xl font-bold mono-header text-emerald-400">{overallRate}%</div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {steps.map((step, idx) => (
-              <div key={idx} className="funnel-connector">
-                <div className="card-hover card p-5 h-full">
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-xs tracking-widest text-white/30">{step.num}</span>
-                    <span className="text-xs tracking-widest text-white/60">{step.label}</span>
+              <div key={idx} className="relative">
+                <div className={`card p-4 h-full border-t-4 ${step.border}`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[10px] tracking-widest text-white/30">{step.num}</span>
+                    <span className={`text-[10px] tracking-widest font-bold ${step.text}`}>{step.label}</span>
                   </div>
-                  <div className="big-num mono-header mb-1">{(step.value || 0).toLocaleString()}</div>
-                  <div className="text-xs text-white/50 mb-4">{step.sub}</div>
-                  <div className="divider mb-3"></div>
-                  <div className="flex justify-between items-center mb-2">
+                  <div className="text-2xl font-bold mono-header mb-1">{(step.value || 0).toLocaleString()}</div>
+                  <div className="text-xs text-white/50 mb-3">{step.sub}</div>
+                  <div className="flex justify-between items-center mb-1.5">
                     <span className="text-[10px] tracking-widest text-white/40">RATE</span>
-                    <span className="text-sm font-semibold">{rates[idx]}</span>
+                    <span className="text-xs font-semibold">{rates[idx]}</span>
                   </div>
                   <div className="progress-track">
-                    <div className="progress-fill" style={{ width: `${Math.min(parseFloat(rates[idx]), 100)}%` }}></div>
+                    <div className={`progress-fill ${step.color}`} style={{ width: `${Math.min(parseFloat(rates[idx]), 100)}%` }}></div>
                   </div>
                 </div>
               </div>
@@ -542,56 +488,244 @@
     }
 
     // ═══ CALENDAR ═══
-    function CalendarComponent({ projects }) {
+    function CalendarComponent({ projects, onlinePlans }) {
       const calendarRef = useRef(null);
 
       useEffect(() => {
         if (!calendarRef.current) return;
-        const events = projects.filter(p => p.startDate && p.endDate).map(p => {
+        
+        const projectEvents = projects.filter(p => p.startDate && p.endDate).map(p => {
           const startD = parseDate(p.startDate);
           const endD = parseDate(p.endDate);
           const adjustedEnd = new Date(endD);
           adjustedEnd.setDate(adjustedEnd.getDate() + 1);
           return {
-            id: p.id, title: p.name,
+            id: p.id, title: `[MKT] ${p.name}`,
             start: startD.toISOString().split('T')[0],
             end: adjustedEnd.toISOString().split('T')[0],
-            backgroundColor: p.status === 'completed' ? '#ffffff' : p.status === 'active' ? '#999' : p.status === 'paused' ? '#666' : p.status === 'cancelled' ? '#333' : '#555',
-            borderColor: 'transparent', textColor: p.status === 'completed' ? '#000' : '#fff'
+            backgroundColor: p.status === 'completed' ? '#10b981' : p.status === 'active' ? '#3b82f6' : p.status === 'paused' ? '#f59e0b' : '#71717a',
+            borderColor: 'transparent', textColor: '#fff'
           };
         });
+
+        const onlineEvents = onlinePlans.filter(p => p.planDate).map(p => {
+          const d = parseDate(p.planDate);
+          if (!d) return null;
+          const colors = { facebook: '#3b82f6', tiktok: '#ec4899', line: '#10b981', website: '#8b5cf6', other: '#71717a' };
+          return {
+            id: `online_${p.id}`, title: `[${p.platform.toUpperCase()}] ${p.title}`,
+            start: d.toISOString().split('T')[0],
+            backgroundColor: colors[p.platform] || '#71717a',
+            borderColor: 'transparent', textColor: '#fff'
+          };
+        }).filter(Boolean);
 
         const calendar = new FullCalendar.Calendar(calendarRef.current, {
           initialView: 'dayGridMonth', locale: 'th',
           headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,dayGridWeek' },
-          events: events,
+          events: [...projectEvents, ...onlineEvents],
           eventClick: function(info) {
-            const p = projects.find(proj => proj.id === info.event.id);
-            if (p) {
-              const startStr = parseDate(p.startDate)?.toLocaleDateString('th-TH') || '-';
-              const endStr = parseDate(p.endDate)?.toLocaleDateString('th-TH') || '-';
-              const inquiries = p.inquiries || 0;
-              const testDrives = p.testDrives || 0;
-              const bookings = p.bookings || 0;
-              const deliveries = p.deliveries || 0;
-              const pct = (v) => inquiries > 0 ? ((v / inquiries) * 100).toFixed(2) + '%' : '0.00%';
-              alert(`${p.name}\n\n${startStr} - ${endStr}\nหมวดหมู่: ${p.category || '-'}\nสถานะ: ${p.status}\nงบประมาณ: ฿${(p.budget || 0).toLocaleString()}\nใช้ไป: ฿${(p.spent || 0).toLocaleString()}\n\nFunnel:\nInquiries: ${inquiries.toLocaleString()} (100%)\nTest Drives: ${testDrives.toLocaleString()} (${pct(testDrives)})\nBookings: ${bookings.toLocaleString()} (${pct(bookings)})\nDeliveries: ${deliveries.toLocaleString()} (${pct(deliveries)})\n\nOverall: ${pct(deliveries)}\n\n${p.description || '-'}`);
+            if (info.event.id.startsWith('online_')) {
+              const p = onlinePlans.find(plan => `online_${plan.id}` === info.event.id);
+              if (p) {
+                alert(`📅 กิจกรรมออนไลน์: ${p.title}\nแพลตฟอร์ม: ${p.platform}\nวันที่: ${parseDate(p.planDate)?.toLocaleDateString('th-TH')} ${p.planTime || ''}\nสถานะ: ${p.status}\nวัตถุประสงค์: ${p.objective || '-'}`);
+              }
+            } else {
+              const p = projects.find(proj => proj.id === info.event.id);
+              if (p) {
+                const startStr = parseDate(p.startDate)?.toLocaleDateString('th-TH') || '-';
+                const endStr = parseDate(p.endDate)?.toLocaleDateString('th-TH') || '-';
+                alert(`${p.name}\n\n${startStr} - ${endStr}\nสถานะ: ${p.status}\nงบประมาณ: ฿${(p.budget || 0).toLocaleString()}`);
+              }
             }
           }
         });
         calendar.render();
         return () => calendar.destroy();
-      }, [projects]);
+      }, [projects, onlinePlans]);
 
       return (
         <div>
           <div ref={calendarRef} className="min-h-[600px]"></div>
           <div className="mt-6 pt-6 border-t border-white/10 flex flex-wrap gap-5 justify-center text-xs">
-            <span className="flex items-center gap-2 text-white/60"><span className="w-2.5 h-2.5 bg-[#999]"></span>Active</span>
-            <span className="flex items-center gap-2 text-white/60"><span className="w-2.5 h-2.5 bg-white"></span>Completed</span>
-            <span className="flex items-center gap-2 text-white/60"><span className="w-2.5 h-2.5 bg-[#666]"></span>Paused</span>
-            <span className="flex items-center gap-2 text-white/60"><span className="w-2.5 h-2.5 bg-[#333]"></span>Cancelled</span>
+            <span className="flex items-center gap-2 text-white/60"><span className="w-2.5 h-2.5 bg-blue-500 rounded-sm"></span>Active Mission</span>
+            <span className="flex items-center gap-2 text-white/60"><span className="w-2.5 h-2.5 bg-emerald-500 rounded-sm"></span>Completed</span>
+            <span className="flex items-center gap-2 text-white/60"><span className="w-2.5 h-2.5 bg-pink-500 rounded-sm"></span>Online: TikTok</span>
+            <span className="flex items-center gap-2 text-white/60"><span className="w-2.5 h-2.5 bg-blue-500 rounded-sm"></span>Online: Facebook</span>
           </div>
+        </div>
+      );
+    }
+
+    // ═══ ONLINE PLAN TAB ═══
+    function OnlinePlanTab({ plans, onAdd, onEdit, onDelete }) {
+      const [showModal, setShowModal] = useState(false);
+      const [editing, setEditing] = useState(null);
+      const [formData, setFormData] = useState({
+        title: '', platform: 'facebook', planDate: '', planTime: '', 
+        status: 'planned', objective: '', expectedReach: '', actualReach: ''
+      });
+
+      const openModal = (plan = null) => {
+        if (plan) {
+          setEditing(plan);
+          const d = parseDate(plan.planDate);
+          setFormData({
+            title: plan.title || '', platform: plan.platform || 'facebook', 
+            planDate: d ? d.toISOString().split('T')[0] : '',
+            planTime: plan.planTime || '', status: plan.status || 'planned',
+            objective: plan.objective || '', expectedReach: plan.expectedReach || '', actualReach: plan.actualReach || ''
+          });
+        } else {
+          setEditing(null);
+          setFormData({ title: '', platform: 'facebook', planDate: '', planTime: '', status: 'planned', objective: '', expectedReach: '', actualReach: '' });
+        }
+        setShowModal(true);
+      };
+
+      const save = async () => {
+        if (!formData.title || !formData.planDate) {
+          alert('กรุณากรอกชื่อกิจกรรมและวันที่');
+          return;
+        }
+        const data = { 
+          ...formData, 
+          expectedReach: parseInt(formData.expectedReach)||0, 
+          actualReach: parseInt(formData.actualReach)||0, 
+          planDate: new Date(formData.planDate) 
+        };
+        if (editing) await onEdit(editing.id, data);
+        else await onAdd(data);
+        setShowModal(false);
+      };
+
+      const getPlatform = (val) => PLATFORMS.find(p => p.value === val) || PLATFORMS[0];
+      const getStatus = (val) => STATUSES_ONLINE.find(s => s.value === val) || STATUSES_ONLINE[0];
+
+      return (
+        <div className="fade-in space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <div className="text-xs tracking-[0.3em] text-white/40 mb-1">// ONLINE_ACTIVITY_PLAN</div>
+              <h2 className="text-2xl font-bold mono-header">แผนกิจกรรมออนไลน์</h2>
+            </div>
+            <button onClick={() => openModal()} className="btn-primary px-5 py-2.5 text-sm tracking-wider flex items-center gap-2">
+              <i data-lucide="plus" className="w-4 h-4"></i> เพิ่มกิจกรรม
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {plans.length === 0 ? (
+              <div className="col-span-full card p-16 text-center">
+                <div className="text-3xl font-bold mb-2 text-white/20">[ NO DATA ]</div>
+                <div className="text-sm text-white/40">ยังไม่มีแผนกิจกรรมออนไลน์</div>
+              </div>
+            ) : (
+              plans.map(p => {
+                const plat = getPlatform(p.platform);
+                const stat = getStatus(p.status);
+                const reachPct = p.expectedReach > 0 ? Math.min((p.actualReach / p.expectedReach) * 100, 100) : 0;
+                return (
+                  <div key={p.id} className="card card-hover p-5 flex flex-col h-full">
+                    <div className="flex justify-between items-start mb-3">
+                      <span className={`badge ${plat.badge}`}>{plat.label}</span>
+                      <span className={`badge ${p.status === 'live' ? 'badge-active' : p.status === 'completed' ? 'badge-completed' : 'badge-planning'}`}>
+                        {stat.label}
+                      </span>
+                    </div>
+                    <h3 className="font-bold text-lg mb-2 line-clamp-2">{p.title}</h3>
+                    <div className="text-xs text-white/50 mb-4 flex items-center gap-2">
+                      <i data-lucide="calendar" className="w-3 h-3"></i>
+                      {parseDate(p.planDate)?.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })} 
+                      {p.planTime && ` • ${p.planTime}`}
+                    </div>
+                    <p className="text-sm text-white/60 mb-4 line-clamp-2 flex-1">{p.objective || 'ไม่มีวัตถุประสงค์ระบุ'}</p>
+                    
+                    {p.expectedReach > 0 && (
+                      <div className="mt-auto">
+                        <div className="flex justify-between text-[10px] tracking-widest text-white/50 mb-1.5">
+                          <span>REACH PROGRESS</span>
+                          <span className="text-blue-400">{reachPct.toFixed(0)}%</span>
+                        </div>
+                        <div className="progress-track">
+                          <div className="progress-fill bg-blue-500" style={{ width: `${reachPct}%` }}></div>
+                        </div>
+                        <div className="text-[11px] text-white/40 mt-1.5 text-right">
+                          {p.actualReach.toLocaleString()} / {p.expectedReach.toLocaleString()}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex gap-2 mt-4 pt-4 border-t border-white/10">
+                      <button onClick={() => openModal(p)} className="flex-1 btn-ghost py-2 text-xs tracking-widest">แก้ไข</button>
+                      <button onClick={() => { if(confirm('ลบกิจกรรมนี้?')) onDelete(p.id); }} className="flex-1 btn-danger py-2 text-xs tracking-widest">ลบ</button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {showModal && (
+            <div className="fixed inset-0 flex items-center justify-center z-50 p-4 modal-backdrop" onClick={() => setShowModal(false)}>
+              <div className="card max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto fade-in" onClick={e => e.stopPropagation()}>
+                <div className="flex justify-between items-center mb-6 pb-4 border-b border-white/10">
+                  <h2 className="text-xl font-bold mono-header">{editing ? 'แก้ไขกิจกรรม' : 'เพิ่มกิจกรรมใหม่'}</h2>
+                  <button onClick={() => setShowModal(false)} className="btn-ghost w-8 h-8 flex items-center justify-center">
+                    <i data-lucide="x" className="w-4 h-4"></i>
+                  </button>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="label block mb-2">ชื่อกิจกรรม *</label>
+                    <input type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="input" placeholder="เช่น Facebook Live เปิดตัวรถใหม่" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="label block mb-2">แพลตฟอร์ม</label>
+                      <select value={formData.platform} onChange={e => setFormData({...formData, platform: e.target.value})} className="input">
+                        {PLATFORMS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="label block mb-2">สถานะ</label>
+                      <select value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})} className="input">
+                        {STATUSES_ONLINE.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="label block mb-2">วันที่ *</label>
+                      <input type="date" value={formData.planDate} onChange={e => setFormData({...formData, planDate: e.target.value})} className="input" />
+                    </div>
+                    <div>
+                      <label className="label block mb-2">เวลา</label>
+                      <input type="time" value={formData.planTime} onChange={e => setFormData({...formData, planTime: e.target.value})} className="input" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="label block mb-2">วัตถุประสงค์</label>
+                    <textarea rows="2" value={formData.objective} onChange={e => setFormData({...formData, objective: e.target.value})} className="input resize-none" placeholder="เช่น สร้างการรับรู้, เพิ่มยอดขาย"></textarea>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="label block mb-2">ยอดเข้าถึงที่คาดหวัง</label>
+                      <input type="number" value={formData.expectedReach} onChange={e => setFormData({...formData, expectedReach: e.target.value})} className="input" placeholder="0" />
+                    </div>
+                    <div>
+                      <label className="label block mb-2">ยอดเข้าถึงจริง</label>
+                      <input type="number" value={formData.actualReach} onChange={e => setFormData({...formData, actualReach: e.target.value})} className="input" placeholder="0" />
+                    </div>
+                  </div>
+                  <div className="flex gap-3 pt-4 border-t border-white/10">
+                    <button onClick={save} className="flex-1 btn-primary py-3 text-sm tracking-widest">บันทึก</button>
+                    <button onClick={() => setShowModal(false)} className="btn-ghost px-6 py-3 text-sm tracking-widest">ยกเลิก</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
@@ -601,6 +735,7 @@
       const [user, setUser] = useState(null);
       const [authLoading, setAuthLoading] = useState(true);
       const [projects, setProjects] = useState([]);
+      const [onlinePlans, setOnlinePlans] = useState([]);
       const [showModal, setShowModal] = useState(false);
       const [editingProject, setEditingProject] = useState(null);
       const [toast, setToast] = useState(null);
@@ -658,11 +793,21 @@
 
       useEffect(() => {
         if (!user) return;
-        const unsubscribe = FirebaseService.subscribeProjects((data) => {
+        const unsubProj = FirebaseService.subscribeProjects((data) => {
           setProjects(data);
           setTimeout(() => lucide.createIcons(), 100);
         });
-        return () => unsubscribe();
+        
+        const unsubOnline = db.collection('online_plans').orderBy('planDate', 'asc').onSnapshot((snapshot) => {
+          const plans = [];
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            plans.push({ id: doc.id, ...data, planDate: parseDate(data.planDate) });
+          });
+          setOnlinePlans(plans);
+        });
+
+        return () => { unsubProj(); unsubOnline(); };
       }, [user]);
 
       useEffect(() => { lucide.createIcons(); });
@@ -695,11 +840,6 @@
           showToast('กรุณากรอกชื่อและวันที่', 'error');
           return;
         }
-        if (new Date(formData.startDate) > new Date(formData.endDate)) {
-          showToast('วันที่เริ่มต้นต้องน้อยกว่าวันที่สิ้นสุด', 'error');
-          return;
-        }
-
         const dataToSave = {
           name: formData.name, description: formData.description || '', category: formData.category,
           budget: parseInt(formData.budget) || 0, spent: parseInt(formData.spent) || 0,
@@ -728,6 +868,28 @@
         } catch (error) {
           showToast('เกิดข้อผิดพลาด', 'error');
         }
+      };
+
+      const addOnlinePlan = async (planData) => {
+        await db.collection('online_plans').add({
+          ...planData,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        showToast('เพิ่มกิจกรรมสำเร็จ', 'success');
+      };
+
+      const updateOnlinePlan = async (id, planData) => {
+        await db.collection('online_plans').doc(id).update({
+          ...planData,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        showToast('อัปเดตกิจกรรมสำเร็จ', 'success');
+      };
+
+      const deleteOnlinePlan = async (id) => {
+        if (!confirm('ต้องการลบกิจกรรมนี้?')) return;
+        await db.collection('online_plans').doc(id).delete();
+        showToast('ลบกิจกรรมสำเร็จ', 'success');
       };
 
       const filteredProjects = useMemo(() => {
@@ -759,32 +921,10 @@
         return { total, active, totalBudget, totalSpent, totalInquiries, totalTestDrives, totalBookings, totalDeliveries, totalFollowUps, cpl };
       }, [dashboardProjects]);
 
-      const categoryBreakdown = useMemo(() => {
-        const breakdown = {};
-        categories.forEach(cat => {
-          const catProjects = projects.filter(p => p.category === cat.value);
-          if (catProjects.length > 0) {
-            breakdown[cat.value] = {
-              ...cat, count: catProjects.length,
-              totalBudget: catProjects.reduce((sum, p) => sum + (p.budget || 0), 0),
-              totalSpent: catProjects.reduce((sum, p) => sum + (p.spent || 0), 0),
-              totalInquiries: catProjects.reduce((sum, p) => sum + (p.inquiries || 0), 0),
-              totalTestDrives: catProjects.reduce((sum, p) => sum + (p.testDrives || 0), 0),
-              totalBookings: catProjects.reduce((sum, p) => sum + (p.bookings || 0), 0),
-              totalDeliveries: catProjects.reduce((sum, p) => sum + (p.deliveries || 0), 0)
-            };
-          }
-        });
-        return Object.values(breakdown);
-      }, [projects]);
-
       const getStatusBadge = (status) => {
         const map = {
-          planning: 'badge-planning',
-          active: 'badge-active',
-          paused: 'badge-paused',
-          completed: 'badge-completed',
-          cancelled: 'badge-cancelled'
+          planning: 'badge-planning', active: 'badge-active', paused: 'badge-planning',
+          completed: 'badge-completed', cancelled: 'badge-cancelled'
         };
         const label = (statuses.find(s => s.value === status) || statuses[0]).label;
         return <span className={`badge ${map[status] || 'badge-planning'}`}>{label.toUpperCase()}</span>;
@@ -800,7 +940,7 @@
         return (
           <div className="min-h-screen flex items-center justify-center">
             <div className="text-center">
-              <div className="text-4xl font-bold mb-2">LOADING_<span className="cursor"></span></div>
+              <div className="text-4xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-violet-400">LOADING_<span className="cursor"></span></div>
               <div className="text-sm text-white/40">กำลังเริ่มต้นระบบ</div>
             </div>
           </div>
@@ -812,20 +952,20 @@
       return (
         <div className="min-h-screen">
           {toast && (
-            <div className={`fixed top-5 right-5 z-[100] card toast px-5 py-3 flex items-center gap-2 ${toast.type === 'error' ? 'border-red-500/40' : 'border-white/30'}`}>
-              <i data-lucide={toast.type === 'error' ? 'x' : 'check'} className={`w-4 h-4 ${toast.type === 'error' ? 'text-red-400' : 'text-white'}`}></i>
+            <div className={`fixed top-5 right-5 z-[100] card toast px-5 py-3 flex items-center gap-2 ${toast.type === 'error' ? 'border-red-500/40 bg-red-500/10' : 'border-emerald-500/40 bg-emerald-500/10'}`}>
+              <i data-lucide={toast.type === 'error' ? 'x' : 'check'} className={`w-4 h-4 ${toast.type === 'error' ? 'text-red-400' : 'text-emerald-400'}`}></i>
               <span className="text-sm">{toast.message}</span>
             </div>
           )}
 
-          <header className="sticky top-0 z-40 border-b border-white/10 bg-black/80 backdrop-blur">
-            <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+          <header className="sticky top-0 z-40 border-b border-white/10 bg-[#09090b]/90 backdrop-blur">
+            <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-white text-black flex items-center justify-center font-bold">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-violet-600 text-white flex items-center justify-center font-bold rounded">
                   M
                 </div>
                 <div>
-                  <div className="font-bold text-lg mono-header">MARKETING_TERMINAL</div>
+                  <div className="font-bold text-lg mono-header tracking-tight">MARKETING_TERMINAL</div>
                   <div className="flex items-center gap-2 text-xs text-white/40">
                     <span className="pulse-dot"></span>
                     <span>{user.email}</span>
@@ -833,8 +973,8 @@
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <button onClick={() => openModal()} className="btn-primary px-5 py-2.5 text-sm tracking-wider">
-                  + NEW
+                <button onClick={() => openModal()} className="btn-primary px-5 py-2.5 text-sm tracking-wider flex items-center gap-2">
+                  <i data-lucide="plus" className="w-4 h-4"></i> NEW
                 </button>
                 <button onClick={handleLogout} className="btn-ghost px-5 py-2.5 text-sm tracking-wider">
                   LOGOUT
@@ -844,11 +984,10 @@
           </header>
 
           <div className="max-w-7xl mx-auto px-6 py-6">
-            {/* TABS */}
             <div className="flex gap-0 mb-8 border-b border-white/10 overflow-x-auto">
               {[
                 { id: 'dashboard', label: 'DASHBOARD' },
-                { id: 'breakdown', label: 'ANALYTICS' },
+                { id: 'online', label: 'ONLINE PLAN' },
                 { id: 'projects', label: 'MISSIONS' },
                 { id: 'calendar', label: 'TIMELINE' }
               ].map((tab) => (
@@ -859,119 +998,72 @@
               ))}
             </div>
 
-            {/* DASHBOARD */}
             {activeTab === 'dashboard' && (
               <div className="fade-in space-y-6">
-                <div className="card p-4 flex flex-wrap items-center gap-2">
-                  <span className="label mr-2">FILTER:</span>
-                  <button onClick={() => setDashboardFilter('all')} className={`px-4 py-1.5 text-xs tracking-widest ${dashboardFilter === 'all' ? 'bg-white text-black' : 'text-white/60 hover:text-white'}`}>ALL [{projects.length}]</button>
-                  <button onClick={() => setDashboardFilter('active')} className={`px-4 py-1.5 text-xs tracking-widest ${dashboardFilter === 'active' ? 'bg-white text-black' : 'text-white/60 hover:text-white'}`}>ACTIVE [{projects.filter(p => p.status === 'active').length}]</button>
+                <div className="flex flex-wrap gap-2">
+                  <button onClick={() => setDashboardFilter('all')} className={`px-4 py-2 text-xs tracking-widest rounded border transition ${dashboardFilter === 'all' ? 'bg-white text-black border-white' : 'border-white/20 text-white/60 hover:border-white/50'}`}>ALL</button>
+                  <button onClick={() => setDashboardFilter('active')} className={`px-4 py-2 text-xs tracking-widest rounded border transition ${dashboardFilter === 'active' ? 'bg-emerald-500 text-black border-emerald-500' : 'border-emerald-500/30 text-emerald-400 hover:border-emerald-500'}`}>ACTIVE</button>
                   {categories.map(cat => {
                     const count = projects.filter(p => p.category === cat.value).length;
                     if (count === 0) return null;
                     return (
                       <button key={cat.value} onClick={() => setDashboardFilter(cat.value)} 
-                        className={`px-4 py-1.5 text-xs tracking-widest ${dashboardFilter === cat.value ? 'bg-white text-black' : 'text-white/60 hover:text-white'}`}>
-                        [{cat.code}] ({count})
+                        className={`px-4 py-2 text-xs tracking-widest rounded border transition ${dashboardFilter === cat.value ? 'bg-violet-500 text-white border-violet-500' : 'border-violet-500/30 text-violet-300 hover:border-violet-500'}`}>
+                        {cat.code} ({count})
                       </button>
                     );
                   })}
                 </div>
 
-                <AutoFunnel data={{ inquiries: metrics.totalInquiries, testDrives: metrics.totalTestDrives, bookings: metrics.totalBookings, deliveries: metrics.totalDeliveries }} />
-
                 <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-                  <StatCard label="MISSIONS" value={metrics.total} icon="folder" hint={`${metrics.active} active`} />
-                  <StatCard label="BUDGET" value={`฿${metrics.totalBudget.toLocaleString()}`} icon="wallet" />
-                  <StatCard label="SPENT" value={`฿${metrics.totalSpent.toLocaleString()}`} icon="credit-card" hint={`${metrics.totalBudget > 0 ? ((metrics.totalSpent/metrics.totalBudget)*100).toFixed(0) : 0}% used`} />
-                  <StatCard label="COST/LEAD" value={`฿${parseInt(metrics.cpl || 0).toLocaleString()}`} icon="target" hint="per inquiry" />
-                  <StatCard label="FOLLOW-UP" value={metrics.totalFollowUps.toLocaleString()} icon="phone" />
+                  <StatCard label="MISSIONS" value={metrics.total} hint={`${metrics.active} active`} icon="folder" color="violet" />
+                  <StatCard label="BUDGET" value={`฿${(metrics.totalBudget/1000000).toFixed(1)}M`} hint={`฿${metrics.totalBudget.toLocaleString()}`} icon="wallet" color="blue" />
+                  <StatCard label="SPENT" value={`฿${(metrics.totalSpent/1000000).toFixed(1)}M`} hint={`${metrics.totalBudget > 0 ? ((metrics.totalSpent/metrics.totalBudget)*100).toFixed(0) : 0}% used`} icon="credit-card" color="amber" />
+                  <StatCard label="COST/LEAD" value={`฿${parseInt(metrics.cpl || 0).toLocaleString()}`} hint="per inquiry" icon="target" color="pink" />
+                  <StatCard label="DELIVERIES" value={metrics.totalDeliveries.toLocaleString()} hint={`from ${metrics.totalInquiries.toLocaleString()} leads`} icon="check-circle" color="green" />
                 </div>
+
+                <div className="card p-6 border-l-4 border-pink-500">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <i data-lucide="zap" className="w-4 h-4 text-pink-400"></i>
+                      <h3 className="font-bold mono-header">กิจกรรมออนไลน์เร็วๆ นี้</h3>
+                    </div>
+                    <button onClick={() => setActiveTab('online')} className="text-xs text-pink-400 hover:text-pink-300 underline">ดูทั้งหมด →</button>
+                  </div>
+                  {onlinePlans.filter(p => p.status === 'planned' || p.status === 'live').sort((a,b) => new Date(a.planDate) - new Date(b.planDate)).slice(0, 3).length === 0 ? (
+                    <div className="text-sm text-white/40 py-4">ไม่มีกิจกรรมออนไลน์ที่ใกล้จะถึง</div>
+                  ) : (
+                    <div className="space-y-3">
+                      {onlinePlans.filter(p => p.status === 'planned' || p.status === 'live').sort((a,b) => new Date(a.planDate) - new Date(b.planDate)).slice(0, 3).map(p => {
+                         const plat = PLATFORMS.find(pl => pl.value === p.platform) || PLATFORMS[0];
+                         return (
+                           <div key={p.id} className="flex items-center justify-between p-3 bg-white/5 rounded border border-white/10 hover:bg-white/[0.07] transition">
+                             <div className="flex items-center gap-3">
+                               <span className={`badge ${plat.badge} text-[10px]`}>{plat.label}</span>
+                               <div>
+                                 <div className="font-semibold text-sm">{p.title}</div>
+                                 <div className="text-xs text-white/50">{parseDate(p.planDate)?.toLocaleDateString('th-TH', {day:'numeric', month:'short'})} {p.planTime}</div>
+                               </div>
+                             </div>
+                             <span className={`text-xs px-2 py-1 rounded font-medium ${p.status === 'live' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/10 text-white/60'}`}>
+                               {p.status === 'live' ? 'LIVE' : 'PLANNED'}
+                             </span>
+                           </div>
+                         )
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                <AutoFunnel data={{ inquiries: metrics.totalInquiries, testDrives: metrics.totalTestDrives, bookings: metrics.totalBookings, deliveries: metrics.totalDeliveries }} />
               </div>
             )}
 
-            {/* BREAKDOWN */}
-            {activeTab === 'breakdown' && (
-              <div className="fade-in">
-                {categoryBreakdown.length === 0 ? (
-                  <div className="card p-16 text-center">
-                    <div className="text-3xl font-bold mb-2">[ NO DATA ]</div>
-                    <div className="text-sm text-white/40">ยังไม่มีข้อมูล</div>
-                  </div>
-                ) : (
-                  <div className="card overflow-hidden">
-                    <div className="p-6 border-b border-white/10 flex justify-between items-center">
-                      <div>
-                        <div className="text-xs tracking-[0.3em] text-white/40 mb-1">// ANALYTICS</div>
-                        <h2 className="text-xl font-bold mono-header">Breakdown by Category</h2>
-                      </div>
-                    </div>
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="border-b border-white/10">
-                            <th className="text-left p-4 label">Category</th>
-                            <th className="text-right p-4 label">Count</th>
-                            <th className="text-right p-4 label">Inq</th>
-                            <th className="text-right p-4 label">Test</th>
-                            <th className="text-right p-4 label">Book</th>
-                            <th className="text-right p-4 label">Delv</th>
-                            <th className="text-right p-4 label">Conv%</th>
-                            <th className="text-right p-4 label">Budget</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {categoryBreakdown.map((cat) => {
-                            const conv = cat.totalInquiries > 0 ? ((cat.totalDeliveries / cat.totalInquiries) * 100).toFixed(2) : '0.00';
-                            const spentPercent = cat.totalBudget > 0 ? ((cat.totalSpent / cat.totalBudget) * 100).toFixed(0) : 0;
-                            return (
-                              <tr key={cat.value} className="border-b border-white/5 hover:bg-white/[0.02] transition">
-                                <td className="p-4">
-                                  <div className="font-semibold">[{cat.code}]</div>
-                                  <div className="text-xs text-white/50">{cat.label}</div>
-                                </td>
-                                <td className="text-right p-4">{cat.count}</td>
-                                <td className="text-right p-4">{cat.totalInquiries.toLocaleString()}</td>
-                                <td className="text-right p-4">{cat.totalTestDrives.toLocaleString()}</td>
-                                <td className="text-right p-4">{cat.totalBookings.toLocaleString()}</td>
-                                <td className="text-right p-4 font-bold">{cat.totalDeliveries.toLocaleString()}</td>
-                                <td className="text-right p-4">
-                                  <span className="badge badge-completed">{conv}%</span>
-                                </td>
-                                <td className="text-right p-4">
-                                  <div className="text-xs text-white/50 mb-1.5">฿{cat.totalSpent.toLocaleString()} / {cat.totalBudget.toLocaleString()}</div>
-                                  <div className="progress-track w-28 ml-auto">
-                                    <div className={`progress-fill ${spentPercent > 90 ? 'progress-fill-danger' : spentPercent > 70 ? 'progress-fill-warning' : 'progress-fill-success'}`} style={{ width: `${Math.min(spentPercent, 100)}%` }}></div>
-                                  </div>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                          <tr className="bg-white/[0.03] border-t border-white/20 font-bold">
-                            <td className="p-4">[TOTAL]</td>
-                            <td className="text-right p-4">{categoryBreakdown.reduce((s, c) => s + c.count, 0)}</td>
-                            <td className="text-right p-4">{categoryBreakdown.reduce((s, c) => s + c.totalInquiries, 0).toLocaleString()}</td>
-                            <td className="text-right p-4">{categoryBreakdown.reduce((s, c) => s + c.totalTestDrives, 0).toLocaleString()}</td>
-                            <td className="text-right p-4">{categoryBreakdown.reduce((s, c) => s + c.totalBookings, 0).toLocaleString()}</td>
-                            <td className="text-right p-4">{categoryBreakdown.reduce((s, c) => s + c.totalDeliveries, 0).toLocaleString()}</td>
-                            <td className="text-right p-4">
-                              {(() => {
-                                const v = categoryBreakdown.reduce((s, c) => s + c.totalInquiries, 0);
-                                const d = categoryBreakdown.reduce((s, c) => s + c.totalDeliveries, 0);
-                                return <span className="badge badge-completed">{v > 0 ? ((d/v)*100).toFixed(2) + '%' : '0.00%'}</span>;
-                              })()}
-                            </td>
-                            <td className="text-right p-4">฿{categoryBreakdown.reduce((s, c) => s + c.totalSpent, 0).toLocaleString()}</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-              </div>
+            {activeTab === 'online' && (
+              <OnlinePlanTab plans={onlinePlans} onAdd={addOnlinePlan} onEdit={updateOnlinePlan} onDelete={deleteOnlinePlan} />
             )}
 
-            {/* MISSIONS */}
             {activeTab === 'projects' && (
               <div className="fade-in space-y-5">
                 <div className="card p-5">
@@ -1000,7 +1092,7 @@
                 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                   {filteredProjects.length === 0 ? (
                     <div className="col-span-full card p-16 text-center">
-                      <div className="text-3xl font-bold mb-2">[ NO MATCHES ]</div>
+                      <div className="text-3xl font-bold mb-2 text-white/20">[ NO MATCHES ]</div>
                       <div className="text-sm text-white/40">ไม่พบแคมเปญ</div>
                     </div>
                   ) : (
@@ -1022,28 +1114,29 @@
                             {getStatusBadge(p.status)}
                           </div>
 
-                          <div className="text-xs text-white/50 mb-5">
+                          <div className="text-xs text-white/50 mb-5 flex items-center gap-2">
+                            <i data-lucide="calendar" className="w-3 h-3"></i>
                             {formatDate(p.startDate)} → {formatDate(p.endDate)}
                           </div>
 
-                          <div className="grid grid-cols-4 gap-1 mb-5 p-3 bg-white/[0.03] border border-white/10">
+                          <div className="grid grid-cols-4 gap-1 mb-5 p-3 bg-white/[0.03] border border-white/10 rounded">
                             <div className="text-center">
-                              <div className="text-[9px] tracking-widest text-white/40 mb-1">INQ</div>
+                              <div className="text-[9px] tracking-widest text-blue-400 mb-1">INQ</div>
                               <div className="text-lg font-bold">{inquiries.toLocaleString()}</div>
                               <div className="text-[9px] text-white/40">100%</div>
                             </div>
                             <div className="text-center border-l border-white/10">
-                              <div className="text-[9px] tracking-widest text-white/40 mb-1">TST</div>
+                              <div className="text-[9px] tracking-widest text-violet-400 mb-1">TST</div>
                               <div className="text-lg font-bold">{(p.testDrives || 0).toLocaleString()}</div>
                               <div className="text-[9px] text-white/40">{testDriveRate}%</div>
                             </div>
                             <div className="text-center border-l border-white/10">
-                              <div className="text-[9px] tracking-widest text-white/40 mb-1">BK</div>
+                              <div className="text-[9px] tracking-widest text-amber-400 mb-1">BK</div>
                               <div className="text-lg font-bold">{(p.bookings || 0).toLocaleString()}</div>
                               <div className="text-[9px] text-white/40">{bookingRate}%</div>
                             </div>
                             <div className="text-center border-l border-white/10">
-                              <div className="text-[9px] tracking-widest text-white/40 mb-1">DLV</div>
+                              <div className="text-[9px] tracking-widest text-emerald-400 mb-1">DLV</div>
                               <div className="text-lg font-bold">{(p.deliveries || 0).toLocaleString()}</div>
                               <div className="text-[9px] text-white/40">{deliveryRate}%</div>
                             </div>
@@ -1051,13 +1144,13 @@
 
                           <div className="mb-5">
                             <div className="flex justify-between text-[10px] tracking-widest text-white/50 mb-2">
-                              <span>BUDGET</span>
-                              <span className={spentPercent > 90 ? 'text-red-400' : spentPercent > 70 ? 'text-yellow-400' : 'text-green-400'}>
+                              <span>BUDGET USAGE</span>
+                              <span className={spentPercent > 90 ? 'text-red-400' : spentPercent > 70 ? 'text-amber-400' : 'text-emerald-400'}>
                                 {spentPercent}%
                               </span>
                             </div>
                             <div className="progress-track">
-                              <div className={`progress-fill ${spentPercent > 90 ? 'progress-fill-danger' : spentPercent > 70 ? 'progress-fill-warning' : 'progress-fill-success'}`} style={{ width: `${Math.min(spentPercent, 100)}%` }}></div>
+                              <div className={`progress-fill ${spentPercent > 90 ? 'bg-red-500' : spentPercent > 70 ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${Math.min(spentPercent, 100)}%` }}></div>
                             </div>
                             <div className="text-[11px] text-white/40 mt-1.5 text-right">
                               ฿{(p.spent || 0).toLocaleString()} / {(p.budget || 0).toLocaleString()}
@@ -1065,12 +1158,8 @@
                           </div>
 
                           <div className="flex gap-2 pt-4 border-t border-white/10">
-                            <button onClick={() => openModal(p)} className="flex-1 btn-ghost py-2 text-xs tracking-widest">
-                              EDIT
-                            </button>
-                            <button onClick={() => deleteProject(p.id)} className="flex-1 btn-danger py-2 text-xs tracking-widest">
-                              DELETE
-                            </button>
+                            <button onClick={() => openModal(p)} className="flex-1 btn-ghost py-2 text-xs tracking-widest">EDIT</button>
+                            <button onClick={() => deleteProject(p.id)} className="flex-1 btn-danger py-2 text-xs tracking-widest">DELETE</button>
                           </div>
                         </div>
                       );
@@ -1080,16 +1169,14 @@
               </div>
             )}
 
-            {/* CALENDAR */}
             {activeTab === 'calendar' && (
               <div className="fade-in card p-6">
-                <CalendarComponent projects={projects} />
+                <CalendarComponent projects={projects} onlinePlans={onlinePlans} />
               </div>
             )}
           </div>
 
-          {/* MODAL */}
-          {showModal && (
+          {showModal && activeTab !== 'online' && (
             <div className="fixed inset-0 flex items-center justify-center z-50 p-4 modal-backdrop" onClick={() => setShowModal(false)}>
               <div className="card max-w-2xl w-full p-8 max-h-[90vh] overflow-y-auto fade-in" onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center justify-between mb-6 pb-6 border-b border-white/10">
@@ -1145,46 +1232,9 @@
                     </div>
                   </div>
 
-                  {/* Funnel */}
-                  <div className="p-5 border border-white/20 bg-white/[0.02]">
+                  <div className="p-5 border border-white/20 bg-white/[0.02] rounded">
                     <div className="text-xs tracking-[0.3em] text-white/40 mb-1">// FUNNEL</div>
                     <h3 className="font-bold text-lg mb-4">Sales Funnel Data</h3>
-
-                    {(() => {
-                      const inq = parseInt(formData.inquiries) || 0;
-                      const td = parseInt(formData.testDrives) || 0;
-                      const bk = parseInt(formData.bookings) || 0;
-                      const dl = parseInt(formData.deliveries) || 0;
-                      const pct = (v) => inq > 0 ? ((v / inq) * 100).toFixed(1) + '%' : '0.0%';
-                      return (
-                        <div className="p-4 bg-black/40 border border-white/10 mb-4">
-                          <div className="label mb-3">LIVE PREVIEW</div>
-                          <div className="grid grid-cols-4 gap-2 text-center">
-                            <div>
-                              <div className="text-[9px] tracking-widest text-white/50 mb-1">INQ</div>
-                              <div className="text-xl font-bold">{inq}</div>
-                              <div className="text-[10px] text-white/40">100%</div>
-                            </div>
-                            <div className="border-l border-white/10">
-                              <div className="text-[9px] tracking-widest text-white/50 mb-1">TST</div>
-                              <div className="text-xl font-bold">{td}</div>
-                              <div className="text-[10px] text-white/40">{pct(td)}</div>
-                            </div>
-                            <div className="border-l border-white/10">
-                              <div className="text-[9px] tracking-widest text-white/50 mb-1">BK</div>
-                              <div className="text-xl font-bold">{bk}</div>
-                              <div className="text-[10px] text-white/40">{pct(bk)}</div>
-                            </div>
-                            <div className="border-l border-white/10">
-                              <div className="text-[9px] tracking-widest text-white/50 mb-1">DLV</div>
-                              <div className="text-xl font-bold">{dl}</div>
-                              <div className="text-[10px] text-white/40">{pct(dl)}</div>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })()}
-
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                       <div>
                         <label className="label block mb-2">Inquiries</label>
@@ -1207,13 +1257,6 @@
                         <input type="number" min="0" placeholder="0" value={formData.followUps} onChange={(e) => setFormData({...formData, followUps: e.target.value})} className="input" />
                       </div>
                     </div>
-
-                    <div className="mt-4 p-5 bg-white text-black">
-                      <div className="text-xs tracking-[0.2em] text-black/50 mb-1">OVERALL CONVERSION</div>
-                      <div className="text-4xl font-bold mono-header">
-                        {(Number(formData.inquiries) || 0) > 0 ? (((Number(formData.deliveries) || 0) / (Number(formData.inquiries) || 0)) * 100).toFixed(2) : '0.00'}%
-                      </div>
-                    </div>
                   </div>
 
                   <div>
@@ -1222,12 +1265,8 @@
                   </div>
 
                   <div className="flex gap-3 pt-4 border-t border-white/10">
-                    <button onClick={saveProject} className="flex-1 btn-primary py-3 text-sm tracking-widest">
-                      SAVE
-                    </button>
-                    <button onClick={() => setShowModal(false)} className="btn-ghost px-6 py-3 text-sm tracking-widest">
-                      CANCEL
-                    </button>
+                    <button onClick={saveProject} className="flex-1 btn-primary py-3 text-sm tracking-widest">SAVE</button>
+                    <button onClick={() => setShowModal(false)} className="btn-ghost px-6 py-3 text-sm tracking-widest">CANCEL</button>
                   </div>
                 </div>
               </div>
