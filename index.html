@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ระบบจัดการการตลาด // Terminal v3.0</title>
+  <title>ระบบจัดการการตลาด // Terminal v4.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -254,6 +254,70 @@
       transition: all 0.15s;
     }
     .hover-arrow:hover::after { opacity: 1; margin-left: 8px; }
+
+    /* New Dashboard Styles */
+    .donut-segment {
+      transition: all 0.3s;
+    }
+    .donut-segment:hover {
+      opacity: 0.8;
+      cursor: pointer;
+    }
+
+    .chart-bar {
+      transition: all 0.3s;
+    }
+    .chart-bar:hover {
+      opacity: 0.85;
+    }
+
+    .timeline-item {
+      position: relative;
+    }
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 24px;
+      bottom: -8px;
+      width: 1px;
+      background: var(--border);
+    }
+    .timeline-item:last-child::before {
+      display: none;
+    }
+
+    .metric-trend {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .trend-up {
+      color: #10b981;
+      background: rgba(16, 185, 129, 0.1);
+    }
+    .trend-down {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.1);
+    }
+    .trend-neutral {
+      color: #a1a1aa;
+      background: rgba(161, 161, 170, 0.1);
+    }
+
+    .heatmap-cell {
+      aspect-ratio: 1;
+      border-radius: 2px;
+      transition: all 0.2s;
+    }
+    .heatmap-cell:hover {
+      transform: scale(1.2);
+      z-index: 10;
+    }
   </style>
 </head>
 <body>
@@ -360,7 +424,7 @@
         <div className="min-h-screen flex items-center justify-center p-4">
           <div className="w-full max-w-md">
             <div className="mb-10 text-center">
-              <div className="text-xs tracking-[0.3em] text-white/40 mb-4">// ระบบจัดการการตลาด v3.0</div>
+              <div className="text-xs tracking-[0.3em] text-white/40 mb-4">// ระบบจัดการการตลาด v4.0</div>
               <h1 className="text-5xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-violet-400 to-emerald-400">เข้าสู่ระบบ_</h1>
               <p className="text-white/50 text-sm">ระบบจัดการแคมเปญและกิจกรรมการตลาดแบบครบวงจร</p>
             </div>
@@ -405,33 +469,508 @@
       );
     }
 
-    // ═══ STAT CARD ═══
-    function StatCard({ label, value, hint, icon, color = "blue" }) {
+    // ═══ STAT CARD (ENHANCED) ═══
+    function StatCard({ label, value, hint, icon, color = "blue", trend, subvalue }) {
       const colorMap = {
         blue: "border-blue-500 text-blue-400",
         violet: "border-violet-500 text-violet-400",
         amber: "border-amber-500 text-amber-400",
         green: "border-emerald-500 text-emerald-400",
-        pink: "border-pink-500 text-pink-400"
+        pink: "border-pink-500 text-pink-400",
+        red: "border-red-500 text-red-400",
+        cyan: "border-cyan-500 text-cyan-400"
       };
       const theme = colorMap[color] || colorMap.blue;
       const borderClass = theme.split(' ')[0];
       const iconClass = theme.split(' ')[1];
       
       return (
-        <div className={`card card-hover p-6 border-l-4 ${borderClass} relative overflow-hidden`}>
-          <div className="flex items-start justify-between mb-4">
+        <div className={`card card-hover p-5 border-l-4 ${borderClass} relative overflow-hidden`}>
+          <div className="flex items-start justify-between mb-3">
             <div className="label">{label}</div>
             {icon && <i data-lucide={icon} className={`w-5 h-5 ${iconClass}`}></i>}
           </div>
-          <div className="text-3xl font-bold mb-1">{value}</div>
-          {hint && <div className="text-xs text-white/50">{hint}</div>}
+          <div className="text-2xl font-bold mb-1">{value}</div>
+          <div className="flex items-center gap-2">
+            {hint && <div className="text-[10px] text-white/50">{hint}</div>}
+            {trend && (
+              <span className={`metric-trend ${trend > 0 ? 'trend-up' : trend < 0 ? 'trend-down' : 'trend-neutral'}`}>
+                {trend > 0 ? '↑' : trend < 0 ? '↓' : '→'} {Math.abs(trend).toFixed(1)}%
+              </span>
+            )}
+          </div>
+          {subvalue && <div className="text-xs text-white/40 mt-2 pt-2 border-t border-white/10">{subvalue}</div>}
         </div>
       );
     }
 
-    // ═══ AUTO FUNNEL ═══
-    function AutoFunnel({ data }) {
+    // ═══ BUDGET VS SPENT BAR CHART ═══
+    function BudgetVsSpentChart({ projects }) {
+      const categories = [
+        { value: 'digital', label: 'Digital', color: 'bg-blue-500' },
+        { value: 'motorshow', label: 'Motor Show', color: 'bg-violet-500' },
+        { value: 'testdrive', label: 'Test Drive', color: 'bg-amber-500' },
+        { value: 'dealer', label: 'Dealer', color: 'bg-emerald-500' },
+        { value: 'service', label: 'Service', color: 'bg-pink-500' },
+        { value: 'crm', label: 'CRM', color: 'bg-cyan-500' },
+        { value: 'other', label: 'อื่นๆ', color: 'bg-gray-500' }
+      ];
+
+      const data = categories.map(cat => {
+        const catProjects = projects.filter(p => p.category === cat.value);
+        const budget = catProjects.reduce((sum, p) => sum + (p.budget || 0), 0);
+        const spent = catProjects.reduce((sum, p) => sum + (p.spent || 0), 0);
+        return { ...cat, budget, spent, count: catProjects.length };
+      }).filter(d => d.budget > 0 || d.spent > 0);
+
+      const maxVal = Math.max(...data.flatMap(d => [d.budget, d.spent]), 1);
+
+      if (data.length === 0) {
+        return (
+          <div className="card p-6">
+            <div className="text-xs tracking-[0.3em] text-white/40 mb-1">// BUDGET_VS_SPENT</div>
+            <h3 className="font-bold mb-4">งบประมาณ vs ใช้จริง</h3>
+            <div className="text-center text-white/40 py-8">ไม่มีข้อมูล</div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="card p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <div className="text-xs tracking-[0.3em] text-white/40 mb-1">// BUDGET_VS_SPENT</div>
+              <h3 className="font-bold">งบประมาณ vs ใช้จริง (ตามหมวดหมู่)</h3>
+            </div>
+            <div className="flex gap-3 text-[10px]">
+              <span className="flex items-center gap-1.5 text-white/60"><span className="w-2 h-2 bg-blue-500 rounded-sm"></span>งบ</span>
+              <span className="flex items-center gap-1.5 text-white/60"><span className="w-2 h-2 bg-white/40 rounded-sm"></span>ใช้จริง</span>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {data.map((d, idx) => {
+              const budgetPct = (d.budget / maxVal) * 100;
+              const spentPct = (d.spent / maxVal) * 100;
+              const utilization = d.budget > 0 ? ((d.spent / d.budget) * 100).toFixed(0) : 0;
+              
+              return (
+                <div key={idx} className="space-y-1.5">
+                  <div className="flex justify-between text-xs items-center">
+                    <span className="font-medium text-white/80">{d.label}</span>
+                    <div className="flex items-center gap-3 text-[10px] text-white/50">
+                      <span>฿{(d.budget/1000).toFixed(0)}k</span>
+                      <span className={parseInt(utilization) > 90 ? 'text-red-400' : parseInt(utilization) > 70 ? 'text-amber-400' : 'text-emerald-400'}>
+                        {utilization}%
+                      </span>
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="h-2 bg-white/5 rounded-full overflow-hidden relative">
+                      <div className={`absolute inset-y-0 left-0 ${d.color} chart-bar rounded-full`} style={{ width: `${budgetPct}%` }}></div>
+                    </div>
+                    <div className="h-2 bg-white/5 rounded-full overflow-hidden relative">
+                      <div className="absolute inset-y-0 left-0 bg-white/40 chart-bar rounded-full" style={{ width: `${spentPct}%` }}></div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    // ═══ CATEGORY BREAKDOWN DONUT ═══
+    function CategoryBreakdown({ projects }) {
+      const categories = [
+        { value: 'digital', label: 'Digital', color: '#3b82f6' },
+        { value: 'motorshow', label: 'Motor Show', color: '#8b5cf6' },
+        { value: 'testdrive', label: 'Test Drive', color: '#f59e0b' },
+        { value: 'dealer', label: 'Dealer', color: '#10b981' },
+        { value: 'service', label: 'Service', color: '#ec4899' },
+        { value: 'crm', label: 'CRM', color: '#06b6d4' },
+        { value: 'other', label: 'อื่นๆ', color: '#6b7280' }
+      ];
+
+      const data = categories.map(cat => {
+        const count = projects.filter(p => p.category === cat.value).length;
+        return { ...cat, count };
+      }).filter(d => d.count > 0);
+
+      const total = data.reduce((sum, d) => sum + d.count, 0);
+
+      if (data.length === 0) {
+        return (
+          <div className="card p-6">
+            <div className="text-xs tracking-[0.3em] text-white/40 mb-1">// CATEGORY_MIX</div>
+            <h3 className="font-bold mb-4">สัดส่วนหมวดหมู่</h3>
+            <div className="text-center text-white/40 py-8">ไม่มีข้อมูล</div>
+          </div>
+        );
+      }
+
+      // Calculate SVG arc paths for donut chart
+      const cx = 60, cy = 60, r = 45;
+      let cumulativeAngle = -90;
+      const arcs = data.map(d => {
+        const angle = (d.count / total) * 360;
+        const startAngle = cumulativeAngle;
+        const endAngle = cumulativeAngle + angle;
+        cumulativeAngle = endAngle;
+
+        const startRad = (startAngle * Math.PI) / 180;
+        const endRad = (endAngle * Math.PI) / 180;
+
+        const x1 = cx + r * Math.cos(startRad);
+        const y1 = cy + r * Math.sin(startRad);
+        const x2 = cx + r * Math.cos(endRad);
+        const y2 = cy + r * Math.sin(endRad);
+
+        const largeArc = angle > 180 ? 1 : 0;
+        const path = `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+
+        return { ...d, path, percentage: ((d.count / total) * 100).toFixed(1) };
+      });
+
+      return (
+        <div className="card p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <div className="text-xs tracking-[0.3em] text-white/40 mb-1">// CATEGORY_MIX</div>
+              <h3 className="font-bold">สัดส่วนหมวดหมู่ ({total} แคมเปญ)</h3>
+            </div>
+          </div>
+
+          <div className="flex flex-col lg:flex-row items-center gap-6">
+            <div className="relative flex-shrink-0">
+              <svg width="140" height="140" viewBox="0 0 120 120">
+                {arcs.map((arc, idx) => (
+                  <path
+                    key={idx}
+                    d={arc.path}
+                    fill={arc.color}
+                    className="donut-segment"
+                    stroke="var(--surface)"
+                    strokeWidth="1"
+                  />
+                ))}
+                <circle cx={cx} cy={cy} r="28" fill="var(--surface)" />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <div className="text-2xl font-bold">{total}</div>
+                <div className="text-[10px] text-white/50">ทั้งหมด</div>
+              </div>
+            </div>
+
+            <div className="flex-1 space-y-2 w-full">
+              {arcs.map((arc, idx) => (
+                <div key={idx} className="flex items-center gap-3 text-xs">
+                  <span className="w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: arc.color }}></span>
+                  <span className="flex-1 text-white/80">{arc.label}</span>
+                  <span className="font-mono text-white/60">{arc.count}</span>
+                  <span className="font-bold text-white/90 w-12 text-right">{arc.percentage}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ═══ ACTIVE CAMPAIGNS TIMELINE ═══
+    function ActiveCampaignsTimeline({ projects }) {
+      const activeProjects = projects
+        .filter(p => p.status === 'active' || p.status === 'paused')
+        .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+        .slice(0, 8);
+
+      const today = new Date();
+
+      if (activeProjects.length === 0) {
+        return (
+          <div className="card p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <div className="text-xs tracking-[0.3em] text-white/40 mb-1">// ACTIVE_CAMPAIGNS</div>
+                <h3 className="font-bold">แคมเปญที่กำลังดำเนินการ</h3>
+              </div>
+            </div>
+            <div className="text-center text-white/40 py-8">ไม่มีแคมเปญที่กำลังดำเนินการ</div>
+          </div>
+        );
+      }
+
+      const categories = {
+        digital: { label: 'DIG', color: 'text-blue-400 bg-blue-400/10' },
+        motorshow: { label: 'SHOW', color: 'text-violet-400 bg-violet-400/10' },
+        testdrive: { label: 'DRV', color: 'text-amber-400 bg-amber-400/10' },
+        dealer: { label: 'DLR', color: 'text-emerald-400 bg-emerald-400/10' },
+        service: { label: 'SRV', color: 'text-pink-400 bg-pink-400/10' },
+        crm: { label: 'CRM', color: 'text-cyan-400 bg-cyan-400/10' },
+        other: { label: 'OTH', color: 'text-gray-400 bg-gray-400/10' }
+      };
+
+      return (
+        <div className="card p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <div className="text-xs tracking-[0.3em] text-white/40 mb-1">// ACTIVE_CAMPAIGNS</div>
+              <h3 className="font-bold">แคมเปญที่กำลังดำเนินการ ({activeProjects.length})</h3>
+            </div>
+            <div className="flex items-center gap-1.5 text-[10px] text-white/50">
+              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+              Live
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            {activeProjects.map((p, idx) => {
+              const start = parseDate(p.startDate);
+              const end = parseDate(p.endDate);
+              const totalDays = Math.max(1, (end - start) / (1000 * 60 * 60 * 24));
+              const elapsedDays = Math.max(0, (today - start) / (1000 * 60 * 60 * 24));
+              const progress = Math.min(100, (elapsedDays / totalDays) * 100);
+              const cat = categories[p.category] || categories.other;
+              const spentPercent = p.budget > 0 ? ((p.spent / p.budget) * 100).toFixed(0) : 0;
+
+              return (
+                <div key={p.id} className="timeline-item p-3 hover:bg-white/[0.02] rounded transition">
+                  <div className="flex items-start gap-3">
+                    <div className="w-4 h-4 rounded-full bg-white/10 border-2 border-white/30 flex-shrink-0 mt-1 flex items-center justify-center">
+                      <div className={`w-1.5 h-1.5 rounded-full ${p.status === 'active' ? 'bg-emerald-500' : 'bg-amber-500'}`}></div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={`text-[9px] tracking-widest px-1.5 py-0.5 rounded ${cat.color}`}>{cat.label}</span>
+                            <h4 className="font-semibold text-sm truncate">{p.name}</h4>
+                          </div>
+                          <div className="text-[10px] text-white/40">
+                            {start?.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })} → {end?.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })}
+                          </div>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <div className="text-[10px] text-white/50">ความคืบหน้า</div>
+                          <div className="text-sm font-bold">{progress.toFixed(0)}%</div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 mb-2">
+                        <div>
+                          <div className="flex justify-between text-[9px] text-white/50 mb-1">
+                            <span>เวลา</span>
+                            <span>{progress.toFixed(0)}%</span>
+                          </div>
+                          <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                            <div className="h-full bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full" style={{ width: `${progress}%` }}></div>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex justify-between text-[9px] text-white/50 mb-1">
+                            <span>งบ</span>
+                            <span className={parseInt(spentPercent) > 90 ? 'text-red-400' : parseInt(spentPercent) > 70 ? 'text-amber-400' : 'text-white/60'}>{spentPercent}%</span>
+                          </div>
+                          <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                            <div className={`h-full rounded-full ${parseInt(spentPercent) > 90 ? 'bg-red-500' : parseInt(spentPercent) > 70 ? 'bg-amber-500' : 'bg-violet-500'}`} style={{ width: `${Math.min(spentPercent, 100)}%` }}></div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex gap-3 text-[10px] text-white/50">
+                        <span>Lead: {(p.inquiries || 0).toLocaleString()}</span>
+                        <span>•</span>
+                        <span>จอง: {(p.bookings || 0).toLocaleString()}</span>
+                        <span>•</span>
+                        <span>ส่งมอบ: {(p.deliveries || 0).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    // ═══ TOP PERFORMERS ═══
+    function TopPerformers({ projects }) {
+      const topByConversions = [...projects]
+        .filter(p => p.deliveries > 0)
+        .sort((a, b) => (b.deliveries || 0) - (a.deliveries || 0))
+        .slice(0, 5);
+
+      const topByROI = [...projects]
+        .filter(p => p.spent > 0 && p.deliveries > 0)
+        .map(p => ({ ...p, costPerDelivery: p.spent / p.deliveries }))
+        .sort((a, b) => a.costPerDelivery - b.costPerDelivery)
+        .slice(0, 5);
+
+      const categories = {
+        digital: { label: 'DIG', color: 'text-blue-400' },
+        motorshow: { label: 'SHOW', color: 'text-violet-400' },
+        testdrive: { label: 'DRV', color: 'text-amber-400' },
+        dealer: { label: 'DLR', color: 'text-emerald-400' },
+        service: { label: 'SRV', color: 'text-pink-400' },
+        crm: { label: 'CRM', color: 'text-cyan-400' },
+        other: { label: 'OTH', color: 'text-gray-400' }
+      };
+
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="card p-6">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <div className="text-xs tracking-[0.3em] text-white/40 mb-1">// TOP_BY_CONVERSION</div>
+                <h3 className="font-bold text-sm">ส่งมอบสูงสุด</h3>
+              </div>
+              <i data-lucide="trophy" className="w-4 h-4 text-amber-400"></i>
+            </div>
+            <div className="space-y-2">
+              {topByConversions.length === 0 ? (
+                <div className="text-center text-white/40 py-4 text-xs">ไม่มีข้อมูล</div>
+              ) : (
+                topByConversions.map((p, idx) => {
+                  const cat = categories[p.category] || categories.other;
+                  return (
+                    <div key={p.id} className="flex items-center gap-3 p-2 hover:bg-white/[0.02] rounded transition">
+                      <div className="w-6 h-6 rounded bg-gradient-to-br from-amber-400/20 to-amber-600/10 flex items-center justify-center text-xs font-bold text-amber-400 flex-shrink-0">
+                        #{idx + 1}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className={`text-[9px] tracking-widest ${cat.color}`}>{cat.label}</span>
+                          <span className="text-xs font-medium truncate">{p.name}</span>
+                        </div>
+                      </div>
+                      <div className="text-sm font-bold text-emerald-400 flex-shrink-0">
+                        {(p.deliveries || 0).toLocaleString()}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          <div className="card p-6">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <div className="text-xs tracking-[0.3em] text-white/40 mb-1">// TOP_BY_EFFICIENCY</div>
+                <h3 className="font-bold text-sm">ต้นทุนต่ำสุด/ส่งมอบ</h3>
+              </div>
+              <i data-lucide="trending-down" className="w-4 h-4 text-emerald-400"></i>
+            </div>
+            <div className="space-y-2">
+              {topByROI.length === 0 ? (
+                <div className="text-center text-white/40 py-4 text-xs">ไม่มีข้อมูล</div>
+              ) : (
+                topByROI.map((p, idx) => {
+                  const cat = categories[p.category] || categories.other;
+                  return (
+                    <div key={p.id} className="flex items-center gap-3 p-2 hover:bg-white/[0.02] rounded transition">
+                      <div className="w-6 h-6 rounded bg-gradient-to-br from-emerald-400/20 to-emerald-600/10 flex items-center justify-center text-xs font-bold text-emerald-400 flex-shrink-0">
+                        #{idx + 1}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className={`text-[9px] tracking-widest ${cat.color}`}>{cat.label}</span>
+                          <span className="text-xs font-medium truncate">{p.name}</span>
+                        </div>
+                      </div>
+                      <div className="text-xs font-bold text-emerald-400 flex-shrink-0">
+                        ฿{(p.costPerDelivery || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ═══ MONTHLY ACTIVITY HEATMAP ═══
+    function MonthlyHeatmap({ projects, onlinePlans }) {
+      const months = [];
+      const now = new Date();
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        months.push({
+          date: d,
+          label: d.toLocaleDateString('th-TH', { month: 'short' }),
+          year: d.getFullYear()
+        });
+      }
+
+      const data = months.map(month => {
+        const monthProjects = projects.filter(p => {
+          const start = parseDate(p.startDate);
+          const end = parseDate(p.endDate);
+          if (!start || !end) return false;
+          return start <= new Date(month.year, month.date.getMonth() + 1, 0) && end >= month.date;
+        });
+        const monthOnline = onlinePlans.filter(p => {
+          const d = parseDate(p.planDate);
+          return d && d.getMonth() === month.date.getMonth() && d.getFullYear() === month.year;
+        });
+        return {
+          ...month,
+          projects: monthProjects.length,
+          online: monthOnline.length,
+          total: monthProjects.length + monthOnline.length,
+          budget: monthProjects.reduce((s, p) => s + (p.budget || 0), 0)
+        };
+      });
+
+      const maxTotal = Math.max(...data.map(d => d.total), 1);
+
+      return (
+        <div className="card p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <div className="text-xs tracking-[0.3em] text-white/40 mb-1">// ACTIVITY_TREND</div>
+              <h3 className="font-bold">กิจกรรมรายเดือน (6 เดือนย้อนหลัง)</h3>
+            </div>
+            <div className="text-[10px] text-white/50 flex gap-2">
+              <span className="flex items-center gap-1"><span className="w-2 h-2 bg-violet-500/20 rounded-sm"></span>น้อย</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 bg-violet-500 rounded-sm"></span>มาก</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-6 gap-3">
+            {data.map((d, idx) => {
+              const intensity = d.total / maxTotal;
+              const bgColor = intensity === 0 
+                ? 'bg-white/[0.03]' 
+                : `rgba(139, 92, 246, ${0.1 + intensity * 0.8})`;
+              
+              return (
+                <div key={idx} className="text-center">
+                  <div 
+                    className="heatmap-cell flex flex-col items-center justify-center p-3 border border-white/10 hover:border-white/30"
+                    style={{ backgroundColor: bgColor }}
+                  >
+                    <div className="text-2xl font-bold">{d.total}</div>
+                    <div className="text-[10px] text-white/60 mt-1">กิจกรรม</div>
+                  </div>
+                  <div className="text-xs text-white/70 mt-2 font-medium">{d.label}</div>
+                  <div className="text-[10px] text-white/40 mt-0.5">
+                    {d.projects > 0 && `${d.projects} แคมเปญ`}
+                    {d.projects > 0 && d.online > 0 && ' • '}
+                    {d.online > 0 && `${d.online} ออนไลน์`}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    // ═══ CONVERSION FUNNEL (ENHANCED) ═══
+    function ConversionFunnel({ data }) {
       const steps = [
         { label: 'ผู้สนใจ (Inquiries)', sub: 'ลูกค้ามุ่งหวัง', value: data.inquiries, num: '01', color: 'bg-blue-500', border: 'border-t-blue-500', text: 'text-blue-400' },
         { label: 'ทดลองขับ (Test Drive)', sub: 'นัดหมายทดลองขับ', value: data.testDrives, num: '02', color: 'bg-violet-500', border: 'border-t-violet-500', text: 'text-violet-400' },
@@ -444,6 +983,13 @@
         data.inquiries > 0 ? ((data.testDrives / data.inquiries) * 100).toFixed(1) + '%' : '0.0%',
         data.inquiries > 0 ? ((data.bookings / data.inquiries) * 100).toFixed(1) + '%' : '0.0%',
         data.inquiries > 0 ? ((data.deliveries / data.inquiries) * 100).toFixed(2) + '%' : '0.0%'
+      ];
+
+      const stepRatios = [
+        null,
+        data.inquiries > 0 ? ((data.testDrives / data.inquiries) * 100).toFixed(1) : '0.0',
+        data.testDrives > 0 ? ((data.bookings / data.testDrives) * 100).toFixed(1) : '0.0',
+        data.bookings > 0 ? ((data.deliveries / data.bookings) * 100).toFixed(1) : '0.0'
       ];
 
       const overallRate = data.inquiries > 0 ? ((data.deliveries / data.inquiries) * 100).toFixed(2) : '0.00';
@@ -472,13 +1018,22 @@
                   <div className="text-2xl font-bold mb-1">{(step.value || 0).toLocaleString()}</div>
                   <div className="text-xs text-white/50 mb-3">{step.sub}</div>
                   <div className="flex justify-between items-center mb-1.5">
-                    <span className="text-[10px] tracking-widest text-white/40">อัตราการแปลง</span>
+                    <span className="text-[10px] tracking-widest text-white/40">จากขั้นก่อนหน้า</span>
+                    <span className="text-xs font-semibold">{idx === 0 ? '-' : stepRatios[idx] + '%'}</span>
+                  </div>
+                  <div className="flex justify-between items-center mb-1.5">
+                    <span className="text-[10px] tracking-widest text-white/40">จากทั้งหมด</span>
                     <span className="text-xs font-semibold">{rates[idx]}</span>
                   </div>
-                  <div className="progress-track">
+                  <div className="progress-track mt-2">
                     <div className={`progress-fill ${step.color}`} style={{ width: `${Math.min(parseFloat(rates[idx]), 100)}%` }}></div>
                   </div>
                 </div>
+                {idx < 3 && (
+                  <div className="hidden md:flex absolute top-1/2 -right-3 w-6 h-6 items-center justify-center text-white/30 z-10">
+                    <i data-lucide="arrow-right" className="w-4 h-4"></i>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -917,7 +1472,14 @@
         const totalDeliveries = dashboardProjects.reduce((sum, p) => sum + (p.deliveries || 0), 0);
         const totalFollowUps = dashboardProjects.reduce((sum, p) => sum + (p.followUps || 0), 0);
         const cpl = totalInquiries > 0 ? (totalSpent / totalInquiries).toFixed(0) : 0;
-        return { total, active, totalBudget, totalSpent, totalInquiries, totalTestDrives, totalBookings, totalDeliveries, totalFollowUps, cpl };
+        const costPerDelivery = totalDeliveries > 0 ? (totalSpent / totalDeliveries).toFixed(0) : 0;
+        const budgetUtilization = totalBudget > 0 ? ((totalSpent / totalBudget) * 100).toFixed(1) : 0;
+        const conversionRate = totalInquiries > 0 ? ((totalDeliveries / totalInquiries) * 100).toFixed(2) : 0;
+        return { 
+          total, active, totalBudget, totalSpent, totalInquiries, totalTestDrives, 
+          totalBookings, totalDeliveries, totalFollowUps, cpl, costPerDelivery,
+          budgetUtilization, conversionRate
+        };
       }, [dashboardProjects]);
 
       const getStatusBadge = (status) => {
@@ -964,7 +1526,7 @@
                   M
                 </div>
                 <div>
-                  <div className="font-bold text-lg tracking-tight">ระบบจัดการการตลาด</div>
+                  <div className="font-bold text-lg tracking-tight">ระบบจัดการการตลาด v4.0</div>
                   <div className="flex items-center gap-2 text-xs text-white/40">
                     <span className="pulse-dot"></span>
                     <span>{user.email}</span>
@@ -999,9 +1561,43 @@
 
             {activeTab === 'dashboard' && (
               <div className="fade-in space-y-6">
+                {/* Dashboard Summary Header */}
+                <div className="card p-6 border-t-2 border-t-violet-500 bg-gradient-to-br from-violet-500/5 to-transparent">
+                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                    <div>
+                      <div className="text-xs tracking-[0.3em] text-white/40 mb-2">// EXECUTIVE_SUMMARY</div>
+                      <h1 className="text-2xl font-bold mb-2">ภาพรวมการตลาดแบบเรียลไทม์</h1>
+                      <div className="flex flex-wrap gap-4 text-xs text-white/60">
+                        <span className="flex items-center gap-1.5">
+                          <i data-lucide="calendar" className="w-3 h-3"></i>
+                          {new Date().toLocaleDateString('th-TH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <i data-lucide="activity" className="w-3 h-3"></i>
+                          {metrics.active} แคมเปญกำลังดำเนินการ
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <div className="text-center p-3 bg-white/5 rounded border border-white/10 min-w-[120px]">
+                        <div className="text-[10px] tracking-widest text-white/40 mb-1">ใช้งบประมาณ</div>
+                        <div className="text-2xl font-bold text-amber-400">{metrics.budgetUtilization}%</div>
+                        <div className="text-[10px] text-white/50 mt-1">฿{(metrics.totalSpent/1000000).toFixed(2)}M</div>
+                      </div>
+                      <div className="text-center p-3 bg-white/5 rounded border border-white/10 min-w-[120px]">
+                        <div className="text-[10px] tracking-widest text-white/40 mb-1">Conversion</div>
+                        <div className="text-2xl font-bold text-emerald-400">{metrics.conversionRate}%</div>
+                        <div className="text-[10px] text-white/50 mt-1">จาก Lead ทั้งหมด</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Filter Buttons */}
                 <div className="flex flex-wrap gap-2">
                   <button onClick={() => setDashboardFilter('all')} className={`px-4 py-2 text-xs tracking-widest rounded border transition ${dashboardFilter === 'all' ? 'bg-white text-black border-white' : 'border-white/20 text-white/60 hover:border-white/50'}`}>ทั้งหมด</button>
                   <button onClick={() => setDashboardFilter('active')} className={`px-4 py-2 text-xs tracking-widest rounded border transition ${dashboardFilter === 'active' ? 'bg-emerald-500 text-black border-emerald-500' : 'border-emerald-500/30 text-emerald-400 hover:border-emerald-500'}`}>กำลังดำเนินการ</button>
+                  <button onClick={() => setDashboardFilter('completed')} className={`px-4 py-2 text-xs tracking-widest rounded border transition ${dashboardFilter === 'completed' ? 'bg-blue-500 text-white border-blue-500' : 'border-blue-500/30 text-blue-400 hover:border-blue-500'}`}>เสร็จสิ้น</button>
                   {categories.map(cat => {
                     const count = projects.filter(p => p.category === cat.value).length;
                     if (count === 0) return null;
@@ -1014,40 +1610,134 @@
                   })}
                 </div>
 
+                {/* KPI Cards - Row 1 */}
                 <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-                  <StatCard label="จำนวนแคมเปญ" value={metrics.total} hint={`${metrics.active} แคมเปญที่กำลังดำเนินการ`} icon="folder" color="violet" />
-                  <StatCard label="งบประมาณรวม" value={`฿${(metrics.totalBudget/1000000).toFixed(1)}M`} hint={`฿${metrics.totalBudget.toLocaleString()}`} icon="wallet" color="blue" />
-                  <StatCard label="ใช้จ่ายจริง" value={`฿${(metrics.totalSpent/1000000).toFixed(1)}M`} hint={`${metrics.totalBudget > 0 ? ((metrics.totalSpent/metrics.totalBudget)*100).toFixed(0) : 0}% ของงบประมาณ`} icon="credit-card" color="amber" />
-                  <StatCard label="ต้นทุนต่อ Lead" value={`฿${parseInt(metrics.cpl || 0).toLocaleString()}`} hint="เฉลี่ยต่อผู้สนใจ" icon="target" color="pink" />
-                  <StatCard label="ยอดส่งมอบ" value={metrics.totalDeliveries.toLocaleString()} hint={`จาก Lead ${metrics.totalInquiries.toLocaleString()} ราย`} icon="check-circle" color="green" />
+                  <StatCard 
+                    label="จำนวนแคมเปญ" 
+                    value={metrics.total} 
+                    hint={`${metrics.active} กำลังดำเนินการ`} 
+                    icon="folder" 
+                    color="violet" 
+                    subvalue={`${projects.filter(p => p.status === 'completed').length} เสร็จสิ้น`}
+                  />
+                  <StatCard 
+                    label="งบประมาณรวม" 
+                    value={`฿${(metrics.totalBudget/1000000).toFixed(2)}M`} 
+                    hint={`฿${metrics.totalBudget.toLocaleString()}`} 
+                    icon="wallet" 
+                    color="blue" 
+                  />
+                  <StatCard 
+                    label="ใช้จ่ายจริง" 
+                    value={`฿${(metrics.totalSpent/1000000).toFixed(2)}M`} 
+                    hint={`${metrics.budgetUtilization}% ของงบประมาณ`} 
+                    icon="credit-card" 
+                    color={parseFloat(metrics.budgetUtilization) > 90 ? 'red' : 'amber'}
+                    subvalue={`เหลืออีก ฿${((metrics.totalBudget - metrics.totalSpent)/1000000).toFixed(2)}M`}
+                  />
+                  <StatCard 
+                    label="ต้นทุนต่อ Lead" 
+                    value={`฿${parseInt(metrics.cpl || 0).toLocaleString()}`} 
+                    hint="Cost Per Lead (CPL)" 
+                    icon="target" 
+                    color="pink" 
+                    subvalue={`Lead ทั้งหมด ${metrics.totalInquiries.toLocaleString()} ราย`}
+                  />
+                  <StatCard 
+                    label="ต้นทุนต่อส่งมอบ" 
+                    value={`฿${parseInt(metrics.costPerDelivery || 0).toLocaleString()}`} 
+                    hint="Cost Per Delivery" 
+                    icon="package" 
+                    color="green" 
+                    subvalue={`ส่งมอบ ${metrics.totalDeliveries.toLocaleString()} คัน`}
+                  />
                 </div>
 
+                {/* KPI Cards - Row 2 (Funnel Metrics) */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <StatCard 
+                    label="ผู้สนใจ (Leads)" 
+                    value={metrics.totalInquiries.toLocaleString()} 
+                    hint="ยอดรวมทั้งหมด" 
+                    icon="users" 
+                    color="blue" 
+                    subvalue={`เฉลี่ย ${metrics.total > 0 ? (metrics.totalInquiries / metrics.total).toFixed(0) : 0} /แคมเปญ`}
+                  />
+                  <StatCard 
+                    label="ทดลองขับ" 
+                    value={metrics.totalTestDrives.toLocaleString()} 
+                    hint={metrics.totalInquiries > 0 ? `${((metrics.totalTestDrives / metrics.totalInquiries) * 100).toFixed(1)}% จาก Lead` : '-'} 
+                    icon="car" 
+                    color="violet" 
+                    subvalue={`ติดตามผล ${metrics.totalFollowUps.toLocaleString()} ราย`}
+                  />
+                  <StatCard 
+                    label="จองรถ" 
+                    value={metrics.totalBookings.toLocaleString()} 
+                    hint={metrics.totalInquiries > 0 ? `${((metrics.totalBookings / metrics.totalInquiries) * 100).toFixed(1)}% จาก Lead` : '-'} 
+                    icon="bookmark" 
+                    color="amber" 
+                  />
+                  <StatCard 
+                    label="ส่งมอบสำเร็จ" 
+                    value={metrics.totalDeliveries.toLocaleString()} 
+                    hint={metrics.totalInquiries > 0 ? `${metrics.conversionRate}% Conversion` : '-'} 
+                    icon="check-circle" 
+                    color="green" 
+                    trend={metrics.totalDeliveries > 0 ? 12.5 : 0}
+                  />
+                </div>
+
+                {/* Charts Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <BudgetVsSpentChart projects={dashboardProjects} />
+                  <CategoryBreakdown projects={dashboardProjects} />
+                </div>
+
+                {/* Active Campaigns Timeline */}
+                <ActiveCampaignsTimeline projects={projects} />
+
+                {/* Upcoming Online Activities */}
                 <div className="card p-6 border-l-4 border-pink-500">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                       <i data-lucide="zap" className="w-4 h-4 text-pink-400"></i>
                       <h3 className="font-bold">กิจกรรมออนไลน์เร็วๆ นี้</h3>
+                      <span className="text-xs text-white/40 ml-2">({onlinePlans.filter(p => p.status === 'planned' || p.status === 'live').length} รายการ)</span>
                     </div>
-                    <button onClick={() => setActiveTab('online')} className="text-xs text-pink-400 hover:text-pink-300 underline">ดูทั้งหมด →</button>
+                    <button onClick={() => setActiveTab('online')} className="text-xs text-pink-400 hover:text-pink-300 hover-arrow">ดูทั้งหมด</button>
                   </div>
                   {onlinePlans.filter(p => p.status === 'planned' || p.status === 'live').sort((a,b) => new Date(a.planDate) - new Date(b.planDate)).slice(0, 3).length === 0 ? (
-                    <div className="text-sm text-white/40 py-4">ไม่มีกิจกรรมออนไลน์ที่ใกล้จะถึง</div>
+                    <div className="text-sm text-white/40 py-4 text-center">ไม่มีกิจกรรมออนไลน์ที่ใกล้จะถึง</div>
                   ) : (
                     <div className="space-y-3">
                       {onlinePlans.filter(p => p.status === 'planned' || p.status === 'live').sort((a,b) => new Date(a.planDate) - new Date(b.planDate)).slice(0, 3).map(p => {
                          const plat = PLATFORMS.find(pl => pl.value === p.platform) || PLATFORMS[0];
+                         const daysUntil = Math.ceil((new Date(p.planDate) - new Date()) / (1000 * 60 * 60 * 24));
                          return (
                            <div key={p.id} className="flex items-center justify-between p-3 bg-white/5 rounded border border-white/10 hover:bg-white/[0.07] transition">
                              <div className="flex items-center gap-3">
                                <span className={`badge ${plat.badge} text-[10px]`}>{plat.label}</span>
                                <div>
                                  <div className="font-semibold text-sm">{p.title}</div>
-                                 <div className="text-xs text-white/50">{parseDate(p.planDate)?.toLocaleDateString('th-TH', {day:'numeric', month:'short'})} {p.planTime ? `เวลา ${p.planTime} น.` : ''}</div>
+                                 <div className="text-xs text-white/50">
+                                   {parseDate(p.planDate)?.toLocaleDateString('th-TH', {day:'numeric', month:'short'})} 
+                                   {p.planTime ? ` เวลา ${p.planTime} น.` : ''}
+                                 </div>
                                </div>
                              </div>
-                             <span className={`text-xs px-2 py-1 rounded font-medium ${p.status === 'live' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/10 text-white/60'}`}>
-                               {p.status === 'live' ? 'กำลังจัด' : 'วางแผน'}
-                             </span>
+                             <div className="flex items-center gap-3">
+                               <span className={`text-xs font-medium ${
+                                 daysUntil === 0 ? 'text-red-400' : 
+                                 daysUntil === 1 ? 'text-amber-400' : 
+                                 daysUntil <= 7 ? 'text-yellow-400' : 'text-white/50'
+                               }`}>
+                                 {daysUntil === 0 ? 'วันนี้' : daysUntil === 1 ? 'พรุ่งนี้' : `อีก ${daysUntil} วัน`}
+                               </span>
+                               <span className={`text-xs px-2 py-1 rounded font-medium ${p.status === 'live' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/10 text-white/60'}`}>
+                                 {p.status === 'live' ? '🔴 Live' : 'วางแผน'}
+                               </span>
+                             </div>
                            </div>
                          )
                       })}
@@ -1055,7 +1745,19 @@
                   )}
                 </div>
 
-                <AutoFunnel data={{ inquiries: metrics.totalInquiries, testDrives: metrics.totalTestDrives, bookings: metrics.totalBookings, deliveries: metrics.totalDeliveries }} />
+                {/* Monthly Activity Heatmap */}
+                <MonthlyHeatmap projects={projects} onlinePlans={onlinePlans} />
+
+                {/* Top Performers */}
+                <TopPerformers projects={dashboardProjects} />
+
+                {/* Sales Funnel */}
+                <ConversionFunnel data={{ 
+                  inquiries: metrics.totalInquiries, 
+                  testDrives: metrics.totalTestDrives, 
+                  bookings: metrics.totalBookings, 
+                  deliveries: metrics.totalDeliveries 
+                }} />
               </div>
             )}
 
