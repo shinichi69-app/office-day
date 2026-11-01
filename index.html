@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ระบบจัดการการตลาด // Terminal v4.0</title>
+  <title>ระบบจัดการการตลาด // Terminal v4.1</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -255,7 +255,7 @@
     }
     .hover-arrow:hover::after { opacity: 1; margin-left: 8px; }
 
-    /* New Dashboard Styles */
+    /* Dashboard Styles */
     .donut-segment {
       transition: all 0.3s;
     }
@@ -317,6 +317,20 @@
     .heatmap-cell:hover {
       transform: scale(1.2);
       z-index: 10;
+    }
+
+    .kpi-card {
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent-from, #8b5cf6), var(--accent-to, #ec4899));
     }
   </style>
 </head>
@@ -424,7 +438,7 @@
         <div className="min-h-screen flex items-center justify-center p-4">
           <div className="w-full max-w-md">
             <div className="mb-10 text-center">
-              <div className="text-xs tracking-[0.3em] text-white/40 mb-4">// ระบบจัดการการตลาด v4.0</div>
+              <div className="text-xs tracking-[0.3em] text-white/40 mb-4">// ระบบจัดการการตลาด v4.1</div>
               <h1 className="text-5xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-violet-400 to-emerald-400">เข้าสู่ระบบ_</h1>
               <p className="text-white/50 text-sm">ระบบจัดการแคมเปญและกิจกรรมการตลาดแบบครบวงจร</p>
             </div>
@@ -469,8 +483,8 @@
       );
     }
 
-    // ═══ STAT CARD (ENHANCED) ═══
-    function StatCard({ label, value, hint, icon, color = "blue", trend, subvalue }) {
+    // ═══ ENHANCED STAT CARD ═══
+    function StatCard({ label, value, hint, icon, color = "blue", trend, subvalue, accent }) {
       const colorMap = {
         blue: "border-blue-500 text-blue-400",
         violet: "border-violet-500 text-violet-400",
@@ -485,7 +499,7 @@
       const iconClass = theme.split(' ')[1];
       
       return (
-        <div className={`card card-hover p-5 border-l-4 ${borderClass} relative overflow-hidden`}>
+        <div className={`kpi-card card card-hover p-5 border-l-4 ${borderClass}`}>
           <div className="flex items-start justify-between mb-3">
             <div className="label">{label}</div>
             {icon && <i data-lucide={icon} className={`w-5 h-5 ${iconClass}`}></i>}
@@ -504,7 +518,7 @@
       );
     }
 
-    // ═══ BUDGET VS SPENT BAR CHART ═══
+    // ═══ BUDGET VS SPENT CHART ═══
     function BudgetVsSpentChart({ projects }) {
       const categories = [
         { value: 'digital', label: 'Digital', color: 'bg-blue-500' },
@@ -528,7 +542,7 @@
       if (data.length === 0) {
         return (
           <div className="card p-6">
-            <div className="text-xs tracking-[0.3em] text-white/40 mb-1">// BUDGET_VS_SPENT</div>
+            <div className="text-xs tracking-[0.3em] text-white/40 mb-1">// BUDGET_ANALYSIS</div>
             <h3 className="font-bold mb-4">งบประมาณ vs ใช้จริง</h3>
             <div className="text-center text-white/40 py-8">ไม่มีข้อมูล</div>
           </div>
@@ -539,8 +553,8 @@
         <div className="card p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <div className="text-xs tracking-[0.3em] text-white/40 mb-1">// BUDGET_VS_SPENT</div>
-              <h3 className="font-bold">งบประมาณ vs ใช้จริง (ตามหมวดหมู่)</h3>
+              <div className="text-xs tracking-[0.3em] text-white/40 mb-1">// BUDGET_ANALYSIS</div>
+              <h3 className="font-bold">งบประมาณ vs ใช้จริง</h3>
             </div>
             <div className="flex gap-3 text-[10px]">
               <span className="flex items-center gap-1.5 text-white/60"><span className="w-2 h-2 bg-blue-500 rounded-sm"></span>งบ</span>
@@ -581,7 +595,7 @@
       );
     }
 
-    // ═══ CATEGORY BREAKDOWN DONUT ═══
+    // ═══ CATEGORY BREAKDOWN ═══
     function CategoryBreakdown({ projects }) {
       const categories = [
         { value: 'digital', label: 'Digital', color: '#3b82f6' },
@@ -610,7 +624,6 @@
         );
       }
 
-      // Calculate SVG arc paths for donut chart
       const cx = 60, cy = 60, r = 45;
       let cumulativeAngle = -90;
       const arcs = data.map(d => {
@@ -725,7 +738,7 @@
           </div>
 
           <div className="space-y-1">
-            {activeProjects.map((p, idx) => {
+            {activeProjects.map((p) => {
               const start = parseDate(p.startDate);
               const end = parseDate(p.endDate);
               const totalDays = Math.max(1, (end - start) / (1000 * 60 * 60 * 24));
@@ -821,7 +834,7 @@
           <div className="card p-6">
             <div className="flex items-center justify-between mb-5">
               <div>
-                <div className="text-xs tracking-[0.3em] text-white/40 mb-1">// TOP_BY_CONVERSION</div>
+                <div className="text-xs tracking-[0.3em] text-white/40 mb-1">// TOP_CONVERSION</div>
                 <h3 className="font-bold text-sm">ส่งมอบสูงสุด</h3>
               </div>
               <i data-lucide="trophy" className="w-4 h-4 text-amber-400"></i>
@@ -856,7 +869,7 @@
           <div className="card p-6">
             <div className="flex items-center justify-between mb-5">
               <div>
-                <div className="text-xs tracking-[0.3em] text-white/40 mb-1">// TOP_BY_EFFICIENCY</div>
+                <div className="text-xs tracking-[0.3em] text-white/40 mb-1">// TOP_EFFICIENCY</div>
                 <h3 className="font-bold text-sm">ต้นทุนต่ำสุด/ส่งมอบ</h3>
               </div>
               <i data-lucide="trending-down" className="w-4 h-4 text-emerald-400"></i>
@@ -891,7 +904,7 @@
       );
     }
 
-    // ═══ MONTHLY ACTIVITY HEATMAP ═══
+    // ═══ MONTHLY HEATMAP ═══
     function MonthlyHeatmap({ projects, onlinePlans }) {
       const months = [];
       const now = new Date();
@@ -969,7 +982,7 @@
       );
     }
 
-    // ═══ CONVERSION FUNNEL (ENHANCED) ═══
+    // ═══ CONVERSION FUNNEL ═══
     function ConversionFunnel({ data }) {
       const steps = [
         { label: 'ผู้สนใจ (Inquiries)', sub: 'ลูกค้ามุ่งหวัง', value: data.inquiries, num: '01', color: 'bg-blue-500', border: 'border-t-blue-500', text: 'text-blue-400' },
@@ -1470,14 +1483,13 @@
         const totalTestDrives = dashboardProjects.reduce((sum, p) => sum + (p.testDrives || 0), 0);
         const totalBookings = dashboardProjects.reduce((sum, p) => sum + (p.bookings || 0), 0);
         const totalDeliveries = dashboardProjects.reduce((sum, p) => sum + (p.deliveries || 0), 0);
-        const totalFollowUps = dashboardProjects.reduce((sum, p) => sum + (p.followUps || 0), 0);
         const cpl = totalInquiries > 0 ? (totalSpent / totalInquiries).toFixed(0) : 0;
         const costPerDelivery = totalDeliveries > 0 ? (totalSpent / totalDeliveries).toFixed(0) : 0;
         const budgetUtilization = totalBudget > 0 ? ((totalSpent / totalBudget) * 100).toFixed(1) : 0;
         const conversionRate = totalInquiries > 0 ? ((totalDeliveries / totalInquiries) * 100).toFixed(2) : 0;
         return { 
           total, active, totalBudget, totalSpent, totalInquiries, totalTestDrives, 
-          totalBookings, totalDeliveries, totalFollowUps, cpl, costPerDelivery,
+          totalBookings, totalDeliveries, cpl, costPerDelivery,
           budgetUtilization, conversionRate
         };
       }, [dashboardProjects]);
@@ -1526,7 +1538,7 @@
                   M
                 </div>
                 <div>
-                  <div className="font-bold text-lg tracking-tight">ระบบจัดการการตลาด v4.0</div>
+                  <div className="font-bold text-lg tracking-tight">ระบบจัดการการตลาด v4.1</div>
                   <div className="flex items-center gap-2 text-xs text-white/40">
                     <span className="pulse-dot"></span>
                     <span>{user.email}</span>
@@ -1561,7 +1573,7 @@
 
             {activeTab === 'dashboard' && (
               <div className="fade-in space-y-6">
-                {/* Dashboard Summary Header */}
+                {/* Executive Summary */}
                 <div className="card p-6 border-t-2 border-t-violet-500 bg-gradient-to-br from-violet-500/5 to-transparent">
                   <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                     <div>
@@ -1610,10 +1622,10 @@
                   })}
                 </div>
 
-                {/* KPI Cards - Row 1 */}
+                {/* KPI Cards - Core Metrics Only (ไม่ซ้ำกับ Funnel) */}
                 <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
                   <StatCard 
-                    label="จำนวนแคมเปญ" 
+                    label="แคมเปญทั้งหมด" 
                     value={metrics.total} 
                     hint={`${metrics.active} กำลังดำเนินการ`} 
                     icon="folder" 
@@ -1636,55 +1648,20 @@
                     subvalue={`เหลืออีก ฿${((metrics.totalBudget - metrics.totalSpent)/1000000).toFixed(2)}M`}
                   />
                   <StatCard 
-                    label="ต้นทุนต่อ Lead" 
+                    label="ต้นทุน/Lead" 
                     value={`฿${parseInt(metrics.cpl || 0).toLocaleString()}`} 
-                    hint="Cost Per Lead (CPL)" 
+                    hint="Cost Per Lead" 
                     icon="target" 
                     color="pink" 
-                    subvalue={`Lead ทั้งหมด ${metrics.totalInquiries.toLocaleString()} ราย`}
+                    subvalue={`Lead ${metrics.totalInquiries.toLocaleString()} ราย`}
                   />
                   <StatCard 
-                    label="ต้นทุนต่อส่งมอบ" 
+                    label="ต้นทุน/ส่งมอบ" 
                     value={`฿${parseInt(metrics.costPerDelivery || 0).toLocaleString()}`} 
                     hint="Cost Per Delivery" 
                     icon="package" 
                     color="green" 
                     subvalue={`ส่งมอบ ${metrics.totalDeliveries.toLocaleString()} คัน`}
-                  />
-                </div>
-
-                {/* KPI Cards - Row 2 (Funnel Metrics) */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  <StatCard 
-                    label="ผู้สนใจ (Leads)" 
-                    value={metrics.totalInquiries.toLocaleString()} 
-                    hint="ยอดรวมทั้งหมด" 
-                    icon="users" 
-                    color="blue" 
-                    subvalue={`เฉลี่ย ${metrics.total > 0 ? (metrics.totalInquiries / metrics.total).toFixed(0) : 0} /แคมเปญ`}
-                  />
-                  <StatCard 
-                    label="ทดลองขับ" 
-                    value={metrics.totalTestDrives.toLocaleString()} 
-                    hint={metrics.totalInquiries > 0 ? `${((metrics.totalTestDrives / metrics.totalInquiries) * 100).toFixed(1)}% จาก Lead` : '-'} 
-                    icon="car" 
-                    color="violet" 
-                    subvalue={`ติดตามผล ${metrics.totalFollowUps.toLocaleString()} ราย`}
-                  />
-                  <StatCard 
-                    label="จองรถ" 
-                    value={metrics.totalBookings.toLocaleString()} 
-                    hint={metrics.totalInquiries > 0 ? `${((metrics.totalBookings / metrics.totalInquiries) * 100).toFixed(1)}% จาก Lead` : '-'} 
-                    icon="bookmark" 
-                    color="amber" 
-                  />
-                  <StatCard 
-                    label="ส่งมอบสำเร็จ" 
-                    value={metrics.totalDeliveries.toLocaleString()} 
-                    hint={metrics.totalInquiries > 0 ? `${metrics.conversionRate}% Conversion` : '-'} 
-                    icon="check-circle" 
-                    color="green" 
-                    trend={metrics.totalDeliveries > 0 ? 12.5 : 0}
                   />
                 </div>
 
@@ -1696,6 +1673,12 @@
 
                 {/* Active Campaigns Timeline */}
                 <ActiveCampaignsTimeline projects={projects} />
+
+                {/* Top Performers */}
+                <TopPerformers projects={dashboardProjects} />
+
+                {/* Monthly Activity Heatmap */}
+                <MonthlyHeatmap projects={projects} onlinePlans={onlinePlans} />
 
                 {/* Upcoming Online Activities */}
                 <div className="card p-6 border-l-4 border-pink-500">
@@ -1745,13 +1728,7 @@
                   )}
                 </div>
 
-                {/* Monthly Activity Heatmap */}
-                <MonthlyHeatmap projects={projects} onlinePlans={onlinePlans} />
-
-                {/* Top Performers */}
-                <TopPerformers projects={dashboardProjects} />
-
-                {/* Sales Funnel */}
+                {/* Sales Funnel - แสดงข้อมูลเชิงลึก (ไม่ซ้ำกับ KPI Cards) */}
                 <ConversionFunnel data={{ 
                   inquiries: metrics.totalInquiries, 
                   testDrives: metrics.totalTestDrives, 
